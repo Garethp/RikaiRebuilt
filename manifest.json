@@ -1,10 +1,7 @@
 {
-
   "manifest_version": 2,
-  "name": "Borderify",
+  "name": "RikaiRebuilt",
   "version": "1.0",
-
-  "description": "Adds a red border to all webpages matching mozilla.org.",
 
   "browser_action": {
     "default_icon": {
@@ -22,5 +19,4 @@
       "src/background.js"
     ]
   }
-
 }
