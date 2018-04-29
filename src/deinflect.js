@@ -1,5 +1,4 @@
 class Deinflect {
-
     constructor() {
         autobind(this);
 
@@ -80,6 +79,4 @@ class Deinflect {
     }
 }
 
-if (process !== undefined) {
-    module.exports = Deinflect;
-}
+if (typeof process !== 'undefined') { module.exports = Deinflect; }

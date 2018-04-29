@@ -16,10 +16,13 @@
 
   "background": {
     "scripts": [
+      "src/config.js",
+      "src/FileReader.js",
       "src/deinflectText.js",
       "src/deinflect.js",
       "src/dictionary.js",
       "src/auto-bind.js",
+      "src/data.js",
       "src/background.js"
     ]
   }

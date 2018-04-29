@@ -1,8 +1,8 @@
 require('../src/deinflectText');
 require('../src/auto-bind');
+require('../src/deinflect.js');
 
 const assert = require('assert');
-const Deinflect = require('../src/deinflect.js');
 
 describe('Deinflect', () => {
     const deinflect = new Deinflect();

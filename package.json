@@ -5,6 +5,7 @@
     "test": "mocha"
   },
   "devDependencies": {
+    "isomorphic-fetch": "^2.2.1",
     "mocha": "^5.1.1"
   }
 }

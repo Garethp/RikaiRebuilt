@@ -82,7 +82,7 @@ class Rikai {
         // this.wordData = new WordData();
     }
 
-    onMouseMove(event) {
+    async onMouseMove(event) {
         let {rangeParent, rangeOffset} = event;
         const tabData = this.tabData;
 
@@ -107,14 +107,14 @@ class Rikai {
         if (event.button !== 0) return;
 
         if (rangeParent && rangeParent.data && rangeOffset < rangeParent.data.length) {
-            this.show(tabData);
+            await this.show(tabData);
         }
     }
 
-    show(tabData) {
+    async show(tabData) {
         let {previousRangeParent, previousRangeOffset} = tabData;
         let i, j;
-        
+
         tabData.uofsNext = 1;
 
         if (!previousRangeParent) {
@@ -212,11 +212,11 @@ class Rikai {
             return 0;
         }
 
-        console.log(text);
-        // let e = this.wordData.wordSearch(text);
+        let e = await this.sendRequest('wordSearch', text);
+        console.log(e.data[0][0]);
     }
 
-    trim (text) {
+    trim(text) {
         return text.replace(/^\s\s*/, "").replace(/\s\s*$/, "");
     }
 
@@ -233,16 +233,15 @@ class Rikai {
 
         let nextNode = rangeParent;
         while ((text.length < maxLength) &&
-            ((nextNode = this.getNext(nextNode)) != null) &&
-            (this.inlineNames[nextNode.nodeName]))
-        {
+        ((nextNode = this.getNext(nextNode)) != null) &&
+        (this.inlineNames[nextNode.nodeName])) {
             text += this.getInlineText(nextNode, selelectionEndList, maxLength - text.length);
         }
 
         return text;
     }
 
-    getPrev (node) {
+    getPrev(node) {
         do {
             if (node.previousSibling) {
                 return node.previousSibling;
@@ -255,7 +254,7 @@ class Rikai {
         return null;
     }
 
-    getInlineText (node, selEndList, maxLength) {
+    getInlineText(node, selEndList, maxLength) {
         if ((node.nodeType === Node.TEXT_NODE) && (node.data.length === 0)) return '';
 
         let text = '';
@@ -272,7 +271,7 @@ class Rikai {
     // Given a node which must not be null, returns either the next sibling or
     // the next sibling of the father or the next sibling of the fathers father
     // and so on or null
-    getNext (node) {
+    getNext(node) {
         do {
             if (node.nextSibling) return node.nextSibling;
             node = node.parentNode;
@@ -299,7 +298,7 @@ class Rikai {
         return text;
     }
 
-    getInlineTextPrev (node, selEndList, maxLength) {
+    getInlineTextPrev(node, selEndList, maxLength) {
         if ((node.nodeType === Node.TEXT_NODE) && (node.data.length === 0)) {
             return ''
         }
@@ -345,24 +344,13 @@ class Rikai {
     disable() {
         this.document.removeEventListener('mousemove');
     }
+
+    async sendRequest(type, content) {
+        return browser.runtime.sendMessage({type, content}).then(response => {
+           return response.response;
+        });
+    };
 }
 
 rikai = new Rikai();
 rikai.enable(document);
-
-// const sendMesage = (message, id) => {
-//     return browser.runtime.sendMessage({ content: message, id })
-//         .then(response => {
-//             return response;
-//         });
-// };
-
-// myPort.onMessage.addListener( message => {
-//     console.log(message);
-//
-//     return;
-// });
-// myPort.postMessage({ greeting: 'Second', id: '2-id' });
-//
-// sendMesage('Hello, World', 'first-id');
-// sendMesage('Second Message', 'second-id');

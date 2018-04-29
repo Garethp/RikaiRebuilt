@@ -1,26 +1,21 @@
+const data = new Data();
+
 async function buttonAction() {
-    // browser.tabs.executeScript({
-    //     file: "src/index.js"
-    // });
-
-    const deinflect = new Deinflect();
-    const text = "見ない";
-    const deinflection = deinflect.go(text);
-
-    console.log(deinflection);
+    browser.tabs.executeScript({
+        file: "src/index.js"
+    });
 }
 
-// browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-//     console.log(message);
-//     console.log(sender);
-//
-//     const { id } = message;
-//
-//     sendResponse({ response: 'My response', id });
-// });
+browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    const {type, content} = message;
+
+    console.log(type);
+    switch (type) {
+        case "wordSearch":
+            return data.wordSearch(content).then(response => {
+                return {response};
+            });
+    }
+});
 
 browser.browserAction.onClicked.addListener(buttonAction);
-
-buttonAction();
-// const dictionary = new Dictionary();
-// dictionary.super();
