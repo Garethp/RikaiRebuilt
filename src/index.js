@@ -25,53 +25,6 @@ const autobind = (self, options) => {
 
     return self;
 };
-document.body.style.border = '5px solid red';
-//
-// class WordData {
-//     selected = 0;
-//     missing = false;
-//     ready = false;
-//
-//     init() {
-//         if (this.ready) return;
-//
-//         this.kanjiShown = {};
-//
-//         let a = rcxConfig.kindex.split(',');
-//         for (let i = a.length - 1; i >= 0; --i) {
-//             this.kanjiShown[a[i]] = 1;
-//         }
-//
-//         for (let i = this.dicList.length - 1; i >= 0; --i) {
-//             let dic = this.dicList[i];
-//             if (dic.isKanji) continue;
-//             if ((!dic.findWord) || (!dic.findText)) this.dicList[i] = dic = new RcxDic(dic);
-//             if (dic.open) dic.open();
-//         }
-//
-//         this.ready = true;
-//     }
-//
-//     wordSearch (word, noKanji) {
-//        this.searchSkipped = 0;
-//         let ds = this.selected;
-//         do {
-//             let dic = this.dicList[ds];
-//             if ((!noKanji) || (!dic.isKanji)) {
-//                 let e;
-//                 if (dic.isKanji) e = this.kanjiSearch(word.charAt(0));
-//                 else e = this._wordSearch(word, dic, null);
-//                 if (e) {
-//                     if (ds != 0) e.title = dic.name;
-//                     return e;
-//                 }
-//             }
-//             this.searchSkipped++;
-//             ds = (ds + 1) % this.dicList.length;
-//         } while (ds != this.selected);
-//         return null;
-//     }
-// }
 
 class Rikai {
 
@@ -259,7 +212,8 @@ class Rikai {
             return 0;
         }
 
-        let e = this.wordData.wordSearch(text);
+        console.log(text);
+        // let e = this.wordData.wordSearch(text);
     }
 
     trim (text) {
@@ -393,15 +347,15 @@ class Rikai {
     }
 }
 
-// rikai = new Rikai();
-// rikai.enable(document);
+rikai = new Rikai();
+rikai.enable(document);
 
-const sendMesage = (message, id) => {
-    return browser.runtime.sendMessage({ content: message, id })
-        .then(response => {
-            return response;
-        });
-};
+// const sendMesage = (message, id) => {
+//     return browser.runtime.sendMessage({ content: message, id })
+//         .then(response => {
+//             return response;
+//         });
+// };
 
 // myPort.onMessage.addListener( message => {
 //     console.log(message);
@@ -409,6 +363,6 @@ const sendMesage = (message, id) => {
 //     return;
 // });
 // myPort.postMessage({ greeting: 'Second', id: '2-id' });
-
-sendMesage('Hello, World', 'first-id');
-sendMesage('Second Message', 'second-id');
+//
+// sendMesage('Hello, World', 'first-id');
+// sendMesage('Second Message', 'second-id');

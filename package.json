@@ -1,0 +1,10 @@
+{
+  "name": "RikaiRebuilt",
+  "scripts": {
+    "start": "web-ext run --start-url https://en.wikipedia.org/wiki/Ky%C5%8Diku_kanji --browser-console",
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "mocha": "^5.1.1"
+  }
+}

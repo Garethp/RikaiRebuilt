@@ -16,6 +16,10 @@
 
   "background": {
     "scripts": [
+      "src/deinflectText.js",
+      "src/deinflect.js",
+      "src/dictionary.js",
+      "src/auto-bind.js",
       "src/background.js"
     ]
   }
