@@ -81,6 +81,8 @@ class Rikai {
             'DIV': false,
         };
         // this.wordData = new WordData();
+
+        this.popupId = 'rikaichan-window';
     }
 
     async onMouseMove(event) {
@@ -497,14 +499,16 @@ class Rikai {
         this.document = document;
 
         document.addEventListener('mousemove', this.onMouseMove);
-    }
 
-    initDictionary() {
-        // this.wordData.init();
+        this.createPopup();
     }
 
     disable() {
         this.document.removeEventListener('mousemove', this.onMouseMove);
+
+        if (this.hasPopup()) {
+            this.document.body.removeChild(this.getPopup());
+        }
     }
 
     async sendRequest(type, content) {
@@ -512,18 +516,36 @@ class Rikai {
             return response.response;
         });
     };
+
+    createPopup() {
+        if (this.hasPopup()) return;
+
+        document.body.innerHTML += `
+            <div id="${this.popupId}">
+            Some Stuff
+</div>
+        `;
+    }
+
+    getPopup() {
+        if (!this.hasPopup()) this.createPopup();
+
+        return this.document.getElementById(this.popupId);
+    }
+
+    hasPopup() {
+        return this.document.getElementById(this.popupId);
+    }
 }
 
-rikai = new Rikai();
+const rikai = new Rikai();
 rikai.enable(document);
 
 browser.runtime.onMessage.addListener(message => {
-    console.log(message);
     switch(message) {
         case 'DISABLE':
             return rikai.disable();
         case 'ENABLE':
-            console.log('Enable Recieved');
             return rikai.enable(document);
     }
 });

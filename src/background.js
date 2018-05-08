@@ -30,6 +30,10 @@ class RikaiRebuilt {
             file: "src/index.js"
         });
 
+        await browser.tabs.insertCSS({
+            file: "styles/popup-blue.css"
+        });
+
         this.activeTabs.push(tab.id);
         this.setTabIcon(tab.id);
     }
@@ -79,7 +83,6 @@ class RikaiRebuilt {
             })
         }
 
-        console.log('Enabled');
         browser.browserAction.setIcon({
             path: {
                 48: 'icons/smile_star.png'
@@ -93,7 +96,6 @@ const rebuilt = new RikaiRebuilt();
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const {type, content} = message;
 
-    console.log(type);
     switch (type) {
         case "wordSearch":
             return rebuilt.wordSearch(content).then(response => {
