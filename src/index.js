@@ -32,6 +32,7 @@ class Rikai {
         autobind(this);
 
         this.tabData = {};
+        this.lastFound = [];
         this.inlineNames = {
             // text node
             '#text': true,
@@ -112,18 +113,19 @@ class Rikai {
     }
 
     async show(tabData) {
-        let {previousRangeParent, previousRangeOffset} = tabData;
+        let {previousRangeParent} = tabData;
+        let previousRangeOffset = tabData.previousRangeOffset + tabData.uofs;
         let i, j;
 
         tabData.uofsNext = 1;
 
         if (!previousRangeParent) {
-            this.clearPopup();
+            this.clear();
             return 0;
         }
 
         if (previousRangeOffset < 0 || previousRangeOffset > previousRangeParent.data.length) {
-            this.clearPopup();
+            this.clear();
             return 0;
         }
 
@@ -135,7 +137,7 @@ class Rikai {
                 ((charCode < 0x3400) || (charCode > 0x9FFF)) &&
                 ((charCode < 0xF900) || (charCode > 0xFAFF)) &&
                 ((charCode < 0xFF10) || (charCode > 0xFF9D)))) {
-            this.clearPopup();
+            this.clear();
             return -2;
         }
 
@@ -208,12 +210,150 @@ class Rikai {
         this.sentence = sentence;
 
         if (text.length === 0) {
-            this.clearPopup();
+            this.clear();
             return 0;
         }
 
         let e = await this.sendRequest('wordSearch', text);
-        console.log(e.data[0][0]);
+        if (e === null) {
+            this.clear();
+            return 0;
+        }
+
+        this.lastFound = [e];
+
+        this.word = text.substr(0, e.matchLen);
+
+        const wordPositionInString = previousRangeOffset + previousSentence.length - sentenceStartPos + startOffset;
+        let sentenceWithBlank = sentence.substr(0, wordPositionInString) + "___"
+            + sentence.substr(wordPositionInString + e.matchLen, sentence.length);
+
+        this.sentenceWithBlank = sentenceWithBlank;
+
+        if (!e.matchLen) e.matchLen = 1;
+        tabData.uofsNext = e.matchLen;
+        tabData.uofs = previousRangeOffset - tabData.previousRangeOffset;
+
+        // @TODO: Add config check for "shouldHighlight"
+        const shouldHighlight = (!('form' in tabData.previousTarget));
+        if (shouldHighlight) {
+            let document = tabData.previousRangeParent.ownerDocument;
+            if (!document) {
+                this.clear();
+                return 0;
+            }
+
+            this.highlightMatch(document, tabData.previousRangeParent, previousRangeOffset, e.matchLen, selectionEndList, tabData);
+            tabData.prevSelView = document.defaultView;
+        }
+
+        // @TODO: Add audio playing
+        // @TODO: Add checks for super sticky
+        // @TODO: Add sanseido mode
+        // @TODO: Add EPWING mode
+
+        this.showPopup(this.getKnownWordIndicatorText() + rcxData.makeHtml(e), tabData.previousTarget, tabData.pos);
+    }
+
+    highlightMatch(document, rangeParent, rangeOffset, matchLen, selEndList, tabData) {
+        if (selEndList.length === 0) return;
+
+        let selEnd;
+        let offset = matchLen + rangeOffset;
+        // before the loop
+        // |----!------------------------!!-------|
+        // |(------)(---)(------)(---)(----------)|
+        // offset: '!!' lies in the fifth node
+        // rangeOffset: '!' lies in the first node
+        // both are relative to the first node
+        // after the loop
+        // |---!!-------|
+        // |(----------)|
+        // we have found the node in which the offset lies and the offset
+        // is now relative to this node
+        for (let i = 0; i < selEndList.length; ++i) {
+            selEnd = selEndList[i];
+            if (offset <= selEnd.data.length) break;
+            offset -= selEnd.data.length;
+        }
+
+        const range = document.createRange();
+        range.setStart(rangeParent, rangeOffset);
+        range.setEnd(selEnd, offset);
+
+        const sel = document.defaultView.getSelection();
+        if ((!sel.isCollapsed) && (tabData.selText !== sel.toString()))
+            return;
+        sel.removeAllRanges();
+        sel.addRange(range);
+        tabData.selText = sel.toString();
+    }
+
+
+    getKnownWordIndicatorText () {
+        let outText = "";
+        let expression = "";
+        let reading = "";
+
+        // Get the last highlighted word
+        if (this.lastFound[0].data) {
+            // Extract needed data from the hilited entry
+            //   entryData[0] = kanji/kana + kana + definition
+            //   entryData[1] = kanji (or kana if no kanji)
+            //   entryData[2] = kana (null if no kanji)
+            //   entryData[3] = definition
+
+            const entryData = this.lastFound[0].data[0][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//);
+            expression = entryData[1];
+
+            if (entryData[2]) {
+                reading = entryData[2];
+            }
+        }
+        else {
+            return "";
+        }
+
+        // Reload the known words associative array if needed
+        if (!this.knownWordsDic || (this.prevKnownWordsFilePath !== rcxConfig.vocabknownwordslistfile)) {
+            rcxMain.knownWordsDic = {};
+            rcxMain.readWordList(rcxConfig.vocabknownwordslistfile, rcxMain.knownWordsDic, rcxConfig.vocabknownwordslistcolumn);
+            this.prevKnownWordsFilePath = rcxConfig.vocabknownwordslistfile;
+        }
+
+        // Reload the to-do words associative array if needed
+        if (!this.todoWordsDic || (this.prevTodoWordsFilePath != rcxConfig.vocabtodowordslistfile)) {
+            rcxMain.todoWordsDic = {};
+            rcxMain.readWordList(rcxConfig.vocabtodowordslistfile, rcxMain.todoWordsDic, rcxConfig.vocabtodowordslistcolumn);
+            this.prevTodoWordsFilePath = rcxConfig.vocabtodowordslistfile;
+        }
+
+        //
+        // First try the expression
+        //
+
+        if (this.knownWordsDic[expression]) {
+            outText = "* ";
+        }
+        else if (this.todoWordsDic[expression]) {
+            outText = "*t ";
+        }
+
+        //
+        // If expression not found in either the known words or to-do lists, try the reading
+        //
+
+        if (outText.length == 0) {
+            if (this.knownWordsDic[reading]) {
+                outText = "*_r ";
+            }
+            else if (this.todoWordsDic[reading]) {
+                outText = "*t_r ";
+            }
+        }
+
+        return outText;
+
     }
 
     trim(text) {
@@ -327,7 +467,29 @@ class Rikai {
 
     }
 
+    clear() {
+        this.clearPopup();
+        this.clearHighlight();
+    }
+
     clearPopup() {
+    }
+
+    clearHighlight () {
+        const tabData = this.tabData;
+        if ((!tabData) || (!tabData.prevSelView)) return;
+        if (tabData.prevSelView.closed) {
+            tabData.prevSelView = null;
+            return;
+        }
+
+        const selelection = tabData.prevSelView.getSelection();
+        if ((selelection.isCollapsed) || (tabData.selText === selelection.toString())) {
+            selelection.removeAllRanges();
+        }
+        tabData.prevSelView = null;
+        tabData.kanjiChar = null;
+        tabData.selText = null;
     }
 
     enable(document) {
@@ -342,15 +504,26 @@ class Rikai {
     }
 
     disable() {
-        this.document.removeEventListener('mousemove');
+        this.document.removeEventListener('mousemove', this.onMouseMove);
     }
 
     async sendRequest(type, content) {
         return browser.runtime.sendMessage({type, content}).then(response => {
-           return response.response;
+            return response.response;
         });
     };
 }
 
 rikai = new Rikai();
 rikai.enable(document);
+
+browser.runtime.onMessage.addListener(message => {
+    console.log(message);
+    switch(message) {
+        case 'DISABLE':
+            return rikai.disable();
+        case 'ENABLE':
+            console.log('Enable Recieved');
+            return rikai.enable(document);
+    }
+});
