@@ -95,7 +95,6 @@ class Data {
         let count = 0;
         let maxLen = 0;
 
-        console.log(word);
         while (word.length > 0) {
             let showInf = (count !== 0);
             let variants = dictionary.isName ? [{word: word, type: 0xFF, reason: null}] : this.deinflect.go(word);

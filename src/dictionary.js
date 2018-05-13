@@ -17,7 +17,6 @@ class Dictionary {
     async open () {
         if (this.opened) return;
 
-        console.log('Opening');
         let entries = await FileReader.readCSv(this.dictionaryPath + this.name + '.csv');
         entries = entries.map(entry => {
             const kanji = entry.shift();
@@ -35,7 +34,6 @@ class Dictionary {
             this.kanji[kanji].push({kanji, kana, entry});
         }
 
-        console.log('Open');
         this.opened = true;
     }
 

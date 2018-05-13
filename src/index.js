@@ -110,7 +110,18 @@ class Rikai {
         if (event.button !== 0) return;
 
         if (rangeParent && rangeParent.data && rangeOffset < rangeParent.data.length) {
+            tabData.pos = { screenX: event.screenX, screenY: event.screenY, pageX: event.pageX, pageY: event.pageY };
             await this.show(tabData);
+        }
+
+        if (tabData.pos) {
+            const distanceX = tabData.pos.screenX - event.screenX;
+            const distanceY = tabData.pos.screenY - event.screenY;
+            const distance = Math.sqrt((distanceX * distanceX) + (distanceY * distanceY));
+
+            if (distance > 4) {
+                this.clear();
+            }
         }
     }
 
@@ -254,7 +265,7 @@ class Rikai {
         // @TODO: Add sanseido mode
         // @TODO: Add EPWING mode
 
-        this.showPopup(this.getKnownWordIndicatorText() + rcxData.makeHtml(e), tabData.previousTarget, tabData.pos);
+        this.showPopup(this.getKnownWordIndicatorText() + this.makeHTML(e), tabData.previousTarget, tabData.pos);
     }
 
     highlightMatch(document, rangeParent, rangeOffset, matchLen, selEndList, tabData) {
@@ -292,7 +303,9 @@ class Rikai {
     }
 
 
-    getKnownWordIndicatorText () {
+    getKnownWordIndicatorText() {
+        return '';
+
         let outText = "";
         let expression = "";
         let reading = "";
@@ -324,7 +337,7 @@ class Rikai {
         }
 
         // Reload the to-do words associative array if needed
-        if (!this.todoWordsDic || (this.prevTodoWordsFilePath != rcxConfig.vocabtodowordslistfile)) {
+        if (!this.todoWordsDic || (this.prevTodoWordsFilePath !== rcxConfig.vocabtodowordslistfile)) {
             rcxMain.todoWordsDic = {};
             rcxMain.readWordList(rcxConfig.vocabtodowordslistfile, rcxMain.todoWordsDic, rcxConfig.vocabtodowordslistcolumn);
             this.prevTodoWordsFilePath = rcxConfig.vocabtodowordslistfile;
@@ -345,7 +358,7 @@ class Rikai {
         // If expression not found in either the known words or to-do lists, try the reading
         //
 
-        if (outText.length == 0) {
+        if (outText.length === 0) {
             if (this.knownWordsDic[reading]) {
                 outText = "*_r ";
             }
@@ -475,9 +488,10 @@ class Rikai {
     }
 
     clearPopup() {
+        this.getPopup().style.display = 'none';
     }
 
-    clearHighlight () {
+    clearHighlight() {
         const tabData = this.tabData;
         if ((!tabData) || (!tabData.prevSelView)) return;
         if (tabData.prevSelView.closed) {
@@ -495,7 +509,9 @@ class Rikai {
     }
 
     enable(document) {
-        this.tabData = {};
+        this.tabData = {
+            prevSelView: null
+        };
         this.document = document;
 
         document.addEventListener('mousemove', this.onMouseMove);
@@ -536,13 +552,290 @@ class Rikai {
     hasPopup() {
         return this.document.getElementById(this.popupId);
     }
+
+
+    makeHTML(entry) {
+        let k;
+        let e;
+        let returnValue = [];
+        let c, s, t;
+        let i, j, n;
+
+        if (entry == null) return '';
+
+        // if (!this.ready) this.init();
+        // if (!this.radData) this.radData = rcxFile.readArray('chrome://rikaichan/content/radicals.dat');
+
+        if (entry.kanji) {
+            let yomi;
+            let box;
+            let bn;
+            let nums;
+
+            yomi = entry.onkun.replace(/\.([^\u3001]+)/g, '<span class="k-yomi-hi">$1</span>');
+            if (entry.nanori.length) {
+                yomi += '<br/><span class="k-yomi-ti">\u540D\u4E57\u308A</span> ' + entry.nanori;
+            }
+            if (entry.bushumei.length) {
+                yomi += '<br/><span class="k-yomi-ti">\u90E8\u9996\u540D</span> ' + entry.bushumei;
+            }
+
+            bn = entry.misc['B'] - 1;
+            k = entry.misc['G'];
+            switch (k) {
+                case 8:
+                    k = 'general<br/>use';
+                    break;
+                case 9:
+                    k = 'name<br/>use';
+                    break;
+                default:
+                    k = isNaN(k) ? '-' : ('grade<br/>' + k);
+                    break;
+            }
+            box = '<table class="k-abox-tb"><tr>' +
+                '<td class="k-abox-r">radical<br/>' + this.radData[bn].charAt(0) + ' ' + (bn + 1) + '</td>' +
+                '<td class="k-abox-g">' + k + '</td>' +
+                '</tr><tr>' +
+                '<td class="k-abox-f">freq<br/>' + (entry.misc['F'] ? entry.misc['F'] : '-') + '</td>' +
+                '<td class="k-abox-s">strokes<br/>' + entry.misc['S'] + '</td>' +
+                '</tr></table>';
+            if (this.kanjiShown['COMP']) {
+                k = this.radData[bn].split('\t');
+                box += '<table class="k-bbox-tb">' +
+                    '<tr><td class="k-bbox-1a">' + k[0] + '</td>' +
+                    '<td class="k-bbox-1b">' + k[2] + '</td>' +
+                    '<td class="k-bbox-1b">' + k[3] + '</td></tr>';
+                j = 1;
+                for (i = 0; i < this.radData.length; ++i) {
+                    s = this.radData[i];
+                    if ((bn !== i) && (s.indexOf(entry.kanji) !== -1)) {
+                        k = s.split('\t');
+                        c = ' class="k-bbox-' + (j ^= 1);
+                        box += '<tr><td' + c + 'a">' + k[0] + '</td>' +
+                            '<td' + c + 'b">' + k[2] + '</td>' +
+                            '<td' + c + 'b">' + k[3] + '</td></tr>';
+                    }
+                }
+                box += '</table>';
+            }
+
+            nums = '';
+            j = 0;
+
+            for (i = 0; i < this.numList.length; i += 2) {
+                c = this.numList[i];
+                if (this.kanjiShown[c]) {
+                    s = entry.misc[c]; // The number
+                    c = ' class="k-mix-td' + (j ^= 1) + '"';
+
+                    if (this.numList[i + 1] === "Heisig") {
+                        const revTkLink = 'http://kanji.koohii.com/study/kanji/' + entry.kanji;
+                        nums += '<tr><td' + c + '>' + '<a' + c + 'href="' + revTkLink + '">'
+                            + this.numList[i + 1] + '</a>' + '</td><td' + c + '>' + '<a' + c + 'href="' + revTkLink + '">'
+                            + (s ? s : '-') + '</a>' + '</td></tr>';
+                    }
+                    else {
+                        nums += '<tr><td' + c + '>' + this.numList[i + 1] + '</td><td' + c + '>' + (s ? s : '-') + '</td></tr>';
+                    }
+                }
+            }
+            if (nums.length) nums = '<table class="k-mix-tb">' + nums + '</table>';
+
+            returnValue.push('<table class="k-main-tb"><tr><td valign="top">');
+            returnValue.push(box);
+            returnValue.push('<span class="k-kanji">' + entry.kanji + '</span><br/>');
+            if (!rcxConfig.hidedef) returnValue.push('<div class="k-eigo">' + entry.eigo + '</div>');
+            returnValue.push('<div class="k-yomi">' + yomi + '</div>');
+            returnValue.push('</td></tr><tr><td>' + nums + '</td></tr></table>');
+            return returnValue.join('');
+        }
+
+        s = t = '';
+
+        if (entry.names) {
+            c = [];
+
+            returnValue.push('<div class="w-title">Names Dictionary</div><table class="w-na-tb"><tr><td>');
+            for (i = 0; i < entry.data.length; ++i) {
+                e = entry.data[i][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/([\S\s]+)\//);
+                if (!e) continue;
+
+                if (s !== e[3]) {
+                    c.push(t);
+                    t = '';
+                }
+
+                if (e[2]) c.push('<span class="w-kanji">' + e[1] + '</span> &#32; <span class="w-kana">' + e[2] + '</span><br/> ');
+                else c.push('<span class="w-kana">' + e[1] + '</span><br/> ');
+
+                s = e[3];
+                if (rcxConfig.hidedef) t = '';
+                else t = '<span class="w-def">' + s.replace(/\//g, '; ').replace(/\n/g, '<br/>') + '</span><br/>';
+            }
+            c.push(t);
+            if (c.length > 4) {
+                n = (c.length >> 1) + 1;
+                returnValue.push(c.slice(0, n + 1).join(''));
+
+                t = c[n];
+                c = c.slice(n, c.length);
+                for (i = 0; i < c.length; ++i) {
+                    if (c[i].indexOf('w-def') !== -1) {
+                        if (t !== c[i]) returnValue.push(c[i]);
+                        if (i === 0) c.shift();
+                        break;
+                    }
+                }
+
+                returnValue.push('</td><td>');
+                returnValue.push(c.join(''));
+            }
+            else {
+                returnValue.push(c.join(''));
+            }
+            if (entry.more) returnValue.push('...<br/>');
+            returnValue.push('</td></tr></table>');
+
+            return returnValue.join('');
+        }
+        if (entry.title) {
+            returnValue.push('<div class="w-title">' + entry.title + '</div>');
+        }
+
+        let pK = '';
+
+        for (i = 0; i < entry.data.length; ++i) {
+            e = entry.data[i][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/([\S\s]+)\//);
+            if (!e) continue;
+
+            /*
+      e[0] = kanji/kana + kana + definition
+      e[1] = kanji (or kana if no kanji)
+      e[2] = kana (null if no kanji)
+      e[3] = definition
+            */
+
+            if (s !== e[3]) {
+                returnValue.push(t);
+                pK = k = '';
+            }
+            else {
+                k = t.length ? '<br/>' : '';
+            }
+
+            if (e[2]) {
+                if (pK === e[1]) k = '\u3001 <span class="w-kana">' + e[2] + '</span>';
+                else k += '<span class="w-kanji">' + e[1] + '</span> &#32; <span class="w-kana">' + e[2] + '</span>';
+                pK = e[1];
+            }
+            else {
+                k += '<span class="w-kana">' + e[1] + '</span>';
+                pK = '';
+            }
+            returnValue.push(k);
+
+            //TODO: Add config usage here
+            // Add pitch accent right after the reading
+            // if (rcxConfig.showpitchaccent) {
+            //     const pitchAccent = rcxMain.getPitchAccent(e[1], e[2]);
+            //
+            //     if (pitchAccent && (pitchAccent.length > 0)) {
+            //         returnValue.push('<span class="w-conj"> ' + pitchAccent + '</span>');
+            //     }
+            // }
+
+            if (entry.data[i][1]) returnValue.push(' <span class="w-conj">(' + entry.data[i][1] + ')</span>');
+
+            //TODO: Add config usage here
+            // Add frequency
+            // if (rcxConfig.showfreq) {
+            //     const freqExpression = e[1];
+            //     var freqReading = e[2];
+            //
+            //     if (freqReading == null) {
+            //         var freqReading = freqExpression;
+            //     }
+            //
+            //     const freq = rcxMain.getFreq(freqExpression, freqReading, (i == 0));
+            //
+            //     if (freq && (freq.length > 0)) {
+            //         const freqClass = rcxMain.getFreqStyle(freq);
+            //         returnValue.push('<span class="' + freqClass + '"> ' + freq + '</span>');
+            //     }
+            // }
+
+            //TODO: Add config usage here
+            s = e[3];
+            if (false) {
+            // if (rcxConfig.hidedef) {
+                t = '<br/>';
+            }
+            else {
+                t = s.replace(/\//g, '; ');
+                //TODO: Add config here
+                // if (!rcxConfig.wpos) t = t.replace(/^\([^)]+\)\s*/, '');
+                // if (!rcxConfig.wpop) t = t.replace('; (P)', '');
+                t = t.replace(/\n/g, '<br/>');
+                t = '<br/><span class="w-def">' + t + '</span><br/>';
+            }
+        }
+        returnValue.push(t);
+        if (entry.more) returnValue.push('...<br/>');
+
+        return returnValue.join('');
+    }
+
+    showPopup(textToShow, previousTarget, position) {
+        let {pageX, pageY} = position || {pageX: 0, pageY: 0};
+        const popup = this.getPopup();
+
+        popup.innerHTML = textToShow;
+        popup.style.display = '';
+        popup.style.maxWidth = '600px';
+
+
+        if (previousTarget && (typeof previousTarget !== 'undefined')
+            && previousTarget.parentNode && (typeof previousTarget.parentNode !== 'undefined')) {
+
+            let width = popup.offsetWidth;
+            let height = popup.offsetHeight;
+
+            popup.style.top = '-1000px';
+            popup.style.left = '0px';
+            popup.style.display = '';
+
+            //TODO: Add alt-views here
+            //TODO: Stuff for box object and zoom?
+            //TODO: Check for Option Element? What?
+
+
+            if (pageX + width > window.innerWidth - 20) {
+                pageX = window.innerWidth - width - 20;
+                if (pageX < 0) pageX = 0;
+            }
+
+            let v = 25;
+            if (previousTarget.title && previousTarget.title !== '') v += 20;
+
+            if (pageY + v + height > window.innerHeight) {
+                let t = pageY - height - 30;
+                if (t >= 0) pageY = t;
+            } else {
+                pageY += v;
+            }
+        }
+
+        popup.style.left = pageX + 'px';
+        popup.style.top = pageY + 'px';
+    }
 }
 
 const rikai = new Rikai();
 rikai.enable(document);
 
 browser.runtime.onMessage.addListener(message => {
-    switch(message) {
+    switch (message) {
         case 'DISABLE':
             return rikai.disable();
         case 'ENABLE':

@@ -110,7 +110,6 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 return {response};
             });
         case "unload":
-            console.log('unload request');
             rebuilt.unloadTab(sender.tab.id);
             return 0;
     }
