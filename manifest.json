@@ -16,6 +16,7 @@
 
   "background": {
     "scripts": [
+      "src/removeFromArray.js",
       "src/config.js",
       "src/FileReader.js",
       "src/deinflectText.js",

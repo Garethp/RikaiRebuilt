@@ -511,7 +511,7 @@ class Rikai {
         }
     }
 
-    async sendRequest(type, content) {
+    async sendRequest(type, content = '') {
         return browser.runtime.sendMessage({type, content}).then(response => {
             return response.response;
         });
@@ -548,4 +548,8 @@ browser.runtime.onMessage.addListener(message => {
         case 'ENABLE':
             return rikai.enable(document);
     }
+});
+
+window.addEventListener('unload', async () => {
+    await rikai.sendRequest('unload');
 });

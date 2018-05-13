@@ -6,6 +6,7 @@ class RikaiRebuilt {
         this.data = null;
         this.activeTabs = [];
         this.deactivatedTabs = [];
+        this.currentTab = null;
     }
 
     enable() {
@@ -19,11 +20,11 @@ class RikaiRebuilt {
         this.enable();
 
         if (this.activeTabs.indexOf(tab.id) !== -1) {
-            return this.disableTab(tab);
+            return this.disableTab(tab.id);
         }
 
         if (this.deactivatedTabs.indexOf(tab.id) !== -1) {
-            return this.reEnableTab(tab);
+            return this.reEnableTab(tab.id);
         }
 
         await browser.tabs.executeScript({
@@ -38,26 +39,31 @@ class RikaiRebuilt {
         this.setTabIcon(tab.id);
     }
 
-    async disableTab(tab) {
-        await browser.tabs.sendMessage(tab.id, 'DISABLE');
+    async disableTab(tabId) {
+        await browser.tabs.sendMessage(tabId, 'DISABLE');
 
-        this.activeTabs = this.activeTabs.filter(tabId => {
-            return tabId !== tab.id;
-        });
+        this.activeTabs = removeFromArray(this.activeTabs, tabId);
+        this.deactivatedTabs.push(tabId);
 
-        this.deactivatedTabs.push(tab.id);
-        this.setTabIcon(tab.id);
+        this.setTabIcon(tabId);
     }
 
-    async reEnableTab(tab) {
-        await browser.tabs.sendMessage(tab.id, 'ENABLE');
+    async unloadTab(tabId) {
+        this.deactivatedTabs = removeFromArray(this.deactivatedTabs, tabId);
+        this.activeTabs = removeFromArray(this.activeTabs, tabId);
 
-        this.deactivatedTabs = this.deactivatedTabs.filter(tabId => {
-            return tabId !== tab.id;
-        });
+        if (tabId === this.currentTab) {
+            this.setTabIcon(tabId);
+        }
+    }
 
-        this.activeTabs.push(tab.id);
-        this.setTabIcon(tab.id);
+    async reEnableTab(tabId) {
+        await browser.tabs.sendMessage(tabId, 'ENABLE');
+
+        this.deactivatedTabs = removeFromArray(this.deactivatedTabs, tabId);
+
+        this.activeTabs.push(tabId);
+        this.setTabIcon(tabId);
     }
 
     getData() {
@@ -72,6 +78,8 @@ class RikaiRebuilt {
 
     handleTabActivated(tab) {
         this.setTabIcon(tab.tabId);
+
+        this.currentTab = tab.tabId;
     }
 
     setTabIcon(tabId) {
@@ -101,6 +109,10 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
             return rebuilt.wordSearch(content).then(response => {
                 return {response};
             });
+        case "unload":
+            console.log('unload request');
+            rebuilt.unloadTab(sender.tab.id);
+            return 0;
     }
 });
 

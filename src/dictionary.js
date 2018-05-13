@@ -9,6 +9,9 @@ class Dictionary {
 
         this.isName = false;
         this.hasType = true;
+
+        this.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.OIndexedDB || window.msIndexedDB;
+        this.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.OIDBTransaction || window.msIDBTransaction;
     }
 
     async open () {
