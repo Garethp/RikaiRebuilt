@@ -14,12 +14,13 @@ class AnkiImport {
         const promises = [];
         let audio = false;
 
+        const fields = {};
         for(const key in config.ankiFields) {
             let newValue = null;
             switch(config.ankiFields[key]) {
                 case 'audio':
                     audio = true;
-                    newValue = entryFormat.audioFile;
+                    newValue = `[sound:${entryFormat.audioFile}]`;
                     break;
                 case 'dictionaryFormat':
                     newValue = entryFormat.dictionaryForm;
@@ -30,14 +31,44 @@ class AnkiImport {
                 case 'reading':
                     newValue = entryFormat.reading;
                     break;
+                case 'saveNotes':
+                    newValue = entryFormat.saveNotes;
+                    break;
+                case 'sentence':
+                    newValue = entryFormat.sentence;
+                    break;
+                case 'sentenceWithBlank':
+                    newValue = entryFormat.sentenceWithBlank;
+                    break;
+                case 'sourceUrl':
+                    newValue = entryFormat.sourceUrl;
+                    break;
+                case 'pageTitle':
+                    newValue = entryFormat.pageTitle;
+                    break;
+                case 'definition':
+                    newValue = entryFormat.definition;
+                    break;
+                case 'frequency':
+                    newValue = entryFormat.frequency;
+                    break;
+                case 'pitch':
+                    newValue = entryFormat.pitch;
+                    break;
+            }
+
+            if (newValue !== null) {
+                fields[key] = newValue;
             }
         }
 
+        console.log(fields);
+
         promises.push(this.makeCall('addNote', { fields }));
 
-        //If Audio
+        // If Audio
         if (audio) {
-            promises.push(this.makeCall('downloadAudio', { filename, url }));
+            promises.push(this.makeCall('downloadAudio', { filename: entryFormat.audioFile, url: entryFormat.audioUrl }));
         }
 
         return Promise.all(promises);
@@ -60,11 +91,6 @@ class AnkiImport {
         if ((entry == null) || (entry.data == null))
         {
             return '';
-        }
-
-        if (!this.ready)
-        {
-            this.init();
         }
 
         // Example of what entry.data[0][0] looks like (linebreak added by me):
@@ -96,7 +122,7 @@ class AnkiImport {
 
         const audioFile = reading + ' - ' + entryData[1] + '.mp3';
 
-        let translation = "";
+        let definition = "";
 
         if(config.epwingMode)
         {
@@ -104,18 +130,18 @@ class AnkiImport {
         }
         else // Not EPWING mode
         {
-            translation = entryData[3].replace(/\//g, "; ");
+            definition = entryData[3].replace(/\//g, "; ");
 
             // Remove word type indicators? [example: (v1,n)]
-            if(!rcxConfig.wpos)
+            if(!config.wpos)
             {
-                translation = translation.replace(/^\([^)]+\)\s*/, '');
+                definition = definition.replace(/^\([^)]+\)\s*/, '');
             }
 
             // Remove popular indicator? [example: (P)]
-            if(!rcxConfig.wpop)
+            if(!config.wpop)
             {
-                translation = translation.replace('; (P)', '');
+                definition = definition.replace('; (P)', '');
             }
         }
 
@@ -123,13 +149,16 @@ class AnkiImport {
         pageTitle = pageTitle.replace(/ \- Mozilla Firefox$/, '');
 
         // Frequency
-        const frequency = rcxMain.getFreq(dictionaryForm, reading, true);
+        // const frequency = rcxMain.getFreq(dictionaryForm, reading, true);
+        const frequency = '';
 
         // Pitch accent
-        const pitch = rcxMain.getPitchAccent(dictionaryForm, reading);
+        // const pitch = rcxMain.getPitchAccent(dictionaryForm, reading);
+        const pitch = '';
 
         const { saveNotes } = config;
-        return { audioFile, dictionaryForm, word, reading, saveNotes, sentence, sentenceWithBlank, sourceUrl, pageTitle, translation, frequency, pitch };
+        const audioUrl = AudioPlayer.getAudioUrl(entry);
+        return { audioFile, audioUrl, dictionaryForm, word, reading, saveNotes, sentence, sentenceWithBlank, sourceUrl, pageTitle, definition, frequency, pitch };
     }
 }
 

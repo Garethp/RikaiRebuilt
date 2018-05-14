@@ -16,6 +16,8 @@
 
   "background": {
     "scripts": [
+      "src/utils.js",
+      "src/audioPlayer.js",
       "src/ankiImport.js",
       "src/removeFromArray.js",
       "src/config.js",

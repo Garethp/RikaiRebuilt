@@ -106,45 +106,26 @@ function playAudio(lastFound) {
 
     const entry = lastFound[0];
 
-    let kanjiText;
-    let kanaText;
-
-    //We have a single kanji selected
-    if (entry && entry.kanji && entry.onkun) {
-        entry.onkun.match(/^([^\u3001]*)/);
-
-        kanjiText = entry.kanji;
-        kanaText = RegExp.$1;
-
-        if (!kanjiText || !kanaText) return;
-
-        kanaText = rebuilt.data.convertKatakanaToHiragana(kanaText);
-
-        if (!kanaText) return;
-    } else if (entry.data[0]) {
-        let entryData =
-            entry.data[0][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//);
-
-        if (!entryData) return 0;
-
-        // Get just the kanji and kana
-        kanjiText = entryData[1];
-        kanaText = entryData[2];
-
-        if (!kanjiText) return 0;
-
-        if (!kanaText) kanaText = kanjiText;
-    } else {
-        return 0;
-    }
-
-    const jdicAudioUrlText =
-        "http://assets.languagepod101.com/dictionary/japanese/audiomp3.php?kana="
-        + kanaText + "&kanji=" + kanjiText;
-
     const audio = new Audio();
-    audio.src = jdicAudioUrlText;
+    audio.src = AudioPlayer.getAudioUrl(entry);
     audio.play();
+}
+
+const ankiImport = new AnkiImport();
+
+function sendToAnki(content) {
+    console.log(content);
+    const { entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl } = content;
+    const entryFormat = ankiImport.makeTextOptions(entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl, false, false, {});
+    ankiImport.addNote(entryFormat, {
+        ankiFields: {
+            'Vocabulary': 'dictionaryFormat',
+            'Reading': 'reading',
+            'Definition': 'definition',
+            'Audio': 'audio'
+        }
+    });
+    playAudio([entry]);
 }
 
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -161,10 +142,12 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
         case "playAudio":
             playAudio(content);
             return 0;
+        case "sendToAnki":
+            sendToAnki(content);
+            return 0;
     }
 });
 
-const ankiImport = new AnkiImport();
 browser.browserAction.onClicked.addListener(rebuilt.enableForTab);
 
 browser.tabs.onActivated.addListener(rebuilt.handleTabActivated);

@@ -89,7 +89,7 @@ class Rikai {
                 playAudio: 70,
                 sendToAnki: 82,
             },
-            hideDefinitions: true
+            hideDefinitions: false
         };
 
         this.keysDown = [];
@@ -248,10 +248,8 @@ class Rikai {
         this.word = text.substr(0, e.matchLen);
 
         const wordPositionInString = previousRangeOffset + previousSentence.length - sentenceStartPos + startOffset;
-        let sentenceWithBlank = sentence.substr(0, wordPositionInString) + "___"
+        this.sentenceWithBlank = sentence.substr(0, wordPositionInString) + "___"
             + sentence.substr(wordPositionInString + e.matchLen, sentence.length);
-
-        this.sentenceWithBlank = sentenceWithBlank;
 
         if (!e.matchLen) e.matchLen = 1;
         tabData.uofsNext = e.matchLen;
@@ -861,7 +859,14 @@ class Rikai {
     }
 
     sendToAnki() {
+        const word = this.word;
+        const sentence = this.sentence;
+        const sentenceWithBlank = this.sentenceWithBlank;
+        const entry = this.lastFound[0];
+        const pageTitle = window.document.title;
+        const sourceUrl = window.location.href;
 
+        this.sendRequest('sendToAnki', { word, sentence, sentenceWithBlank, entry, pageTitle, sourceUrl });
     }
 
 
