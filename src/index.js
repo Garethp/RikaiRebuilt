@@ -867,44 +867,7 @@ class Rikai {
 
     playAudio() {
         const { lastFound } = this;
-
-        if (!lastFound || lastFound.length === 0) return;
-        const entry = lastFound[0];
-
-        let kanjiText;
-        let kanaText;
-
-        //We have a single kanji selected
-        if (entry && entry.kanji && entry.onkun) {
-            entry.onkun.match(/^([^\u3001]*)/);
-
-            kanjiText = entry.kanji;
-            kanaText = RegExp.$1;
-
-            if (!kanjiText || !kanaText) return;
-
-            //@TODO: Convert katakana to hirigana for KanaText here
-
-            if (!kanaText) return;
-        } else if (entry.data[0]) {
-            let entryData =
-                entry.data[0][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//);
-
-            if (!entryData) return 0;
-
-            // Get just the kanji and kana
-            kanjiText = entryData[1];
-            kanaText = entryData[2];
-
-            if (!kanjiText) return 0;
-
-            if (!kanaText) kanaText = kanjiText;
-        } else {
-            return 0;
-        }
-
-        console.log({kanaText});
-        console.log({kanjiText});
+        this.sendRequest('playAudio', lastFound);
     }
 
     updateConfig(config) {
