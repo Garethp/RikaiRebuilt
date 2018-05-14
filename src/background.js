@@ -40,7 +40,7 @@ class RikaiRebuilt {
     }
 
     async disableTab(tabId) {
-        await browser.tabs.sendMessage(tabId, 'DISABLE');
+        await browser.tabs.sendMessage(tabId, { type: 'DISABLE' });
 
         this.activeTabs = removeFromArray(this.activeTabs, tabId);
         this.deactivatedTabs.push(tabId);
@@ -58,7 +58,7 @@ class RikaiRebuilt {
     }
 
     async reEnableTab(tabId) {
-        await browser.tabs.sendMessage(tabId, 'ENABLE');
+        await browser.tabs.sendMessage(tabId, { type:  'ENABLE' });
 
         this.deactivatedTabs = removeFromArray(this.deactivatedTabs, tabId);
 
@@ -115,5 +115,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
+const ankiImport = new AnkiImport();
 browser.browserAction.onClicked.addListener(rebuilt.enableForTab);
+
 browser.tabs.onActivated.addListener(rebuilt.handleTabActivated);

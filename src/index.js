@@ -83,6 +83,16 @@ class Rikai {
         // this.wordData = new WordData();
 
         this.popupId = 'rikaichan-window';
+
+        this.config = {
+            keymap: {
+                playAudio: 70,
+                sendToAnki: 82,
+            },
+            hideDefinitions: true
+        };
+
+        this.keysDown = [];
     }
 
     async onMouseMove(event) {
@@ -515,8 +525,29 @@ class Rikai {
         this.document = document;
 
         document.addEventListener('mousemove', this.onMouseMove);
+        document.addEventListener('keydown', this.onKeyDown);
+        document.addEventListener('keyup', this.onKeyUp);
 
         this.createPopup();
+    }
+
+    onKeyDown(event) {
+        if ((event.altKey) || (event.metaKey) || (event.ctrlKey)) return;
+        if ((event.shiftKey) && (event.keyCode != 16)) return;
+        if (this.keysDown[event.keyCode]) return;
+
+        this.keysDown[event.keyCode] = 1;
+
+        switch (event.keyCode) {
+            case this.config.keymap.playAudio:
+                return this.playAudio();
+            case this.config.keymap.sendToAnki:
+                return this.sendToAnki();
+        }
+    }
+
+    onKeyUp(event) {
+        if (this.keysDown[event.keyCode]) this.keysDown[event.keyCode] = 0;
     }
 
     disable() {
@@ -645,7 +676,7 @@ class Rikai {
             returnValue.push('<table class="k-main-tb"><tr><td valign="top">');
             returnValue.push(box);
             returnValue.push('<span class="k-kanji">' + entry.kanji + '</span><br/>');
-            if (!rcxConfig.hidedef) returnValue.push('<div class="k-eigo">' + entry.eigo + '</div>');
+            if (!this.config.hideDefinitions) returnValue.push('<div class="k-eigo">' + entry.eigo + '</div>');
             returnValue.push('<div class="k-yomi">' + yomi + '</div>');
             returnValue.push('</td></tr><tr><td>' + nums + '</td></tr></table>');
             return returnValue.join('');
@@ -670,7 +701,7 @@ class Rikai {
                 else c.push('<span class="w-kana">' + e[1] + '</span><br/> ');
 
                 s = e[3];
-                if (rcxConfig.hidedef) t = '';
+                if (this.config.hideDefinitions) t = '';
                 else t = '<span class="w-def">' + s.replace(/\//g, '; ').replace(/\n/g, '<br/>') + '</span><br/>';
             }
             c.push(t);
@@ -767,8 +798,7 @@ class Rikai {
 
             //TODO: Add config usage here
             s = e[3];
-            if (false) {
-            // if (rcxConfig.hidedef) {
+            if (this.config.hideDefinitions) {
                 t = '<br/>';
             }
             else {
@@ -829,17 +859,71 @@ class Rikai {
         popup.style.left = pageX + 'px';
         popup.style.top = pageY + 'px';
     }
+
+    sendToAnki() {
+
+    }
+
+
+    playAudio() {
+        const { lastFound } = this;
+
+        if (!lastFound || lastFound.length === 0) return;
+        const entry = lastFound[0];
+
+        let kanjiText;
+        let kanaText;
+
+        //We have a single kanji selected
+        if (entry && entry.kanji && entry.onkun) {
+            entry.onkun.match(/^([^\u3001]*)/);
+
+            kanjiText = entry.kanji;
+            kanaText = RegExp.$1;
+
+            if (!kanjiText || !kanaText) return;
+
+            //@TODO: Convert katakana to hirigana for KanaText here
+
+            if (!kanaText) return;
+        } else if (entry.data[0]) {
+            let entryData =
+                entry.data[0][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//);
+
+            if (!entryData) return 0;
+
+            // Get just the kanji and kana
+            kanjiText = entryData[1];
+            kanaText = entryData[2];
+
+            if (!kanjiText) return 0;
+
+            if (!kanaText) kanaText = kanjiText;
+        } else {
+            return 0;
+        }
+
+        console.log({kanaText});
+        console.log({kanjiText});
+    }
+
+    updateConfig(config) {
+        this.config = config;
+    }
 }
 
 const rikai = new Rikai();
 rikai.enable(document);
 
 browser.runtime.onMessage.addListener(message => {
-    switch (message) {
+    const { type, content } = message;
+    switch (type) {
         case 'DISABLE':
             return rikai.disable();
         case 'ENABLE':
             return rikai.enable(document);
+        case 'UPDATE_CONFIG':
+            return rikai.updateConfig(content);
     }
 });
 
