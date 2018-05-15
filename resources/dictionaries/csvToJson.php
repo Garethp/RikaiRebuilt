@@ -19,7 +19,8 @@ $csv = array_map(function ($line) {
 
 $json = [
     'name' => 'Japanese-To-English',
-    'entries' => $csv
+    'id' => 'e82ffa3b-1cd4-4749-b5bf-9a6f64e6890a',
+    'entries' => $csv,
 ];
 
 file_put_contents('./rikaichan.json', json_encode($json, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));

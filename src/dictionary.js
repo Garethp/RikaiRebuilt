@@ -105,47 +105,40 @@ class IndexedDictionary {
 
     async add(kanji, kana, entry) {
         let transaction = this.db.transaction('dictionary', 'readwrite');
-        transaction.objectStore('dictionary').add({kanji, kana, entry, combined: [kanji, kana]}).then(() => {
-            console.log('added');
-        });
+        transaction.objectStore('dictionary').add({kanji, kana, entry, combined: [kanji, kana]});
         return transaction.complete;
     }
 
-    async addMultiple(entries) {
-        const transaction = this.db.transaction(this.store, 'readwrite');
-        const objectStore = transaction.objectStore(this.store);
+    async addMultiple(entries, progressCallback) {
+        let i = 0;
+        const length = entries.length;
 
-        for (let e of entries) {
-            const {kanji, kana, entry} = e;
-            objectStore.add({ kanji, kana, entry, combined: [kanji, kana]}).then(() => {
-                console.log('Add');
-            })
-        }
+        const addNext = async () => {
+            if (i >= length || entries[i] === null) return;
+            if (typeof progressCallback !== 'undefined') progressCallback(i, length);
 
-        return transaction.complete;
+            const {kanji, kana, entry} = entries[i];
+            i++;
+
+            return this.add(kanji, kana, entry).then(addNext);
+        };
+
+        return addNext();
     }
 
     async deleteDatabase() {
         return idb.delete(this.name);
     }
 
-    async importFromFile(file) {
+    async importFromFile(file, progressCallback) {
         return FileReader.readJson(file).then(dictionary => {
             const entries = dictionary.entries;
-            const addPromises = [];
-            // console.log(entries);
-
-            // let i =1;
-            // for (const entry of entries) {
-            //     addPromises.push(this.add(entry.kanji, entry.kana, entry.entry));
-            //     i++;
-            //     if (i == 5) break;
-            // }
-            //
-            // return Promise.all(addPromises);
-
-            return this.addMultiple(entries);
+            return this.import(entries, progressCallback);
         });
+    }
+
+    async import(entries, progressCallback) {
+        return this.addMultiple(entries, progressCallback);
     }
 
     async clear() {

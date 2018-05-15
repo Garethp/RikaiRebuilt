@@ -173,7 +173,19 @@ const testDb = new IndexedDictionary('test');
 testDb.open()
 .then(async () => {
     // await testDb.importFromFile('https://raw.githubusercontent.com/Garethp/RikaiRebuilt/master/resources/dictionaries/rikaichan.csv');
-    await testDb.importFromFile('../resources/dictionaries/rikaichan.json');
+    let lastPercent = -1;
+    let lastTime = new Date().getTime();
+    await testDb.importFromFile('../resources/dictionaries/rikaichan.json', (item, total) => {
+        const percent = Math.floor((item / total) * 100);
+
+        if (percent > lastPercent) {
+            let currentTime = new Date().getTime();
+            const diffTime = currentTime - lastTime;
+            console.log(`${percent}% of items have been processed, and the last percent took ${diffTime} milliseconds to add`);
+            lastPercent = percent;
+            lastTime = currentTime;
+        }
+    });
     console.log(await testDb.find('仝'));
 }).then(async () => {
     await testDb.deleteDatabase();
