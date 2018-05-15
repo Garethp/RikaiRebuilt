@@ -4,13 +4,16 @@ class FileReader {
             uri = browser.extension.getURL(uri);
         }
 
-        return fetch(uri).then(response => {
-            return response.text();
-        })
+        return fetch(uri);
+    }
+
+    static readJson(uri) {
+        return this.read(uri).then(response => response.json())
     }
 
     static readCSv(uri) {
-        return this.read(uri).then(text => {
+        return this.read(uri).then(response => response.text())
+            .then(text => {
             return text.split('\n').map(line => {
                 return line.split(',');
             });

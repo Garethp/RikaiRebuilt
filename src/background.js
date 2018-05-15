@@ -172,8 +172,9 @@ browser.storage.onChanged.addListener((changes, areaName) => {
 const testDb = new IndexedDictionary('test');
 testDb.open()
 .then(async () => {
-    // await testDb.importFromFile('../resources/dictionaries/rikaichan.csv');
+    // await testDb.importFromFile('https://raw.githubusercontent.com/Garethp/RikaiRebuilt/master/resources/dictionaries/rikaichan.csv');
+    await testDb.importFromFile('../resources/dictionaries/rikaichan.json');
     console.log(await testDb.find('仝'));
 }).then(async () => {
-    // await testDb.deleteDatabase();
+    await testDb.deleteDatabase();
 });

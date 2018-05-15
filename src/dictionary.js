@@ -105,7 +105,23 @@ class IndexedDictionary {
 
     async add(kanji, kana, entry) {
         let transaction = this.db.transaction('dictionary', 'readwrite');
-        transaction.objectStore('dictionary').add({kanji, kana, entry, combined: [kanji, kana]});
+        transaction.objectStore('dictionary').add({kanji, kana, entry, combined: [kanji, kana]}).then(() => {
+            console.log('added');
+        });
+        return transaction.complete;
+    }
+
+    async addMultiple(entries) {
+        const transaction = this.db.transaction(this.store, 'readwrite');
+        const objectStore = transaction.objectStore(this.store);
+
+        for (let e of entries) {
+            const {kanji, kana, entry} = e;
+            objectStore.add({ kanji, kana, entry, combined: [kanji, kana]}).then(() => {
+                console.log('Add');
+            })
+        }
+
         return transaction.complete;
     }
 
@@ -114,30 +130,22 @@ class IndexedDictionary {
     }
 
     async importFromFile(file) {
-        console.log('Time to clear');
-        await this.clear();
+        return FileReader.readJson(file).then(dictionary => {
+            const entries = dictionary.entries;
+            const addPromises = [];
+            // console.log(entries);
 
-        console.log('Reading');
-        let entries = await FileReader.readCSv(file);
-        console.log('Read');
-        entries = entries.map(entry => {
-            const kanji = entry.shift();
-            const kana = entry.shift();
-            const definition = entry.join(',');
+            // let i =1;
+            // for (const entry of entries) {
+            //     addPromises.push(this.add(entry.kanji, entry.kana, entry.entry));
+            //     i++;
+            //     if (i == 5) break;
+            // }
+            //
+            // return Promise.all(addPromises);
 
-            return [kanji, kana, definition];
+            return this.addMultiple(entries);
         });
-
-        console.log('Mapped');
-        const addPromises = [];
-        // console.log(entries);
-        for (const line of entries) {
-            const [kanji, kana, entry] = line;
-
-            addPromises.push(this.add(kanji, kana, entry));
-        }
-
-        return addPromises;
     }
 
     async clear() {
