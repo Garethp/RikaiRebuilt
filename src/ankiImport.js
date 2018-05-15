@@ -62,8 +62,6 @@ class AnkiImport {
             }
         }
 
-        console.log(fields);
-
         promises.push(this.makeCall('addNote', { fields }));
 
         // If Audio

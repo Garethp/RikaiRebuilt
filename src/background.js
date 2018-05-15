@@ -30,6 +30,12 @@ class RikaiRebuilt {
             return this.reEnableTab(tab.id);
         }
 
+        browser.storage.local.get('config').then(config => {
+            if (!config.config) return;
+
+            this.updateConfig(config.config);
+        });
+
         await browser.tabs.executeScript({ file: "src/defaultConfig.js" });
         await browser.tabs.executeScript({
             file: "src/index.js"
@@ -44,7 +50,6 @@ class RikaiRebuilt {
     }
 
     async disableTab(tabId) {
-        console.log(typeof tabId);
         await browser.tabs.sendMessage(tabId, { type: 'DISABLE' });
 
         this.activeTabs = removeFromArray(this.activeTabs, tabId);
@@ -106,6 +111,13 @@ class RikaiRebuilt {
     updateConfig(config) {
         this.config = config || defaultConfig;
     }
+
+    sendToAnki(content) {
+        const { entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl } = content;
+        const entryFormat = ankiImport.makeTextOptions(entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl, false, false, this.config);
+        ankiImport.addNote(entryFormat, this.config);
+        playAudio([entry]);
+    }
 }
 
 
@@ -123,14 +135,6 @@ function playAudio(lastFound) {
 
 const ankiImport = new AnkiImport();
 
-function sendToAnki(content) {
-    console.log(content);
-    const { entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl } = content;
-    const entryFormat = ankiImport.makeTextOptions(entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl, false, false, {});
-    ankiImport.addNote(entryFormat, config.ankiFields);
-    playAudio([entry]);
-}
-
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const {type, content} = message;
 
@@ -146,7 +150,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
             playAudio(content);
             return 0;
         case "sendToAnki":
-            sendToAnki(content);
+            rebuilt.sendToAnki(content);
             return 0;
     }
 });
