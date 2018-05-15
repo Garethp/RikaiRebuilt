@@ -36,14 +36,15 @@ class RikaiRebuilt {
             this.updateConfig(config.config);
         });
 
-        await browser.tabs.executeScript({ file: "src/defaultConfig.js" });
-        await browser.tabs.executeScript({
-            file: "src/index.js"
-        });
+        await Promise.all([
+            browser.tabs.executeScript({ file: "src/defaultConfig.js" }),
+            browser.tabs.executeScript({ file: "dist/browser-polyfill.min.js" })
+        ]);
 
-        await browser.tabs.insertCSS({
-            file: "styles/popup-blue.css"
-        });
+        await Promise.all([
+            browser.tabs.executeScript({ file: "src/index.js" }),
+            browser.tabs.insertCSS({ file: "styles/popup-blue.css" }),
+        ]);
 
         this.activeTabs.push(tab.id);
         this.setTabIcon(tab.id);

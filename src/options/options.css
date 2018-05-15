@@ -3,5 +3,6 @@ ul {
 }
 
 body {
-    overflow-x: hidden;
+    min-width: 600px;
+    padding: 20px;
 }
