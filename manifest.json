@@ -17,6 +17,7 @@
 
   "background": {
     "scripts": [
+      "dist/idb.js",
       "dist/browser-polyfill.min.js",
       "src/defaultConfig.js",
       "src/utils.js",

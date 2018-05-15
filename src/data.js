@@ -6,8 +6,10 @@ class Data {
     constructor() {
         autobind(this);
 
-        this.dictionary = new Dictionary('rikaichan-jpen@polarcloud.com');
-        this.dictionary.open();
+        let dictionary = new Dictionary('rikaichan-jpen@polarcloud.com');
+        dictionary.open();
+
+        this.dictionaries = [ dictionary ];
 
         this.deinflect = new Deinflect();
 
@@ -18,17 +20,35 @@ class Data {
         this.cv = [0x30F4, 0xFF74, 0xFF75, 0x304C, 0x304E, 0x3050, 0x3052, 0x3054, 0x3056, 0x3058, 0x305A, 0x305C, 0x305E, 0x3060,
             0x3062, 0x3065, 0x3067, 0x3069, 0xFF85, 0xFF86, 0xFF87, 0xFF88, 0xFF89, 0x3070, 0x3073, 0x3076, 0x3079, 0x307C];
         this.cs = [0x3071, 0x3074, 0x3077, 0x307A, 0x307D];
+
+        this.selectedDictionary = 0;
     }
 
     async wordSearch(word, noKanji) {
-        let dictionary = this.dictionary;
-        let result = await this._wordSearch(word, dictionary, null);
+        let dictionaryIndex = this.selectedDictionary;
+        do {
+            const dictionary = this.dictionaries[dictionaryIndex];
 
-        if (!result) {
-            return null;
-        }
+            if (!noKanji || !dictionary.isKanji) {
+                let entry;
+                if (dictionary.isKanji) entry = this.kanjiSearch(word.charAt(0));
+                else entry = this._wordSearch(word, dictionary, null);
 
-        return result;
+                if (entry) {
+                    if (dictionaryIndex !== 0) entry.title = dictionary.name;
+
+                    return entry;
+                }
+            }
+
+            dictionaryIndex++;
+            if (dictionaryIndex >= this.dictionary.length) {
+                dictionaryIndex = 0;
+            }
+
+        } while (dictionaryIndex !== this.selectedDictionary);
+
+        return null;
     }
 
     async _wordSearch(word, dictionary, max) {
@@ -211,6 +231,10 @@ class Data {
         }
 
         return r;
+    }
+
+    kanjiSearch(character) {
+        return null;
     }
 }
 

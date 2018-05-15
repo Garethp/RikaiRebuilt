@@ -168,3 +168,12 @@ browser.storage.onChanged.addListener((changes, areaName) => {
 
     rebuilt.updateConfig(config);
 });
+
+const testDb = new IndexedDictionary('test');
+testDb.open()
+.then(async () => {
+    // await testDb.importFromFile('../resources/dictionaries/rikaichan.csv');
+    console.log(await testDb.find('仝'));
+}).then(async () => {
+    // await testDb.deleteDatabase();
+});

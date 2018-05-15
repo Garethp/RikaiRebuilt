@@ -9,9 +9,6 @@ class Dictionary {
 
         this.isName = false;
         this.hasType = true;
-
-        this.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.OIndexedDB || window.msIndexedDB;
-        this.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.OIDBTransaction || window.msIDBTransaction;
     }
 
     async open () {
@@ -67,6 +64,87 @@ class Dictionary {
     getReadings (reading) {
 
     }
-};
+}
+
+class IndexedDictionary {
+    constructor(name) {
+        this.store = 'dictionary';
+
+        this.name = name;
+    }
+
+    async open() {
+        this.db = await idb.open(this.name, 2, upgradeDb => {
+            try {
+                upgradeDb.deleteObjectStore(this.store);
+            } catch (e) {}
+            const store = upgradeDb.createObjectStore(this.store, {autoIncrement: true});
+
+            store.createIndex('kanji', 'kanji');
+            store.createIndex('kana', 'kana');
+            store.createIndex('both', 'combined', {multiEntry: true});
+        });
+    }
+
+    async close() {
+
+    }
+
+    async find(word) {
+        return this.findByIndex('both', word)
+    }
+
+    async findByIndex(index, value)
+    {
+        return this.db.transaction(this.store).objectStore(this.store).index(index).getAll(value);
+    }
+
+    async findKanji(word) {
+        return this.findByIndex('kanji', word);
+    }
+
+    async add(kanji, kana, entry) {
+        let transaction = this.db.transaction('dictionary', 'readwrite');
+        transaction.objectStore('dictionary').add({kanji, kana, entry, combined: [kanji, kana]});
+        return transaction.complete;
+    }
+
+    async deleteDatabase() {
+        return idb.delete(this.name);
+    }
+
+    async importFromFile(file) {
+        console.log('Time to clear');
+        await this.clear();
+
+        console.log('Reading');
+        let entries = await FileReader.readCSv(file);
+        console.log('Read');
+        entries = entries.map(entry => {
+            const kanji = entry.shift();
+            const kana = entry.shift();
+            const definition = entry.join(',');
+
+            return [kanji, kana, definition];
+        });
+
+        console.log('Mapped');
+        const addPromises = [];
+        // console.log(entries);
+        for (const line of entries) {
+            const [kanji, kana, entry] = line;
+
+            addPromises.push(this.add(kanji, kana, entry));
+        }
+
+        return addPromises;
+    }
+
+    async clear() {
+        const transaction = this.db.transaction(this.store, 'readwrite');
+        transaction.objectStore(this.store).clear();
+        return transaction.complete;
+    }
+}
 
 if (typeof process !== 'undefined') { module.exports = Dictionary; }
