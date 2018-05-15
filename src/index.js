@@ -84,13 +84,7 @@ class Rikai {
 
         this.popupId = 'rikaichan-window';
 
-        this.config = {
-            keymap: {
-                playAudio: 70,
-                sendToAnki: 82,
-            },
-            hideDefinitions: false
-        };
+        this.config = defaultConfig;
 
         this.keysDown = [];
     }
@@ -520,11 +514,23 @@ class Rikai {
         this.tabData = {
             prevSelView: null
         };
+
+        browser.storage.local.get('config').then(config => {
+            this.config = config.config || defaultConfig;
+        });
+
         this.document = document;
 
         document.addEventListener('mousemove', this.onMouseMove);
         document.addEventListener('keydown', this.onKeyDown);
         document.addEventListener('keyup', this.onKeyUp);
+
+        browser.storage.onChanged.addListener((changes, areaSet) => {
+            if (areaSet !== 'local') return;
+            if (typeof changes.config === 'undefined') return;
+
+            this.config = changes.config.newValue || defaultConfig;
+        });
 
         this.createPopup();
     }
@@ -802,8 +808,8 @@ class Rikai {
             else {
                 t = s.replace(/\//g, '; ');
                 //TODO: Add config here
-                // if (!rcxConfig.wpos) t = t.replace(/^\([^)]+\)\s*/, '');
-                // if (!rcxConfig.wpop) t = t.replace('; (P)', '');
+                if (!this.config.showWordTypeIndicator) t = t.replace(/^\([^)]+\)\s*/, '');
+                if (!this.config.showPopularWordIndicator) t = t.replace('; (P)', '');
                 t = t.replace(/\n/g, '<br/>');
                 t = '<br/><span class="w-def">' + t + '</span><br/>';
             }
@@ -874,10 +880,6 @@ class Rikai {
         const { lastFound } = this;
         this.sendRequest('playAudio', lastFound);
     }
-
-    updateConfig(config) {
-        this.config = config;
-    }
 }
 
 const rikai = new Rikai();
@@ -890,8 +892,6 @@ browser.runtime.onMessage.addListener(message => {
             return rikai.disable();
         case 'ENABLE':
             return rikai.enable(document);
-        case 'UPDATE_CONFIG':
-            return rikai.updateConfig(content);
     }
 });
 

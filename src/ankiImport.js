@@ -133,13 +133,13 @@ class AnkiImport {
             definition = entryData[3].replace(/\//g, "; ");
 
             // Remove word type indicators? [example: (v1,n)]
-            if(!config.wpos)
+            if(!config.showWordTypeIndicator)
             {
                 definition = definition.replace(/^\([^)]+\)\s*/, '');
             }
 
             // Remove popular indicator? [example: (P)]
-            if(!config.wpop)
+            if(!config.showPopularWordIndicator)
             {
                 definition = definition.replace('; (P)', '');
             }

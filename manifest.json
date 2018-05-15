@@ -11,11 +11,13 @@
 
   "permissions": [
     "<all_urls>",
-    "tabs"
+    "tabs",
+    "storage"
   ],
 
   "background": {
     "scripts": [
+      "src/defaultConfig.js",
       "src/utils.js",
       "src/audioPlayer.js",
       "src/ankiImport.js",
@@ -29,5 +31,8 @@
       "src/data.js",
       "src/background.js"
     ]
+  },
+  "options_ui": {
+    "page": "src/options/options.html"
   }
 }

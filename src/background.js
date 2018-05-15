@@ -1,3 +1,5 @@
+let config = defaultConfig;
+
 class RikaiRebuilt {
     constructor() {
         autobind(this);
@@ -7,6 +9,7 @@ class RikaiRebuilt {
         this.activeTabs = [];
         this.deactivatedTabs = [];
         this.currentTab = null;
+        this.config = defaultConfig;
     }
 
     enable() {
@@ -27,6 +30,7 @@ class RikaiRebuilt {
             return this.reEnableTab(tab.id);
         }
 
+        await browser.tabs.executeScript({ file: "src/defaultConfig.js" });
         await browser.tabs.executeScript({
             file: "src/index.js"
         });
@@ -40,6 +44,7 @@ class RikaiRebuilt {
     }
 
     async disableTab(tabId) {
+        console.log(typeof tabId);
         await browser.tabs.sendMessage(tabId, { type: 'DISABLE' });
 
         this.activeTabs = removeFromArray(this.activeTabs, tabId);
@@ -97,7 +102,12 @@ class RikaiRebuilt {
             }
         })
     }
+
+    updateConfig(config) {
+        this.config = config || defaultConfig;
+    }
 }
+
 
 const rebuilt = new RikaiRebuilt();
 
@@ -117,14 +127,7 @@ function sendToAnki(content) {
     console.log(content);
     const { entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl } = content;
     const entryFormat = ankiImport.makeTextOptions(entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl, false, false, {});
-    ankiImport.addNote(entryFormat, {
-        ankiFields: {
-            'Vocabulary': 'dictionaryFormat',
-            'Reading': 'reading',
-            'Definition': 'definition',
-            'Audio': 'audio'
-        }
-    });
+    ankiImport.addNote(entryFormat, config.ankiFields);
     playAudio([entry]);
 }
 
@@ -151,3 +154,12 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 browser.browserAction.onClicked.addListener(rebuilt.enableForTab);
 
 browser.tabs.onActivated.addListener(rebuilt.handleTabActivated);
+
+browser.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== 'local') return;
+    if (typeof changes.config === 'undefined') return;
+
+    config = changes.config.newValue;
+
+    rebuilt.updateConfig(config);
+});
