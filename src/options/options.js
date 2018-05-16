@@ -139,7 +139,6 @@ $('#recommendedDictionaries').delegate('.install-dictionary', 'click', (event) =
     fetch(dictionary.url).then(response => response.json()).then(dictionary => {
         installStatus.html('Installing 0%');
         progressBar.parent().show();
-        console.log(dictionary);
         sendRequest('importDictionary', dictionary);
     });
 });
@@ -201,7 +200,6 @@ browser.runtime.onMessage.addListener(async (message) => {
 
             browser.storage.local.set({ config });
             setFormFieldsFromConfig(config);
-            return console.log('Done');
     }
 });
 

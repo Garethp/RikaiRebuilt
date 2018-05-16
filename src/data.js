@@ -3,13 +3,11 @@ if (typeof process !== 'undefined') { Dictionary = require('./dictionary.js'); D
 class Data {
     // katakana -> hiragana conversion tables
 
-    constructor() {
+    constructor(config) {
         autobind(this);
-
-        let dictionary = new Dictionary('rikaichan-jpen@polarcloud.com');
-        dictionary.open();
-
-        this.dictionaries = [ dictionary ];
+        this.config = config;
+        this.dictionaries = [];
+        this.updateDictionaries();
 
         this.deinflect = new Deinflect();
 
@@ -24,7 +22,31 @@ class Data {
         this.selectedDictionary = 0;
     }
 
+    async updateDictionaries() {
+        // let dictionary = new Dictionary('rikaichan');
+        // await dictionary.open();
+        // this.dictionaries = [dictionary];
+
+        for (const dictionaryDb of this.dictionaries) {
+            await dictionaryDb.close();
+        }
+
+        this.dictionaries = this.config.installedDictionaries.map(dictionary => {
+            const dictionaryDb = new IndexedDictionary(dictionary.id);
+            dictionaryDb.open();
+            return dictionaryDb;
+        });
+    }
+
+    updateConfig(config) {
+        this.config = config;
+        this.updateDictionaries();
+    }
+
     async wordSearch(word, noKanji) {
+        if (this.dictionaries.length === 0) return null;
+
+        this.selectedDictionary = 0;
         let dictionaryIndex = this.selectedDictionary;
         do {
             const dictionary = this.dictionaries[dictionaryIndex];

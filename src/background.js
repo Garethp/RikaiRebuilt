@@ -16,7 +16,7 @@ class RikaiRebuilt {
         if (this.enabled) return;
 
         this.enabled = true;
-        this.data = new Data();
+        this.data = new Data(this.config);
     }
 
     async enableForTab(tab) {
@@ -111,6 +111,7 @@ class RikaiRebuilt {
 
     updateConfig(config) {
         this.config = config || defaultConfig;
+        this.getData().updateConfig(config);
     }
 
     sendToAnki(content) {
@@ -136,14 +137,14 @@ function playAudio(lastFound) {
 
 const ankiImport = new AnkiImport();
 
-browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+browser.runtime.onMessage.addListener((message, sender) => {
     const {type, content} = message;
 
     switch (type) {
         case "wordSearch":
             return rebuilt.wordSearch(content).then(response => {
                 return {response};
-            });
+            }, f => console.log(f));
         case "unload":
             rebuilt.unloadTab(sender.tab.id);
             return 0;
@@ -180,7 +181,6 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
             return 0;
         case "deleteDictionary":
             const dictionary = new IndexedDictionary(content.id);
-            console.log(`Deleting ${content.id}`);
             dictionary.open().then(async () => {
                 dictionary.deleteDatabase();
             });

@@ -88,11 +88,14 @@ class IndexedDictionary {
     }
 
     async close() {
-
+        return this.db.close();
     }
 
-    async find(word) {
-        return this.findByIndex('both', word)
+    async findWord(word) {
+        word = await this.findByIndex('both', word);
+        return word.map(entry => {
+            return ((entry.kanji ? (`${entry.kanji} [${entry.kana}]`) : entry.kana) + ` /${entry.entry}/`);
+        });
     }
 
     async findByIndex(index, value)

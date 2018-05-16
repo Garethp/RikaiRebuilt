@@ -3,13 +3,17 @@
 ini_set('memory_limit','1G');
 
 $dictionaries = [
-    'rikaichan' => [
+    'english' => [
         'name' => 'Japanese To English Dictionary',
         'id' => 'e82ffa3b-1cd4-4749-b5bf-9a6f64e6890a',
     ],
     'names' => [
         'name' => 'Japanese Names',
-        'id' => '359fe507-7235-4040-8f7b-c5af90e9897d'
+        'id' => '359fe507-7235-4040-8f7b-c5af90e9897d',
+    ],
+    'dutch' => [
+        'name' => 'Japanese To Dutch Dictionary',
+        'id' => 'a544e3ba-51cc-4574-aed5-54e195557e17',
     ],
 ];
 
