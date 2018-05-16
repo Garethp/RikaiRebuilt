@@ -547,6 +547,11 @@ class Rikai {
                 return this.playAudio();
             case this.config.keymap.sendToAnki:
                 return this.sendToAnki();
+            case this.config.keymap.selectNextDictionary:
+                this.sendRequest('selectNextDictionary').then(response => {
+                    console.log('Selected');
+                });
+                return;
         }
     }
 

@@ -22,6 +22,14 @@ class Data {
         this.selectedDictionary = 0;
     }
 
+    selectNextDictionary() {
+        this.selectedDictionary++;
+
+        if (this.selectedDictionary >= this.dictionaries.length) {
+            this.selectedDictionary = 0;
+        }
+    }
+
     async updateDictionaries() {
         // let dictionary = new Dictionary('rikaichan');
         // await dictionary.open();
@@ -36,6 +44,8 @@ class Data {
             dictionaryDb.open();
             return dictionaryDb;
         });
+
+        this.selectedDictionary = 0;
     }
 
     updateConfig(config) {
@@ -46,7 +56,6 @@ class Data {
     async wordSearch(word, noKanji) {
         if (this.dictionaries.length === 0) return null;
 
-        this.selectedDictionary = 0;
         let dictionaryIndex = this.selectedDictionary;
         do {
             const dictionary = this.dictionaries[dictionaryIndex];

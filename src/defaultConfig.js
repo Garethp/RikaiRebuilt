@@ -2,6 +2,7 @@ const defaultConfig = {
     keymap: {
         playAudio: 70,
         sendToAnki: 82,
+        selectNextDictionary: 16,
     },
     hideDefinitions: false, //hidedef
     ankiFields: {},
@@ -27,6 +28,6 @@ const defaultConfig = {
             id: 'a544e3ba-51cc-4574-aed5-54e195557e17',
             url: 'https://raw.githubusercontent.com/Garethp/RikaiRebuilt/master/resources/dictionaries/dutch.json'
             // url: '../../resources/dictionaries/dutch.json'
-        }
+        },
     ],
 };

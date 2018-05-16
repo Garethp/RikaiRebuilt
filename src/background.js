@@ -154,6 +154,9 @@ browser.runtime.onMessage.addListener((message, sender) => {
         case "sendToAnki":
             rebuilt.sendToAnki(content);
             return 0;
+        case 'selectNextDictionary':
+            rebuilt.getData().selectNextDictionary();
+            return { response: null };
         case "importDictionary":
             const {name, id, entries} = content;
             const testDb = new IndexedDictionary(id);
