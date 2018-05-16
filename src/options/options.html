@@ -35,9 +35,9 @@ Keymap
 <h2>Dictionaries</h2>
 <form>
     <div class="card card-body">
-        You have no dictionaries
+        <span id="installedDictionaries">You have no dictionaries</span>
         <hr />
-        <button type="button" class="btn" id="installDictionary">Install Default</button>
+        <span id="recommendedDictionaries"></span>
     </div>
 
     <div class="form-group row">
@@ -84,7 +84,10 @@ Options:
 <form>
     <button type='button' class='btn btn-primary' id='savePreferences'>Save</button>
     <button type='button' class='btn btn-primary' id='resetPreferences'>Reset</button>
+    <button type='button' class='btn' id='showConfig'>Show Config</button>
 </form>
+
+<pre><code id="configArea" style="display: none;"></code></precl>
 <script src="jquery.js"></script>
 <script src="bootstrap.min.js"></script>
 <script src="bootstrap.bundle.min.js"></script>

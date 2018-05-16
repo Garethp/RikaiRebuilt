@@ -71,10 +71,11 @@ class IndexedDictionary {
         this.store = 'dictionary';
 
         this.name = name;
+        this.version = 2;
     }
 
     async open() {
-        this.db = await idb.open(this.name, 2, upgradeDb => {
+        this.db = await idb.open(this.name, this.version, upgradeDb => {
             try {
                 upgradeDb.deleteObjectStore(this.store);
             } catch (e) {}
@@ -110,20 +111,33 @@ class IndexedDictionary {
     }
 
     async addMultiple(entries, progressCallback) {
-        let i = 0;
-        const length = entries.length;
+        return new Promise((resolve, reject) => {
+            const openRequest = window.indexedDB.open(this.name, this.version);
 
-        const addNext = async () => {
-            if (i >= length || entries[i] === null) return;
-            if (typeof progressCallback !== 'undefined') progressCallback(i, length);
+            openRequest.onerror = reject;
+            openRequest.onsuccess = () => {
+                const db = openRequest.result;
+                db.onerror = reject;
 
-            const {kanji, kana, entry} = entries[i];
-            i++;
+                const transaction = db.transaction(this.store, 'readwrite');
+                const itemStore = transaction.objectStore(this.store);
+                const length = entries.length;
+                let i = 0;
+                const addNext = async () => {
+                    if (i === length || entries[i] === null) return resolve();
 
-            return this.add(kanji, kana, entry).then(addNext);
-        };
+                    const {kanji, kana, entry} = entries[i];
+                    const addRequest = itemStore.add({kanji, kana, entry, combined: [kanji, kana]});
+                    addRequest.onsuccess = addNext;
+                    addRequest.onerror = reject;
 
-        return addNext();
+                    i++;
+                    progressCallback(i, length)
+                };
+
+                return addNext();
+            };
+        });
     }
 
     async deleteDatabase() {

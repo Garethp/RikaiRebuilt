@@ -153,6 +153,38 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
         case "sendToAnki":
             rebuilt.sendToAnki(content);
             return 0;
+        case "importDictionary":
+            const {name, id, entries} = content;
+            const testDb = new IndexedDictionary(id);
+            const startTime = new Date().getTime();
+            let lastPercent = 0;
+            let canSend = true;
+            testDb.open().then(async () => {
+                await testDb.import(entries, (item, total) => {
+                    let percentage = Math.floor((item / total) * 100);
+                    if (percentage > lastPercent && canSend) {
+                        browser.tabs.sendMessage(sender.tab.id, {
+                            type: 'DICTIONARY_IMPORT_UPDATE',
+                            content: {id, item, total}
+                        }).then(() => {}, rejected => { console.log(rejected); canSend = false;});
+
+                        lastPercent = percentage;
+                    }
+                });
+            }).then(async () => {
+                const diff = new Date().getTime() - startTime;
+                if (canSend) {
+                    browser.tabs.sendMessage(sender.tab.id, { type: 'DICTIONARY_IMPORT_COMPLETE', content: { id }});
+                }
+            });
+            return 0;
+        case "deleteDictionary":
+            const dictionary = new IndexedDictionary(content.id);
+            console.log(`Deleting ${content.id}`);
+            dictionary.open().then(async () => {
+                dictionary.deleteDatabase();
+            });
+            return 0;
     }
 });
 
@@ -169,24 +201,3 @@ browser.storage.onChanged.addListener((changes, areaName) => {
     rebuilt.updateConfig(config);
 });
 
-const testDb = new IndexedDictionary('test');
-testDb.open()
-.then(async () => {
-    // await testDb.importFromFile('https://raw.githubusercontent.com/Garethp/RikaiRebuilt/master/resources/dictionaries/rikaichan.csv');
-    let lastPercent = -1;
-    let lastTime = new Date().getTime();
-    await testDb.importFromFile('../resources/dictionaries/rikaichan.json', (item, total) => {
-        const percent = Math.floor((item / total) * 100);
-
-        if (percent > lastPercent) {
-            let currentTime = new Date().getTime();
-            const diffTime = currentTime - lastTime;
-            console.log(`${percent}% of items have been processed, and the last percent took ${diffTime} milliseconds to add`);
-            lastPercent = percent;
-            lastTime = currentTime;
-        }
-    });
-    console.log(await testDb.find('仝'));
-}).then(async () => {
-    await testDb.deleteDatabase();
-});

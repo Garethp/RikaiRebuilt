@@ -17,15 +17,22 @@ function getKeymapFromInputs() {
 }
 
 $("#savePreferences").on('click', () => {
+    setPreferences();
+});
+
+async function setPreferences() {
     config.ankiFields = makeFields($("#fields").val());
     config.hideDefinitions = $("#hideDefinitions").is(':checked');
     config.keymap = getKeymapFromInputs();
 
-    browser.storage.local.set({ config });
-});
+    return browser.storage.local.set({ config });
+}
 
 $("#resetPreferences").on('click', () => {
+    const installedDictionaries = config.installedDictionaries;
     config = defaultConfig;
+
+    config.installedDictionaries = installedDictionaries;
     browser.storage.local.set({ config });
     setFormFieldsFromConfig(config);
 });
@@ -69,6 +76,36 @@ function setFormFieldsFromConfig(config) {
     $("#hideDefinitions").prop('checked', config.hideDefinitions);
 
     setKeymapFields(config.keymap);
+    const installedDictionaryIds = config.installedDictionaries.map(dictionary => dictionary.id);
+
+    $('#recommendedDictionaries').html(defaultConfig.recommendedDictionaries.filter(dictionary => {
+        return installedDictionaryIds.indexOf(dictionary.id) === -1;
+    }).map(dictionary => {
+        return `
+        <div class="row">
+            <div class="col-5">${dictionary.name}</div>
+            <div class="col-5">
+                <button type="button" class="btn install-dictionary" data-dictionary-id="${dictionary.id}">Install</button>
+                <span class="install-status" data-dictionary-id="${dictionary.id}"></span>
+                <div class="progress" style="display: none;">
+                    <div class="progress-bar" data-dictionary-id="${dictionary.id}"></div>
+                </div>
+            </div>
+        </div>
+    `;
+    }).join(''));
+
+    $('#installedDictionaries').html(config.installedDictionaries.map(dictionary => {
+        return `<div class="row">
+            <div class="col-5">${dictionary.name}</div>
+            <div class="col-5"><button type="button" class="btn remove-dictionary" data-dictionary-id="${dictionary.id}">Remove</button></div>
+        </div>`;
+    }).join(''));
+    if (config.installedDictionaries.length === 0) {
+        $('#installedDictionaries').html('You have no dictionaries');
+    }
+
+    $('#configArea').html(JSON.stringify(config, null, 4));
 }
 
 function setKeymapFields(keymap) {
@@ -86,4 +123,88 @@ $('.keymap-input').on('keydown', (event) => {
     event.target.value = keyCodeToChar[event.keyCode];
 
     return false;
+});
+
+$('#recommendedDictionaries').delegate('.install-dictionary', 'click', (event) => {
+    const installButton = $(event.target);
+
+    const dictionary = getDictionaryById(defaultConfig.recommendedDictionaries, installButton.data('dictionary-id'));
+
+    const installStatus = $(`.install-status[data-dictionary-id=${dictionary.id}]`);
+    const progressBar = $(`.progress-bar[data-dictionary-id=${dictionary.id}]`);
+
+    installButton.hide();
+    installStatus.html('Downloading');
+
+    fetch(dictionary.url).then(response => response.json()).then(dictionary => {
+        installStatus.html('Installing 0%');
+        progressBar.parent().show();
+        console.log(dictionary);
+        sendRequest('importDictionary', dictionary);
+    });
+});
+
+$('#installedDictionaries').delegate('.remove-dictionary', 'click', async (event) => {
+    const removeButton = $(event.target);
+    const dictionary = getDictionaryById(config.installedDictionaries, removeButton.data('dictionary-id'));
+
+    config.installedDictionaries = config.installedDictionaries.filter(installed => {
+        return installed !== dictionary;
+    });
+
+    sendRequest('deleteDictionary', dictionary);
+
+    await setPreferences();
+    browser.storage.local.set({config});
+    setFormFieldsFromConfig(config);
+});
+
+getDictionaryById = (dictionaries, id) => {
+    for (const dictionary of dictionaries) {
+        if (dictionary.id === id) return dictionary;
+    }
+
+    return null;
+};
+
+sendRequest = (type, content = '') => {
+    return browser.runtime.sendMessage({type, content}).then(response => {
+        return response.response;
+    });
+};
+
+browser.runtime.onMessage.addListener(async (message) => {
+    const { type, content } = message;
+    let item, total;
+
+    let id = content.id;
+
+    const installStatus = $(`.install-status[data-dictionary-id=${id}]`);
+    const progressBar = $(`.progress-bar[data-dictionary-id=${id}]`);
+
+    switch (type) {
+        case 'DICTIONARY_IMPORT_UPDATE':
+            item = content.item;
+            total = content.total;
+
+            const percent = Math.floor((item / total) * 100);
+
+            installStatus.html(`Installing ${percent}%`);
+            progressBar.css({ width: `${percent}%`});
+            return;
+        case 'DICTIONARY_IMPORT_COMPLETE':
+            progressBar.parent().hide();
+            installStatus.html('');
+            config.installedDictionaries.push(getDictionaryById(defaultConfig.recommendedDictionaries, id));
+
+            await setPreferences();
+
+            browser.storage.local.set({ config });
+            setFormFieldsFromConfig(config);
+            return console.log('Done');
+    }
+});
+
+$('#showConfig').on('click', () => {
+    $('#configArea').show();
 });
