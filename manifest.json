@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "RikaiRebuilt",
-  "version": "1.0",
+  "version": "1.0.1",
 
   "browser_action": {
     "default_icon": {
@@ -34,6 +34,7 @@
       "src/background.js"
     ]
   },
+
   "options_ui": {
     "page": "src/options/options.html"
   }

@@ -575,11 +575,9 @@ class Rikai {
     createPopup() {
         if (this.hasPopup()) return;
 
-        document.body.innerHTML += `
-            <div id="${this.popupId}">
-            Some Stuff
-</div>
-        `;
+        const popup = this.document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
+        popup.setAttribute('id', this.popupId);
+        document.documentElement.appendChild(popup);
     }
 
     getPopup() {
