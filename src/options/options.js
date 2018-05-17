@@ -163,6 +163,7 @@ $('#installedDictionaries').delegate('.remove-dictionary', 'click', async (event
 
 $('#installedDictionaries').delegate('.move-dictionary-up', 'click', async(event) => {
     const index = $(event.target).data('index');
+    if (index === 0) return;
 
     config.installedDictionaries.splice(index - 1, 0, config.installedDictionaries.splice(index, 1)[0]);
 

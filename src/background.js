@@ -117,7 +117,7 @@ class RikaiRebuilt {
     sendToAnki(content) {
         const { entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl } = content;
         const entryFormat = ankiImport.makeTextOptions(entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl, false, false, this.config);
-        ankiImport.addNote(entryFormat, this.config);
+        ankiImport.addNote(entryFormat, entry, this.config);
         playAudio([entry]);
     }
 }
@@ -130,9 +130,7 @@ function playAudio(lastFound) {
 
     const entry = lastFound[0];
 
-    const audio = new Audio();
-    audio.src = AudioPlayer.getAudioUrl(entry);
-    audio.play();
+    AudioPlayer.play(entry);
 }
 
 const ankiImport = new AnkiImport();

@@ -10,7 +10,7 @@ class AnkiImport {
         });
     }
 
-    addNote(entryFormat, config) {
+    async addNote(entryFormat, entry, config) {
         const promises = [];
         let audio = false;
 
@@ -64,8 +64,9 @@ class AnkiImport {
 
         promises.push(this.makeCall('addNote', { fields }));
 
+        const isNoAudio = await AudioPlayer.isNoAudio(entry);
         // If Audio
-        if (audio) {
+        if (audio && !isNoAudio) {
             promises.push(this.makeCall('downloadAudio', { filename: entryFormat.audioFile, url: entryFormat.audioUrl }));
         }
 
