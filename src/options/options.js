@@ -30,9 +30,13 @@ async function setPreferences() {
 
 $("#resetPreferences").on('click', () => {
     const installedDictionaries = config.installedDictionaries;
+    const ankiFields = config.ankiFields;
+
     config = defaultConfig;
 
     config.installedDictionaries = installedDictionaries;
+    config.ankiFields = ankiFields;
+
     browser.storage.local.set({ config });
     setFormFieldsFromConfig(config);
 });

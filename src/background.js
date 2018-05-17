@@ -135,7 +135,7 @@ function playAudio(lastFound) {
 
 const ankiImport = new AnkiImport();
 
-browser.runtime.onMessage.addListener((message, sender) => {
+browser.runtime.onMessage.addListener(async (message, sender) => {
     const {type, content} = message;
 
     switch (type) {
@@ -177,6 +177,9 @@ browser.runtime.onMessage.addListener((message, sender) => {
                 const diff = new Date().getTime() - startTime;
                 if (canSend) {
                     browser.tabs.sendMessage(sender.tab.id, { type: 'DICTIONARY_IMPORT_COMPLETE', content: { id }});
+                } else {
+                    config.installedDictionaries.push({ name, id });
+                    browser.storage.local.set({ config })
                 }
             });
             return 0;

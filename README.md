@@ -19,9 +19,9 @@ Take a look at the Feature List below
  * Playing JDIC Audio for highlighted words
  * Importing to Anki
  * Customizing the keyboard shortcuts
+ * Support for Multiple dictionaries
 
 #### Not completed
- * Support for Multiple dictionaries
  * EPWING dictionary support
  * Sanseido dictionary support
  * Showing pitch accents
