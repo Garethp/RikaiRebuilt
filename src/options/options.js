@@ -95,10 +95,13 @@ function setFormFieldsFromConfig(config) {
     `;
     }).join(''));
 
-    $('#installedDictionaries').html(config.installedDictionaries.map(dictionary => {
+    $('#installedDictionaries').html(config.installedDictionaries.map((dictionary, index) => {
         return `<div class="row">
             <div class="col-5">${dictionary.name}</div>
-            <div class="col-5"><button type="button" class="btn remove-dictionary" data-dictionary-id="${dictionary.id}">Remove</button></div>
+            <div class="col-5">
+                <button type="button" class="btn move-dictionary-up" data-index="${index}">↑</button>
+                <button type="button" class="btn remove-dictionary" data-dictionary-id="${dictionary.id}">Remove</button>
+            </div>
         </div>`;
     }).join(''));
     if (config.installedDictionaries.length === 0) {
@@ -152,6 +155,16 @@ $('#installedDictionaries').delegate('.remove-dictionary', 'click', async (event
     });
 
     sendRequest('deleteDictionary', dictionary);
+
+    await setPreferences();
+    browser.storage.local.set({config});
+    setFormFieldsFromConfig(config);
+});
+
+$('#installedDictionaries').delegate('.move-dictionary-up', 'click', async(event) => {
+    const index = $(event.target).data('index');
+
+    config.installedDictionaries.splice(index - 1, 0, config.installedDictionaries.splice(index, 1)[0]);
 
     await setPreferences();
     browser.storage.local.set({config});
