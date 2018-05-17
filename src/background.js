@@ -162,7 +162,7 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
             let lastPercent = 0;
             let canSend = true;
             testDb.open().then(async () => {
-                await testDb.import(entries, (item, total) => {
+                return testDb.import(entries, (item, total) => {
                     let percentage = Math.floor((item / total) * 100);
                     if (percentage > lastPercent && canSend) {
                         browser.tabs.sendMessage(sender.tab.id, {
@@ -173,7 +173,8 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
                         lastPercent = percentage;
                     }
                 });
-            }).then(async () => {
+            }, f => console.log(f)).then(async () => {
+                console.log('Imported');
                 const diff = new Date().getTime() - startTime;
                 if (canSend) {
                     browser.tabs.sendMessage(sender.tab.id, { type: 'DICTIONARY_IMPORT_COMPLETE', content: { id }});
@@ -181,7 +182,7 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
                     config.installedDictionaries.push({ name, id });
                     browser.storage.local.set({ config })
                 }
-            });
+            }, f => console.log(f));
             return 0;
         case "deleteDictionary":
             const dictionary = new IndexedDictionary(content.id);
