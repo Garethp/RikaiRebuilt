@@ -1,4 +1,4 @@
-ul {
+ul.anki-field-options li{
     max-width: 200px;
 }
 
@@ -13,4 +13,10 @@ pre {
 
 .row {
     padding-bottom: 10px;
+}
+
+#myTabContent {
+    margin-bottom: 30px;
+
+    top: -1px;
 }

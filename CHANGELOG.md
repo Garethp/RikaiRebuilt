@@ -4,3 +4,4 @@
  * Added Chrome Support
  * Added tags when importing to Anki
  * Added a popup for when users are trying to use the extension when the options page is open
+ * Cleaned up Options page

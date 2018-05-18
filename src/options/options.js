@@ -226,3 +226,9 @@ browser.runtime.onMessage.addListener(async (message) => {
 $('#showConfig').on('click', () => {
     $('#configArea').show();
 });
+
+$('#myTab a').on('click', function (e) {
+    console.log($(this).tab());
+    e.preventDefault();
+    $(this).tab('show')
+});

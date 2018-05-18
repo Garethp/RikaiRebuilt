@@ -20,6 +20,7 @@ Take a look at the Feature List below
  * Importing to Anki
  * Customizing the keyboard shortcuts
  * Support for Multiple dictionaries
+ * Support for adding tags when importing in to Anki
 
 #### Not completed
  * EPWING dictionary support
