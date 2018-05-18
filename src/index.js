@@ -283,6 +283,9 @@ class Rikai {
         }
 
         let e = await this.sendRequest('wordSearch', text);
+        if (e === -1) {
+            return 0;
+        }
         if (e === null) {
             this.clear();
             return 0;
@@ -393,6 +396,9 @@ class Rikai {
         }
 
         let entry = await this.sendRequest('wordSearch', text);
+        if (entry === -1) {
+            return 0;
+        }
         if (entry === null) {
             this.clear();
             return 0;
@@ -739,6 +745,13 @@ class Rikai {
 
     async sendRequest(type, content = '') {
         return browser.runtime.sendMessage({type, content}).then(response => {
+            if (typeof response === 'undefined') {
+                console.log('Show Popup');
+                this.showPopup('If you have the options page for RikaiRebuilt, please close that. Word search' +
+                    ' doesn\'t work properly when the options tab is open');
+                return -1;
+            }
+
             return response.response;
         });
     };
@@ -994,13 +1007,14 @@ class Rikai {
     }
 
     showPopup(textToShow, previousTarget, position) {
-        let {pageX, pageY} = position || {pageX: 0, pageY: 0};
+        let {pageX, pageY} = position || {pageX: 10, pageY: 10};
+        console.log(pageX);
+        console.log(pageY);
         const popup = this.getPopup();
 
         popup.innerHTML = textToShow;
-        popup.style.display = '';
+        popup.style.display = 'block';
         popup.style.maxWidth = '600px';
-
 
         if (previousTarget && (typeof previousTarget !== 'undefined')
             && previousTarget.parentNode && (typeof previousTarget.parentNode !== 'undefined')) {
@@ -1033,8 +1047,11 @@ class Rikai {
             }
         }
 
+        console.log('Okay, time to go');
         popup.style.left = pageX + 'px';
         popup.style.top = pageY + 'px';
+
+        console.log(popup.style);
     }
 
     sendToAnki() {

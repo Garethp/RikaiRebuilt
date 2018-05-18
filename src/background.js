@@ -143,14 +143,14 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
     switch (type) {
         case "wordSearch":
             return rebuilt.wordSearch(content).then(response => {
-                return {response};
+                return { response };
             }, f => console.log(f));
         case "unload":
             rebuilt.unloadTab(sender.tab.id);
-            return 0;
+            return { response: '' };
         case "playAudio":
             playAudio(content);
-            return 0;
+            return { response: '' };
         case "sendToAnki":
             rebuilt.sendToAnki(content);
             return 0;
@@ -184,13 +184,13 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
                     browser.storage.local.set({ config })
                 }
             }, f => console.log(f));
-            return 0;
+            return { response: '' };
         case "deleteDictionary":
             const dictionary = new IndexedDictionary(content.id);
             dictionary.open().then(async () => {
                 dictionary.deleteDatabase();
             });
-            return 0;
+            return { response: '' };
     }
 });
 
