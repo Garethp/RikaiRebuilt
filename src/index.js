@@ -669,8 +669,9 @@ class Rikai {
         const tabData = this.tabData;
 
         if (tabData.previousTextSource) {
+            tabData.previousTextSource.deselect();
             tabData.previousTextSource = null;
-            return tabData.previousTextSource.deselect();
+            return;
         }
         if ((!tabData) || (!tabData.prevSelView)) return;
         if (tabData.prevSelView.closed) {
@@ -699,7 +700,13 @@ class Rikai {
         this.document = document;
 
         document.addEventListener('mousemove', this.onMouseMove);
-        document.addEventListener('keydown', this.onKeyDown);
+        document.addEventListener('keydown', event => {
+            const shouldStop = this.onKeyDown(event);
+            if (shouldStop === true) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+        });
         document.addEventListener('keyup', this.onKeyUp);
 
         browser.storage.onChanged.addListener((changes, areaSet) => {
@@ -716,6 +723,7 @@ class Rikai {
         if ((event.altKey) || (event.metaKey) || (event.ctrlKey)) return;
         if ((event.shiftKey) && (event.keyCode != 16)) return;
         if (this.keysDown[event.keyCode]) return;
+        if (!this.isVisible()) return;
 
         this.keysDown[event.keyCode] = 1;
 
@@ -725,10 +733,11 @@ class Rikai {
             case this.config.keymap.sendToAnki:
                 return this.sendToAnki();
             case this.config.keymap.selectNextDictionary:
-                this.sendRequest('selectNextDictionary').then(response => {
-                });
+                this.sendRequest('selectNextDictionary');
                 return;
         }
+
+        return false;
     }
 
     onKeyUp(event) {
@@ -746,7 +755,6 @@ class Rikai {
     async sendRequest(type, content = '') {
         return browser.runtime.sendMessage({type, content}).then(response => {
             if (typeof response === 'undefined') {
-                console.log('Show Popup');
                 this.showPopup('If you have the options page for RikaiRebuilt, please close that. Word search' +
                     ' doesn\'t work properly when the options tab is open');
                 return -1;
@@ -1008,8 +1016,6 @@ class Rikai {
 
     showPopup(textToShow, previousTarget, position) {
         let {pageX, pageY} = position || {pageX: 10, pageY: 10};
-        console.log(pageX);
-        console.log(pageY);
         const popup = this.getPopup();
 
         popup.innerHTML = textToShow;
@@ -1047,11 +1053,8 @@ class Rikai {
             }
         }
 
-        console.log('Okay, time to go');
         popup.style.left = pageX + 'px';
         popup.style.top = pageY + 'px';
-
-        console.log(popup.style);
     }
 
     sendToAnki() {
@@ -1063,12 +1066,21 @@ class Rikai {
         const sourceUrl = window.location.href;
 
         this.sendRequest('sendToAnki', { word, sentence, sentenceWithBlank, entry, pageTitle, sourceUrl });
+        return true;
     }
 
+    isVisible() {
+        const popup = this.getPopup();
+        return popup && popup.style.display !== 'none';
+    }
 
     playAudio() {
         const { lastFound } = this;
+
+        if (!lastFound || lastFound.length === 0) return false;
+
         this.sendRequest('playAudio', lastFound);
+        return true;
     }
 }
 

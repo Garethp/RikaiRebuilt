@@ -228,7 +228,6 @@ $('#showConfig').on('click', () => {
 });
 
 $('#myTab a').on('click', function (e) {
-    console.log($(this).tab());
     e.preventDefault();
     $(this).tab('show')
 });

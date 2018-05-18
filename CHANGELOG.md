@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.5
+ * Fixed the key event being propogated once used
+
 #### Version 1.0.4
  * Fixed the lack of icon
 
