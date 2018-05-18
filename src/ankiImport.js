@@ -62,7 +62,8 @@ class AnkiImport {
             }
         }
 
-        promises.push(this.makeCall('addNote', { fields }));
+        const tags = config.ankiTags;
+        promises.push(this.makeCall('addNote', { fields, tags }));
 
         const isNoAudio = await AudioPlayer.isNoAudio(entry);
         // If Audio

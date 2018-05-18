@@ -16,11 +16,11 @@
 </head>
 
 <body>
+<div class="container">
 <h2>Keyboard</h2>
 Keymap
 <div class="card card-body">
     <form class="">
-        <div class="container-fluid">
         <div class="row">
             <div class="col-4"><label class="my-1 mr-2" for="keymap-sendToAnki">Real-Time Anki Import</label></div>
             <div class="col-3"><input type="input" class="form-control keymap-input" id="keymap-sendToAnki"/></div>
@@ -58,12 +58,22 @@ Keymap
 <div>In order to use this, please install this <b>updated</b>
     <a href="https://ankiweb.net/shared/info/1659361456">Real-Time Improt plugin</a> for Anki. Don't worry, it will still work with Rikaisama if you use that in a different browser
 </div>
-<form>
-    <div class="form-group row">
+<form class="form-group">
+    <div class="row">
+        <div class="col-3">
         <label title="The fields for the Card that will be created in Anki" for="fields"
-               class="col-3 col-form-label">Card Fields</label>
-        <div class="col-9">
+               class="col-form-label">Card Fields</label></div>
+        <div class="col-7">
             <input type="text" id="fields" class="form-control">
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-3">
+        <label title="Tags to add to anki (Separated by spaces)" for="ankiTags"
+               class="col-form-label">Anki Tags</label></div>
+        <div class="col-3">
+            <input type="text" id="ankiTags" class="form-control">
         </div>
     </div>
 </form>
@@ -95,7 +105,8 @@ Options:
     <button type='button' class='btn' id='showConfig'>Show Config</button>
 </form>
 
-<pre><code id="configArea" style="display: none;"></code></precl>
+<pre><code id="configArea" style="display: none;"></code></pre>
+</div>
 <script src="jquery.js"></script>
 <script src="bootstrap.min.js"></script>
 <script src="bootstrap.bundle.min.js"></script>

@@ -24,6 +24,7 @@ async function setPreferences() {
     config.ankiFields = makeFields($("#fields").val());
     config.hideDefinitions = $("#hideDefinitions").is(':checked');
     config.keymap = getKeymapFromInputs();
+    config.ankiTags = $("#ankiTags").val();
 
     return browser.storage.local.set({ config });
 }
@@ -78,6 +79,7 @@ browser.storage.local.get('config').then(extensionConfig => {
 function setFormFieldsFromConfig(config) {
     $("#fields").val(makeTextFromFields(config.ankiFields));
     $("#hideDefinitions").prop('checked', config.hideDefinitions);
+    $("#ankiTags").val(config.ankiTags);
 
     setKeymapFields(config.keymap);
     const installedDictionaryIds = config.installedDictionaries.map(dictionary => dictionary.id);

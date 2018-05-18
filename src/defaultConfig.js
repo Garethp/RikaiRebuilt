@@ -8,6 +8,7 @@ const defaultConfig = {
     ankiFields: {},
     showWordTypeIndicator: true, //wpos
     showPopularWordIndicator: true, //wpop
+    ankiTags: '',
     installedDictionaries: [
     ],
     recommendedDictionaries: [

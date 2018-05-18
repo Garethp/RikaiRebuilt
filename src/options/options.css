@@ -10,3 +10,7 @@ body {
 pre {
     padding:10px;
 }
+
+.row {
+    padding-bottom: 10px;
+}
