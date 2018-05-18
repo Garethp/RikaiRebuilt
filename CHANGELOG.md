@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.4
+ * Fixed the lack of icon
+
 #### Version 1.0.3
  * Added Chrome Support
  * Added tags when importing to Anki
