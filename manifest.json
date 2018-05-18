@@ -36,6 +36,7 @@
   },
 
   "options_ui": {
+    "open_in_tab": true,
     "page": "src/options/options.html"
   }
 }

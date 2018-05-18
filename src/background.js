@@ -38,7 +38,9 @@ class RikaiRebuilt {
 
         await Promise.all([
             browser.tabs.executeScript({ file: "src/defaultConfig.js" }),
-            browser.tabs.executeScript({ file: "dist/browser-polyfill.min.js" })
+            browser.tabs.executeScript({ file: "dist/browser-polyfill.min.js" }),
+            browser.tabs.executeScript({ file: "src/content/source.js" }),
+            browser.tabs.executeScript({ file: "src/content/document.js" }),
         ]);
 
         await Promise.all([
@@ -174,8 +176,7 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
                     }
                 });
             }, f => console.log(f)).then(async () => {
-                console.log('Imported');
-                const diff = new Date().getTime() - startTime;
+                    const diff = new Date().getTime() - startTime;
                 if (canSend) {
                     browser.tabs.sendMessage(sender.tab.id, { type: 'DICTIONARY_IMPORT_COMPLETE', content: { id }});
                 } else {

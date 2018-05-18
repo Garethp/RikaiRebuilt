@@ -87,8 +87,8 @@ function setFormFieldsFromConfig(config) {
     }).map(dictionary => {
         return `
         <div class="row">
-            <div class="col-5">${dictionary.name}</div>
-            <div class="col-5">
+            <div class="col-5 col-sm-8">${dictionary.name}</div>
+            <div class="col-5 col-sm-3">
                 <button type="button" class="btn install-dictionary" data-dictionary-id="${dictionary.id}">Install</button>
                 <span class="install-status" data-dictionary-id="${dictionary.id}"></span>
                 <div class="progress" style="display: none;">

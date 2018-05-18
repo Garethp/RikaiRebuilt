@@ -93,6 +93,11 @@ class Rikai {
         let {rangeParent, rangeOffset} = event;
         const tabData = this.tabData;
 
+        //Not Firefox, need to query text in a different way
+        if (rangeParent === undefined) {
+            return this.searchAt({x: event.clientX, y: event.clientY}, tabData, event);
+        }
+
         if (event.target === tabData.previousTarget) {
             if (tabData.title) return;
             if (rangeParent === tabData.previousRangeParent && rangeOffset === tabData.previousRangeOffset) return;
@@ -128,6 +133,52 @@ class Rikai {
             }
         }
     }
+
+    async searchAt(point, tabData, event) {
+        const textSource = docRangeFromPoint(point);
+
+        if (!textSource || !textSource.range || typeof textSource.range.startContainer.data === 'undefined') return;
+
+        if (event.target === tabData.previousTarget && textSource.equals(tabData.previousTextSource)) {
+            return;
+        }
+
+        let charCode = textSource.range.startContainer.data.charCodeAt(textSource.range.startOffset);
+        if ((isNaN(charCode)) ||
+            ((charCode !== 0x25CB) &&
+                ((charCode < 0x3001) || (charCode > 0x30FF)) &&
+                ((charCode < 0x3400) || (charCode > 0x9FFF)) &&
+                ((charCode < 0xF900) || (charCode > 0xFAFF)) &&
+                ((charCode < 0xFF10) || (charCode > 0xFF9D)))) {
+            this.clear();
+            return -2;
+        }
+
+        tabData.pos = { screenX: event.screenX, screenY: event.screenY, pageX: event.pageX, pageY: event.pageY };
+        tabData.previousRangeOffset = textSource.range.startOffset;
+
+        tabData.previousTarget = event.target;
+        tabData.previousTextSource = textSource;
+
+        let hideResults = !textSource || !textSource.containsPoint(point);
+        const textClone = textSource.clone();
+        const sentenceClone = textSource.clone();
+        const previousSentenceClone = textSource.clone();
+
+        textClone.setEndOffset(20);
+        const text = textClone.text();
+
+        sentenceClone.setEndOffsetFromBeginningOfCurrentNode(textSource.range.startContainer.data.length + 50);
+        const sentence = sentenceClone.text();
+
+        previousSentenceClone.setStartOffsetFromBeginningOfCurrentNode(50);
+        const previousSentence = previousSentenceClone.text();
+
+        this.showFromText(text, sentence, previousSentence, textSource.range.startOffset, textClone.range.startContainer, entry => {
+            textClone.setEndOffset(this.word.length);
+            textClone.select();
+        }, tabData);
+    };
 
     async show(tabData) {
         let {previousRangeParent} = tabData;
@@ -268,6 +319,121 @@ class Rikai {
         // @TODO: Add EPWING mode
 
         this.showPopup(this.getKnownWordIndicatorText() + this.makeHTML(e), tabData.previousTarget, tabData.pos);
+    }
+
+    getSentenceStuff(rangeOffset, sentence, previousSentence) {
+        let i = rangeOffset + previousSentence.length;
+
+        let sentenceStartPos;
+        let sentenceEndPos;
+
+        // Find the last character of the sentence
+        while (i < sentence.length) {
+            if (sentence[i] === "。" || sentence[i] === "\n" || sentence[i] === "？" || sentence[i] === "！") {
+                sentenceEndPos = i;
+                break;
+            }
+            else if (i === (sentence.length - 1)) {
+                sentenceEndPos = i;
+            }
+
+            i++;
+        }
+
+
+        i = rangeOffset + previousSentence.length;
+
+        // Find the first character of the sentence
+        while (i >= 0) {
+            if (sentence[i] === "。" || sentence[i] === "\n" || sentence[i] === "？" || sentence[i] === "！") {
+                sentenceStartPos = i + 1;
+                break;
+            }
+            else if (i === 0) {
+                sentenceStartPos = i;
+            }
+
+            i--;
+        }
+
+        // Extract the sentence
+        sentence = sentence.substring(sentenceStartPos, sentenceEndPos + 1);
+
+        let startingWhitespaceMatch = sentence.match(/^\s+/);
+
+        // Strip out control characters
+        sentence = sentence.replace(/[\n\r\t]/g, '');
+
+        let startOffset = 0;
+
+        // Adjust offset of selected word according to the number of
+        // whitespace chars at the beginning of the sentence
+        if (startingWhitespaceMatch) {
+            startOffset -= startingWhitespaceMatch[0].length;
+        }
+
+        // Trim
+        sentence = this.trim(sentence);
+
+        return {sentence, sentenceStartPos, startOffset};
+    }
+
+    async showFromText(text, sentence, previousSentence, rangeOffset, rangeContainer, highlightFunction, tabData) {
+        const sentenceStuff = this.getSentenceStuff(rangeOffset, sentence, previousSentence);
+
+        let sentenceStartPos = sentenceStuff.sentenceStartPos;
+        sentence = sentenceStuff.sentence;
+        let startOffset = sentenceStuff.startOffset;
+
+        this.sentence = sentence;
+
+        if (text.length === 0) {
+            this.clear();
+            return 0;
+        }
+
+        let entry = await this.sendRequest('wordSearch', text);
+        if (entry === null) {
+            this.clear();
+            return 0;
+        }
+
+        this.lastFound = [entry];
+
+        this.word = text.substr(0, entry.matchLen);
+
+        const wordPositionInString = rangeOffset + previousSentence.length - sentenceStartPos + startOffset;
+        this.sentenceWithBlank = sentence.substr(0, wordPositionInString) + "___"
+            + sentence.substr(wordPositionInString + entry.matchLen, sentence.length);
+
+        if (!entry.matchLen) entry.matchLen = 1;
+        tabData.uofsNext = entry.matchLen;
+        tabData.uofs = rangeOffset - tabData.previousRangeOffset;
+
+        // @TODO: Add config check for "shouldHighlight"
+        // const shouldHighlight = (!('form' in tabData.previousTarget));
+        const shouldHighlight = true;
+        if (shouldHighlight) {
+            if (typeof highlightFunction === 'undefined') {
+                let document = rangeContainer.ownerDocument;
+                if (!document) {
+                    this.clear();
+                    return 0;
+                }
+
+                this.highlightMatch(document, tabData.previousRangeParent, previousRangeOffset, entry.matchLen, selectionEndList, tabData);
+                tabData.prevSelView = document.defaultView;
+            } else {
+                highlightFunction(entry);
+            }
+        }
+
+        // @TODO: Add audio playing
+        // @TODO: Add checks for super sticky
+        // @TODO: Add sanseido mode
+        // @TODO: Add EPWING mode
+
+        this.showPopup(this.getKnownWordIndicatorText() + this.makeHTML(entry), tabData.previousTarget, tabData.pos);
     }
 
     highlightMatch(document, rangeParent, rangeOffset, matchLen, selEndList, tabData) {
@@ -495,6 +661,11 @@ class Rikai {
 
     clearHighlight() {
         const tabData = this.tabData;
+
+        if (tabData.previousTextSource) {
+            tabData.previousTextSource = null;
+            return tabData.previousTextSource.deselect();
+        }
         if ((!tabData) || (!tabData.prevSelView)) return;
         if (tabData.prevSelView.closed) {
             tabData.prevSelView = null;
@@ -562,7 +733,7 @@ class Rikai {
         this.document.removeEventListener('mousemove', this.onMouseMove);
 
         if (this.hasPopup()) {
-            this.document.body.removeChild(this.getPopup());
+            this.document.documentElement.removeChild(this.getPopup());
         }
     }
 
@@ -887,7 +1058,7 @@ class Rikai {
 const rikai = new Rikai();
 rikai.enable(document);
 
-browser.runtime.onMessage.addListener(message => {
+    browser.runtime.onMessage.addListener(async (message) => {
     const { type, content } = message;
     switch (type) {
         case 'DISABLE':
