@@ -92,7 +92,7 @@
 
         <div class="tab-pane fade" id="anki" role="tabpanel" aria-labelledby="anki-tab">
             <div>In order to use this, please install this <b>updated</b>
-                <a href="https://ankiweb.net/shared/info/1659361456">Real-Time Improt plugin</a> for Anki. Don't worry,
+                <a href="https://ankiweb.net/shared/info/1659361456">Real-Time Import plugin</a> for Anki. Don't worry,
                 it
                 will still work with Rikaisama if you use that in a different browser
             </div>
@@ -112,6 +112,18 @@
                                class="col-form-label">Anki Tags</label></div>
                     <div class="col-3">
                         <input type="text" id="ankiTags" class="form-control">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-3">
+                        <label for="importEmptyAudio" class="form-check-label"
+                               title="When importing, if there's no audio to download we can fill the field with the location of the file where the audio would be, or just leave it empty">Fill
+                            Audio Field Even When
+                            There's No Audio</label>
+                    </div>
+                    <div class="col-3">
+                        <input type="checkbox" id="importEmptyAudio" class="" />
                     </div>
                 </div>
             </form>
@@ -138,8 +150,12 @@
             </ul>
         </div>
 
-
         <div class="tab-pane fade" id="changelog" role="tabpanel" aria-labelledby="changelog-tab">
+            <h4>Version 1.0.6</h4>
+            <ul>
+                <li>Added the option to not fill in the Audio field when there's no Audio to download</li>
+            </ul>
+
             <h4>Version 1.0.5</h4>
             <ul>
                 <li>Fixed keys being eaten even when nothing is highlighted</li>

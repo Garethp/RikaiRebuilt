@@ -9,6 +9,7 @@ const defaultConfig = {
     showWordTypeIndicator: true, //wpos
     showPopularWordIndicator: true, //wpop
     ankiTags: '',
+    importEmptyAudio: true,
     installedDictionaries: [
     ],
     recommendedDictionaries: [

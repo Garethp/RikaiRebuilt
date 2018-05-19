@@ -13,14 +13,19 @@ class AnkiImport {
     async addNote(entryFormat, entry, config) {
         const promises = [];
         let audio = false;
+        const isNoAudio = await AudioPlayer.isNoAudio(entry);
 
         const fields = {};
         for(const key in config.ankiFields) {
             let newValue = null;
             switch(config.ankiFields[key]) {
                 case 'audio':
-                    audio = true;
-                    newValue = `[sound:${entryFormat.audioFile}]`;
+                    if (isNoAudio && !config.importEmptyAudio) {
+                        newValue = null;
+                    } else {
+                        audio = true;
+                        newValue = `[sound:${entryFormat.audioFile}]`;
+                    }
                     break;
                 case 'dictionaryFormat':
                     newValue = entryFormat.dictionaryForm;
@@ -65,7 +70,6 @@ class AnkiImport {
         const tags = config.ankiTags;
         promises.push(this.makeCall('addNote', { fields, tags }));
 
-        const isNoAudio = await AudioPlayer.isNoAudio(entry);
         // If Audio
         if (audio && !isNoAudio) {
             promises.push(this.makeCall('downloadAudio', { filename: entryFormat.audioFile, url: entryFormat.audioUrl }));

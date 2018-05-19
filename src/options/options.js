@@ -23,6 +23,7 @@ $("#savePreferences").on('click', () => {
 async function setPreferences() {
     config.ankiFields = makeFields($("#fields").val());
     config.hideDefinitions = $("#hideDefinitions").is(':checked');
+    config.importEmptyAudio = $("#importEmptyAudio").is(':checked');
     config.keymap = getKeymapFromInputs();
     config.ankiTags = $("#ankiTags").val();
 
@@ -79,6 +80,7 @@ browser.storage.local.get('config').then(extensionConfig => {
 function setFormFieldsFromConfig(config) {
     $("#fields").val(makeTextFromFields(config.ankiFields));
     $("#hideDefinitions").prop('checked', config.hideDefinitions);
+    $("#importEmptyAudio").prop('checked', config.importEmptyAudio);
     $("#ankiTags").val(config.ankiTags);
 
     setKeymapFields(config.keymap);

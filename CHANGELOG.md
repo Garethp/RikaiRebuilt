@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.6
+ * Added an option to not fill in the Audio field when there's no audio
+
 #### Version 1.0.5
  * Fixed the key event being propogated once used
 
