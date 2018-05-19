@@ -28,11 +28,13 @@ const autobind = (self, options) => {
 
 class Rikai {
 
-    constructor() {
+    constructor(document) {
         autobind(this);
 
+        this.document = document;
         this.tabData = {};
         this.lastFound = [];
+        this.enabled = false;
         this.inlineNames = {
             // text node
             '#text': true,
@@ -80,12 +82,9 @@ class Rikai {
             // User configurable elements
             'DIV': false,
         };
-        // this.wordData = new WordData();
 
         this.popupId = 'rikaichan-window';
-
         this.config = defaultConfig;
-
         this.keysDown = [];
     }
 
@@ -119,7 +118,7 @@ class Rikai {
         if (event.button !== 0) return;
 
         if (rangeParent && rangeParent.data && rangeOffset < rangeParent.data.length) {
-            tabData.pos = { screenX: event.screenX, screenY: event.screenY, pageX: event.pageX, pageY: event.pageY };
+            tabData.pos = {screenX: event.screenX, screenY: event.screenY, pageX: event.pageX, pageY: event.pageY};
             await this.show(tabData);
         }
 
@@ -154,7 +153,7 @@ class Rikai {
             return -2;
         }
 
-        tabData.pos = { screenX: event.screenX, screenY: event.screenY, pageX: event.pageX, pageY: event.pageY };
+        tabData.pos = {screenX: event.screenX, screenY: event.screenY, pageX: event.pageX, pageY: event.pageY};
         tabData.previousRangeOffset = textSource.range.startOffset;
 
         tabData.previousTarget = event.target;
@@ -688,7 +687,9 @@ class Rikai {
         tabData.selText = null;
     }
 
-    enable(document) {
+    enable() {
+        if (this.enabled) return;
+
         this.tabData = {
             prevSelView: null
         };
@@ -697,17 +698,15 @@ class Rikai {
             this.config = config.config || defaultConfig;
         });
 
-        this.document = document;
-
-        document.addEventListener('mousemove', this.onMouseMove);
-        document.addEventListener('keydown', event => {
+        this.document.addEventListener('mousemove', this.onMouseMove);
+        this.document.addEventListener('keydown', event => {
             const shouldStop = this.onKeyDown(event);
             if (shouldStop === true) {
                 event.stopPropagation();
                 event.preventDefault();
             }
         });
-        document.addEventListener('keyup', this.onKeyUp);
+        this.document.addEventListener('keyup', this.onKeyUp);
 
         browser.storage.onChanged.addListener((changes, areaSet) => {
             if (areaSet !== 'local') return;
@@ -717,6 +716,8 @@ class Rikai {
         });
 
         this.createPopup();
+
+        this.enabled = true;
     }
 
     onKeyDown(event) {
@@ -746,10 +747,21 @@ class Rikai {
 
     disable() {
         this.document.removeEventListener('mousemove', this.onMouseMove);
+        this.document.removeEventListener('keydown', event => {
+            const shouldStop = this.onKeyDown(event);
+            if (shouldStop === true) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+        });
+
+        this.document.removeEventListener('keyup', this.onKeyUp);
 
         if (this.hasPopup()) {
             this.document.documentElement.removeChild(this.getPopup());
         }
+
+        this.enabled = false;
     }
 
     async sendRequest(type, content = '') {
@@ -769,6 +781,7 @@ class Rikai {
 
         const popup = this.document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
         popup.setAttribute('id', this.popupId);
+        popup.setAttribute('style', 'display: none;');
         document.documentElement.appendChild(popup);
     }
 
@@ -1065,7 +1078,7 @@ class Rikai {
         const pageTitle = window.document.title;
         const sourceUrl = window.location.href;
 
-        this.sendRequest('sendToAnki', { word, sentence, sentenceWithBlank, entry, pageTitle, sourceUrl });
+        this.sendRequest('sendToAnki', {word, sentence, sentenceWithBlank, entry, pageTitle, sourceUrl});
         return true;
     }
 
@@ -1075,7 +1088,7 @@ class Rikai {
     }
 
     playAudio() {
-        const { lastFound } = this;
+        const {lastFound} = this;
 
         if (!lastFound || lastFound.length === 0) return false;
 
@@ -1084,19 +1097,20 @@ class Rikai {
     }
 }
 
-const rikai = new Rikai();
-rikai.enable(document);
-
-    browser.runtime.onMessage.addListener(async (message) => {
-    const { type, content } = message;
-    switch (type) {
-        case 'DISABLE':
-            return rikai.disable();
-        case 'ENABLE':
-            return rikai.enable(document);
+const rikai = new Rikai(document);
+browser.storage.local.get('enabled').then( ({ enabled }) => {
+    if (enabled) {
+        rikai.enable();
     }
 });
 
-window.addEventListener('unload', async () => {
-    await rikai.sendRequest('unload');
+browser.storage.onChanged.addListener((change, storageArea) => {
+    if (storageArea !== "local") return;
+    if (typeof change.enabled === 'undefined') return;
+
+    if (change.enabled.newValue === true) {
+        rikai.enable();
+    } else {
+        rikai.disable();
+    }
 });

@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.7
+ * Made the enable/disable apply across the entire browser, not just per-tab
+
 #### Version 1.0.6
  * Added an option to not fill in the Audio field when there's no audio
 

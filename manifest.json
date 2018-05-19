@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "author": "Gareth Parker",
   "name": "RikaiRebuilt",
-  "version": "1.0.6",
+  "version": "1.0.7",
 
   "browser_action": {
     "default_icon": {
@@ -40,6 +40,24 @@
       "src/background.js"
     ]
   },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "src/defaultConfig.js",
+        "dist/browser-polyfill.min.js",
+        "src/content/document.js",
+        "src/content/source.js",
+        "src/content/index.js"
+      ],
+      "css": [
+        "styles/popup-blue.css"
+      ]
+    }
+  ],
 
   "options_ui": {
     "open_in_tab": true,

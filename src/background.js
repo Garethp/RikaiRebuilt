@@ -5,110 +5,61 @@ class RikaiRebuilt {
         autobind(this);
 
         this.enabled = false;
+        this.isSetUp = false;
         this.data = null;
-        this.activeTabs = [];
-        this.deactivatedTabs = [];
-        this.currentTab = null;
         this.config = defaultConfig;
     }
 
-    enable() {
-        if (this.enabled) return;
+    setup() {
+        if (this.isSetUp) return;
 
-        this.enabled = true;
+        this.isSetUp = true;
         this.data = new Data(this.config);
     }
 
-    async enableForTab(tab) {
-        this.enable();
+    async enable() {
+        this.setup();
 
-        if (this.activeTabs.indexOf(tab.id) !== -1) {
-            return this.disableTab(tab.id);
+        if (this.enabled === true) {
+            return this.disable();
         }
 
-        if (this.deactivatedTabs.indexOf(tab.id) !== -1) {
-            return this.reEnableTab(tab.id);
-        }
-
+        browser.storage.local.set({ enabled: true});
         browser.storage.local.get('config').then(config => {
             if (!config.config) return;
 
             this.updateConfig(config.config);
         });
 
-        await Promise.all([
-            browser.tabs.executeScript({ file: "src/defaultConfig.js" }),
-            browser.tabs.executeScript({ file: "dist/browser-polyfill.min.js" }),
-            browser.tabs.executeScript({ file: "src/content/source.js" }),
-            browser.tabs.executeScript({ file: "src/content/document.js" }),
-        ]);
+        browser.browserAction.setIcon({
+            path: {
+                48: 'icons/smile_star.png'
+            }
+        });
 
-        await Promise.all([
-            browser.tabs.executeScript({ file: "src/index.js" }),
-            browser.tabs.insertCSS({ file: "styles/popup-blue.css" }),
-        ]);
-
-        this.activeTabs.push(tab.id);
-        this.setTabIcon(tab.id);
+        this.enabled = true;
     }
 
-    async disableTab(tabId) {
-        await browser.tabs.sendMessage(tabId, { type: 'DISABLE' });
+    async disable() {
+        browser.storage.local.set({ enabled: false });
 
-        this.activeTabs = removeFromArray(this.activeTabs, tabId);
-        this.deactivatedTabs.push(tabId);
+        browser.browserAction.setIcon({
+            path: {
+                48: 'icons/smile.png'
+            }
+        });
 
-        this.setTabIcon(tabId);
-    }
-
-    async unloadTab(tabId) {
-        this.deactivatedTabs = removeFromArray(this.deactivatedTabs, tabId);
-        this.activeTabs = removeFromArray(this.activeTabs, tabId);
-
-        if (tabId === this.currentTab) {
-            this.setTabIcon(tabId);
-        }
-    }
-
-    async reEnableTab(tabId) {
-        await browser.tabs.sendMessage(tabId, { type:  'ENABLE' });
-
-        this.deactivatedTabs = removeFromArray(this.deactivatedTabs, tabId);
-
-        this.activeTabs.push(tabId);
-        this.setTabIcon(tabId);
+        this.enabled = false;
     }
 
     getData() {
-        this.enable();
+        this.setup();
 
         return this.data;
     }
 
     async wordSearch(text) {
         return this.getData().wordSearch(text);
-    }
-
-    handleTabActivated(tab) {
-        this.setTabIcon(tab.tabId);
-
-        this.currentTab = tab.tabId;
-    }
-
-    setTabIcon(tabId) {
-        if (this.activeTabs.indexOf(tabId) === -1) {
-            return browser.browserAction.setIcon({
-                path: {
-                    48: 'icons/smile.png'
-                }
-            })
-        }
-
-        browser.browserAction.setIcon({
-            path: {
-                48: 'icons/smile_star.png'
-            }
-        })
     }
 
     updateConfig(config) {
@@ -194,9 +145,7 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
     }
 });
 
-browser.browserAction.onClicked.addListener(rebuilt.enableForTab);
-
-browser.tabs.onActivated.addListener(rebuilt.handleTabActivated);
+browser.browserAction.onClicked.addListener(rebuilt.enable);
 
 browser.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== 'local') return;
@@ -207,3 +156,4 @@ browser.storage.onChanged.addListener((changes, areaName) => {
     rebuilt.updateConfig(config);
 });
 
+browser.storage.local.set({ enabled: false });
