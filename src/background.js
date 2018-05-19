@@ -157,3 +157,13 @@ browser.storage.onChanged.addListener((changes, areaName) => {
 });
 
 browser.storage.local.set({ enabled: false });
+
+browser.runtime.onInstalled.addListener(({ id, previousVersion, reason }) => {
+    const optionsPageUrl = browser.extension.getURL('src/options/options.html');
+
+    if (reason === 'update') {
+        browser.tabs.create({ url: `${optionsPageUrl}#changelog` });
+    } else if (reason === 'install') {
+        browser.tabs.create({ url: `${optionsPageUrl}#dictionaries` });
+    }
+});
