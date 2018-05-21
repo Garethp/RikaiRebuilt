@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.11
+ * Solving issue with inputs not working after being used
+
 #### Version 1.0.10
  * Fixing issue caused by last update
 
