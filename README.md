@@ -29,3 +29,15 @@ Take a look at the Feature List below
  * Showing Frequency Information
  * Super Sticky Mode
  * Saving words to files
+
+#### Roadmap
+ * Showing Frequency Information
+ * Adding themes
+ * Syncing settings between computers
+ * Showing Pitch Information
+ * Adding alternate view
+ * Adding sticky mode
+ * Edge and Opera Support
+ * Possible EPWING support
+ * Add Jisho Stroke Orders
+ * Possible Sansiedo mode
