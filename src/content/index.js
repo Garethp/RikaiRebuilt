@@ -786,6 +786,7 @@ class Rikai {
         const popup = this.document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
         popup.setAttribute('id', this.popupId);
         popup.setAttribute('style', 'display: none;');
+        popup.setAttribute('class', 'rikai-blue');
         document.documentElement.appendChild(popup);
     }
 
