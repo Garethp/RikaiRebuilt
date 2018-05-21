@@ -16,17 +16,7 @@ function getKeymapFromInputs() {
     return keyMap;
 }
 
-$("#savePreferences").on('click', () => {
-    setPreferences();
-});
-
 async function setPreferences() {
-    config.ankiFields = makeFields($("#fields").val());
-    config.hideDefinitions = $("#hideDefinitions").is(':checked');
-    config.importEmptyAudio = $("#importEmptyAudio").is(':checked');
-    config.keymap = getKeymapFromInputs();
-    config.ankiTags = $("#ankiTags").val();
-
     return browser.storage.local.set({ config });
 }
 
@@ -43,30 +33,33 @@ $("#resetPreferences").on('click', () => {
     setFormFieldsFromConfig(config);
 });
 
-function makeFields(values) {
-    values = values.split(';');
+function makeAnkiFields(values, fromConfig) {
+    if (fromConfig === true) {
+        const string = [];
+        for (const key in values) {
+            string.push(`${key} = ${values[key]}`);
+        }
 
-    const fields = {};
-    for(let value of values) {
-        if (value.trim() === '') continue;
+        return string.join('; ');
+    } else {
+        values = values.split(';');
 
-        value = value.split('=');
+        const fields = {};
+        for(let value of values) {
+            if (value.trim() === '') continue;
 
-        if (value.length !== 2) continue;
+            value = value.split('=');
 
-        fields[value[0].trim()] = value[1].trim();
+            if (value.length !== 2) continue;
+
+            fields[value[0].trim()] = value[1].trim();
+        }
+
+        return fields;
     }
-
-    return fields;
 }
 
-function makeTextFromFields(fields) {
-    const string = [];
-    for (const key in fields) {
-        string.push(`${key} = ${fields[key]}`);
-    }
-
-    return string.join('; ');
+function makeKeyValues(value, fromConfig) {
 }
 
 browser.storage.local.get('config').then(extensionConfig => {
@@ -78,10 +71,23 @@ browser.storage.local.get('config').then(extensionConfig => {
 });
 
 function setFormFieldsFromConfig(config) {
-    $("#fields").val(makeTextFromFields(config.ankiFields));
-    $("#hideDefinitions").prop('checked', config.hideDefinitions);
-    $("#importEmptyAudio").prop('checked', config.importEmptyAudio);
-    $("#ankiTags").val(config.ankiTags);
+    $('[data-config-option]:checkbox').each((_, checkbox) => {
+        const $checkbox = $(checkbox);
+        $checkbox.prop('checked', config[$checkbox.data('config-option')]);
+    });
+
+    $('[data-config-option]:text').each((_, input) => {
+        const $input = $(input);
+        let configValue = config[$input.data('config-option')];
+        if ($input.data('config-map')) {
+            const map = $input.data('config-map');
+            if (typeof window[map] === 'function') {
+                configValue = window[map](configValue, true);
+            }
+        }
+
+        $input.val(configValue);
+    });
 
     setKeymapFields(config.keymap);
     const installedDictionaryIds = config.installedDictionaries.map(dictionary => dictionary.id);
@@ -164,7 +170,6 @@ $('#installedDictionaries').delegate('.remove-dictionary', 'click', async (event
 
     sendRequest('deleteDictionary', dictionary);
 
-    await setPreferences();
     browser.storage.local.set({config});
     setFormFieldsFromConfig(config);
 });
@@ -175,7 +180,6 @@ $('#installedDictionaries').delegate('.move-dictionary-up', 'click', async(event
 
     config.installedDictionaries.splice(index - 1, 0, config.installedDictionaries.splice(index, 1)[0]);
 
-    await setPreferences();
     browser.storage.local.set({config});
     setFormFieldsFromConfig(config);
 });
@@ -218,8 +222,6 @@ browser.runtime.onMessage.addListener(async (message) => {
             installStatus.html('');
             config.installedDictionaries.push(getDictionaryById(defaultConfig.recommendedDictionaries, id));
 
-            await setPreferences();
-
             browser.storage.local.set({ config });
             setFormFieldsFromConfig(config);
     }
@@ -244,3 +246,36 @@ if (url.match('#')) {
 $('.nav-tabs a').on('shown.bs.tab', function (e) {
     window.location.hash = e.target.hash;
 });
+
+$('[data-config-option]:checkbox').on('change', event => {
+    const $element = $(event.target);
+
+    config[$element.data('config-option')] = $element.is(':checked');
+    browser.storage.local.set({ config });
+    setFormFieldsFromConfig(config);
+});
+
+$('[data-config-option]:text').on('blur', event => {
+    const $element = $(event.target);
+
+    let configValue = $element.val();
+
+    if ($element.data('config-map') && typeof window[$element.data('config-map')] === 'function') {
+        configValue = window[$element.data('config-map')](configValue, false);
+    }
+
+    config[$element.data('config-option')] = configValue;
+    browser.storage.local.set({config});
+    setFormFieldsFromConfig(config)
+});
+
+$('.keymap-input').on('blur', event => {
+    config.keymap = getKeymapFromInputs();
+
+    browser.storage.local.set({ config });
+    setFormFieldsFromConfig(config);
+});
+
+function makeInt(value) {
+    return parseInt(value);
+}

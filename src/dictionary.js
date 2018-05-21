@@ -94,6 +94,7 @@ class IndexedDictionary {
     async findWord(word) {
         word = await this.findByIndex('both', word);
         return word.map(entry => {
+            if (entry.entry[entry.entry.length - 1] === '/') return entry.entry;
             return ((entry.kanji ? (`${entry.kanji} [${entry.kana}]`) : entry.kana) + ` /${entry.entry}/`);
         });
     }

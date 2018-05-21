@@ -133,11 +133,11 @@ class Data {
         let maxTrim;
 
         if (dictionary.isName) {
-            maxTrim = applicationConfig.nameMax;
+            maxTrim = this.config.nameMax;
             result.names = 1;
         }
         else {
-            maxTrim = applicationConfig.maxEntries;
+            maxTrim = this.config.maxEntries;
         }
 
         if (max != null) maxTrim = max;
@@ -180,7 +180,7 @@ class Data {
                         }
                         ok = (z !== -1);
                     }
-                    if ((ok) && (dictionary.hasType) && (applicationConfig.hideXRatedEntries)) {
+                    if ((ok) && (dictionary.hasType) && (this.config.hideXRatedEntries)) {
                         if (dentry.match(/\/\([^\)]*\bX\b.*?\)/)) ok = false;
                     }
                     if (ok) {

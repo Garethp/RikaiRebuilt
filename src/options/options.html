@@ -17,11 +17,16 @@
 
 <body>
 <div class="container">
-
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item">
-            <a class="nav-link active" id="keyboard-tab" data-toggle="tab" href="#keyboard" role="tab"
-               aria-controls="keyboard" aria-selected="true">
+            <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab"
+               aria-controls="general" aria-selected="true">
+                General
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="keyboard-tab" data-toggle="tab" href="#keyboard" role="tab"
+               aria-controls="keyboard">
                 Keyboard
             </a>
         </li>
@@ -46,29 +51,43 @@
     </ul>
 
     <div class="tab-content card card-body" id="myTabContent">
-        <div class="tab-pane fade show active" id="keyboard" role="tabpanel" aria-labelledby="keyboard-tab">
+        <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+            <div class="form-group row">
+                <div class="col-3">
+                    <label
+                            title="With this selected, the changelog page will automatically open in a new tab whenever RikaiRebuilt updates, so you know what's added"
+                            class="col-form-label"
+                            for="openChangelogOnUpdate">Open Changelog on Update</label>
+                </div>
+                <div class="col-9">
+                    <input class="form-check-input" type="checkbox" id="openChangelogOnUpdate"
+                           data-config-option="openChangelogOnUpdate"/>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="keyboard" role="tabpanel" aria-labelledby="keyboard-tab">
             <h4><b>Keymap</b></h4>
-                <form class="">
-                    <div class="row">
-                        <div class="col-4"><label class="my-1 mr-2" for="keymap-sendToAnki">Real-Time Anki
-                            Import</label></div>
-                        <div class="col-3"><input type="input" class="form-control keymap-input"
-                                                  id="keymap-sendToAnki"/></div>
-                    </div>
+            <form class="">
+                <div class="row">
+                    <div class="col-4"><label class="my-1 mr-2" for="keymap-sendToAnki">Real-Time Anki
+                        Import</label></div>
+                    <div class="col-3"><input type="input" class="form-control keymap-input"
+                                              id="keymap-sendToAnki"/></div>
+                </div>
 
-                    <div class="row">
-                        <div class="col-4"><label class="my-1 mr-2" for="keymap-playAudio">Play JDIC Audio</label></div>
-                        <div class="col-3"><input type="input" class="form-control keymap-input" id="keymap-playAudio"/>
-                        </div>
+                <div class="row">
+                    <div class="col-4"><label class="my-1 mr-2" for="keymap-playAudio">Play JDIC Audio</label></div>
+                    <div class="col-3"><input type="input" class="form-control keymap-input" id="keymap-playAudio"/>
                     </div>
+                </div>
 
-                    <div class="row">
-                        <div class="col-4"><label class="my-1 mr-2" for="keymap-selectNextDictionary">Select Next
-                            Dictionary</label></div>
-                        <div class="col-3"><input type="input" class="form-control keymap-input"
-                                                  id="keymap-selectNextDictionary"/></div>
-                    </div>
-                </form>
+                <div class="row">
+                    <div class="col-4"><label class="my-1 mr-2" for="keymap-selectNextDictionary">Select Next
+                        Dictionary</label></div>
+                    <div class="col-3"><input type="input" class="form-control keymap-input"
+                                              id="keymap-selectNextDictionary"/></div>
+                </div>
+            </form>
         </div>
         <div class="tab-pane fade" id="dictionaries" role="tabpanel" aria-labelledby="dictionaries-tab">
             <h4><b>Dictionaries</b></h4>
@@ -81,116 +100,154 @@
 
                 <div class="form-group row">
                     <div class="col-3">
-                    <label title="Hide the definition of the word when showing the popup" class="col-form-label"
-                           for="hideDefinitions">Hide Definitions</label></div>
-                    <div class="col-5">
-                        <input class="form-check-input" type="checkbox" value="" id="hideDefinitions"/>
+                        <label title="Hide the definition of the word when showing the popup" class="col-form-label"
+                               for="hideDefinitions">Hide Definitions</label></div>
+                    <div class="col-9">
+                        <input class="form-check-input" type="checkbox" value="" id="hideDefinitions"
+                               data-config-option="hideDefinitions"/>
+                    </div>
+                    <div class="col-3">
+                        <label title="Hide X-Rated Dictionary Definitions" class="col-form-label"
+                               for="hideXDefinitions">Hide X-Rated Dictionary Definitions</label>
+                    </div>
+                    <div class="col-9">
+                        <input class="form-check-input" type="checkbox" id="hideXDefinitions"
+                               data-config-option="hideXRatedEntries"/>
                     </div>
                 </div>
-            </form>
-        </div>
+                <div class="form-group row">
 
-        <div class="tab-pane fade" id="anki" role="tabpanel" aria-labelledby="anki-tab">
-            <div>In order to use this, please install this <b>updated</b>
-                <a href="https://ankiweb.net/shared/info/1659361456">Real-Time Import plugin</a> for Anki. Don't worry,
-                it
-                will still work with Rikaisama if you use that in a different browser
-            </div>
-            <form class="form-group">
-                <div class="row">
-                    <div class="col-3">
-                        <label title="The fields for the Card that will be created in Anki" for="fields"
-                               class="col-form-label">Card Fields</label></div>
-                    <div class="col-7">
-                        <input type="text" id="fields" class="form-control">
+                    <div class="col-3 col-form-label">
+                        <label for="maxEntries">Maximum Definitions to show</label>
                     </div>
-                </div>
-
-                <div class="row">
                     <div class="col-3">
-                        <label title="Tags to add to anki (Separated by spaces)" for="ankiTags"
-                               class="col-form-label">Anki Tags</label></div>
-                    <div class="col-3">
-                        <input type="text" id="ankiTags" class="form-control">
+                        <input class="form-control" type="text" data-config-option="maxEntries" id="maxEntries"
+                               data-config-map="makeInt"/>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-3">
-                        <label for="importEmptyAudio" class="form-check-label"
-                               title="When importing, if there's no audio to download we can fill the field with the location of the file where the audio would be, or just leave it empty">Fill
-                            Audio Field Even When
-                            There's No Audio</label>
+                <div class="form-group row">
+                    <div class="col-3 col-form-label">
+                        <label for="nameMax">Maximum Names to show</label>
                     </div>
                     <div class="col-3">
-                        <input type="checkbox" id="importEmptyAudio" class="" />
+                        <input class="form-control" type="text" data-config-option="nameMax" id="nameMax"
+                               data-config-map="makeInt"/>
                     </div>
                 </div>
-            </form>
-
-            Exmaple: <code>Vocabulary=dictionaryFormat; Reading=reading; Definition=definition; Audio=audio</code>
-            <hr/>
-
-            Options:
-            <ul class="anki-field-options">
-                <li title="This field is where the audio file is injected">audio</li>
-                <li title="The dictionary format of the word">dictionaryFormat</li>
-                <li title="Just the word that you've selected">word</li>
-                <li title="The reading of the word">reading</li>
-                <li>saveNotes</li>
-                <li title="The sentence that the word you selected appears in">sentence</li>
-                <li title="The setence that the word you selected appears in, with the selected word replaced with _'s">
-                    sentenceWithBlank
-                </li>
-                <li title="The url of the page you saved the word form">sourceUrl</li>
-                <li title="The titel fo the page you saved the word from">pageTitle</li>
-                <li title="The definition of the selected word">definition</li>
-                <li>frequency</li>
-                <li>pitch</li>
-            </ul>
-        </div>
-
-        <div class="tab-pane fade" id="changelog" role="tabpanel" aria-labelledby="changelog-tab">
-            <h4>Version 1.0.7</h4>
-            <ul>
-                <li>Made the enable/disable apply across the whole browser, not just per-tab</li>
-            </ul>
-
-            <h4>Version 1.0.6</h4>
-            <ul>
-                <li>Added the option to not fill in the Audio field when there's no Audio to download</li>
-            </ul>
-
-            <h4>Version 1.0.5</h4>
-            <ul>
-                <li>Fixed keys being eaten even when nothing is highlighted</li>
-            </ul>
-
-            <h4>Version 1.0.4</h4>
-            <ul>
-                <li>Fixed the lack of icon</li>
-            </ul>
-
-            <h4>Version 1.0.3</h4>
-            Please note that for this version you need to update your Real-Time Import plugin, since it now has support
-            for importing cards with Tags.<br /><br />
-
-            <ul>
-                <li>Added Chrome Support</li>
-                <li>Added tags when importing in to Anki</li>
-                <li>Added a popup for when users are trying to use the extension when the options page is open</li>
-                <li>Cleaned up the options page</li>
-            </ul>
-        </div>
+        </form>
     </div>
 
-    <form>
-        <button type='button' class='btn btn-primary' id='savePreferences'>Save</button>
-        <button type='button' class='btn btn-primary' id='resetPreferences'>Reset</button>
-        <button type='button' class='btn' id='showConfig'>Show Config</button>
-    </form>
+    <div class="tab-pane fade" id="anki" role="tabpanel" aria-labelledby="anki-tab">
+        <div>In order to use this, please install this <b>updated</b>
+            <a href="https://ankiweb.net/shared/info/1659361456">Real-Time Import plugin</a> for Anki. Don't worry,
+            it
+            will still work with Rikaisama if you use that in a different browser
+        </div>
+        <form class="form-group">
+            <div class="row">
+                <div class="col-3">
+                    <label title="The fields for the Card that will be created in Anki" for="fields"
+                           class="col-form-label">Card Fields</label></div>
+                <div class="col-7">
+                    <input type="text" id="fields" class="form-control" data-config-option="ankiFields"
+                           data-config-map="makeAnkiFields">
+                </div>
+            </div>
 
-    <pre><code id="configArea" style="display: none;"></code></pre>
+            <div class="row">
+                <div class="col-3">
+                    <label title="Tags to add to anki (Separated by spaces)" for="ankiTags"
+                           class="col-form-label">Anki Tags</label></div>
+                <div class="col-3">
+                    <input type="text" id="ankiTags" class="form-control" data-config-option="ankiTags">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-3">
+                    <label for="importEmptyAudio" class="form-check-label"
+                           title="When importing, if there's no audio to download we can fill the field with the location of the file where the audio would be, or just leave it empty">Fill
+                        Audio Field Even When
+                        There's No Audio</label>
+                </div>
+                <div class="col-3">
+                    <input type="checkbox" id="importEmptyAudio" class="" data-config-option="importEmptyAudio"/>
+                </div>
+            </div>
+        </form>
+
+        Exmaple: <code>Vocabulary=dictionaryFormat; Reading=reading; Definition=definition; Audio=audio</code>
+        <hr/>
+
+        Options:
+        <ul class="anki-field-options">
+            <li title="This field is where the audio file is injected">audio</li>
+            <li title="The dictionary format of the word">dictionaryFormat</li>
+            <li title="Just the word that you've selected">word</li>
+            <li title="The reading of the word">reading</li>
+            <li>saveNotes</li>
+            <li title="The sentence that the word you selected appears in">sentence</li>
+            <li title="The setence that the word you selected appears in, with the selected word replaced with _'s">
+                sentenceWithBlank
+            </li>
+            <li title="The url of the page you saved the word form">sourceUrl</li>
+            <li title="The titel fo the page you saved the word from">pageTitle</li>
+            <li title="The definition of the selected word">definition</li>
+            <li>frequency</li>
+            <li>pitch</li>
+        </ul>
+    </div>
+
+    <div class="tab-pane fade" id="changelog" role="tabpanel" aria-labelledby="changelog-tab">
+        <h4>Version 1.0.8</h4>
+        <ul>
+            <li>Added an option for hiding X Rated definitions</li>
+            <li>Added an option for the maximum number of names to show</li>
+            <li>Added an option for the maximum number of entries to show</li>
+            <li>Added an option to show the Changelog page whenever the plugin updates</li>
+            <li>The options page now updates as you change options, instead of waiting for you to hit save</li>
+        </ul>
+
+        <h4>Version 1.0.7</h4>
+        <ul>
+            <li>Made the enable/disable apply across the whole browser, not just per-tab</li>
+        </ul>
+
+        <h4>Version 1.0.6</h4>
+        <ul>
+            <li>Added the option to not fill in the Audio field when there's no Audio to download</li>
+        </ul>
+
+        <h4>Version 1.0.5</h4>
+        <ul>
+            <li>Fixed keys being eaten even when nothing is highlighted</li>
+        </ul>
+
+        <h4>Version 1.0.4</h4>
+        <ul>
+            <li>Fixed the lack of icon</li>
+        </ul>
+
+        <h4>Version 1.0.3</h4>
+        Please note that for this version you need to update your Real-Time Import plugin, since it now has support
+        for importing cards with Tags.<br/><br/>
+
+        <ul>
+            <li>Added Chrome Support</li>
+            <li>Added tags when importing in to Anki</li>
+            <li>Added a popup for when users are trying to use the extension when the options page is open</li>
+            <li>Cleaned up the options page</li>
+        </ul>
+    </div>
+</div>
+
+<form>
+    <button type='button' class='btn btn-primary' id='resetPreferences'>Reset</button>
+    <button type='button' class='btn' id='showConfig'>Show Config</button>
+</form>
+
+<pre><code id="configArea" style="display: none;"></code></pre>
 </div>
 <script src="jquery.js"></script>
 <script src="bootstrap.min.js"></script>

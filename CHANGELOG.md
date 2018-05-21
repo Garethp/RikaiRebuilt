@@ -1,5 +1,11 @@
 ## Changelog
 
+#### Version 1.0.8
+ * Add the option to open up the Changelog on each update
+ * Added options for hiding X rated definitions, show maximum names and show maximum entries
+ * Made options page update automatically, no more clicking save
+ * Added an edict-like format for Dictionary
+
 #### Version 1.0.7
  * Made the enable/disable apply across the entire browser, not just per-tab
 

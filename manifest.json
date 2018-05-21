@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "author": "Gareth Parker",
   "name": "RikaiRebuilt",
-  "version": "1.0.7",
+  "version": "1.0.8",
 
   "browser_action": {
     "default_icon": {
@@ -30,7 +30,6 @@
       "src/audioPlayer.js",
       "src/ankiImport.js",
       "src/removeFromArray.js",
-      "src/config.js",
       "src/FileReader.js",
       "src/deinflectText.js",
       "src/deinflect.js",

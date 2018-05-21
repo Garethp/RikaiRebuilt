@@ -5,11 +5,15 @@ const defaultConfig = {
         selectNextDictionary: 16,
     },
     hideDefinitions: false, //hidedef
+    hideXRatedEntries: false, //hidex
+    nameMax: 20, //namax
+    maxEntries: 10,
     ankiFields: {},
     showWordTypeIndicator: true, //wpos
     showPopularWordIndicator: true, //wpop
     ankiTags: '',
     importEmptyAudio: true,
+    openChangelogOnUpdate: false,
     installedDictionaries: [
     ],
     recommendedDictionaries: [

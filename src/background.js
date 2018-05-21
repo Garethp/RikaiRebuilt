@@ -24,7 +24,7 @@ class RikaiRebuilt {
             return this.disable();
         }
 
-        browser.storage.local.set({ enabled: true});
+        browser.storage.local.set({enabled: true});
         browser.storage.local.get('config').then(config => {
             if (!config.config) return;
 
@@ -41,7 +41,7 @@ class RikaiRebuilt {
     }
 
     async disable() {
-        browser.storage.local.set({ enabled: false });
+        browser.storage.local.set({enabled: false});
 
         browser.browserAction.setIcon({
             path: {
@@ -68,7 +68,7 @@ class RikaiRebuilt {
     }
 
     sendToAnki(content) {
-        const { entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl } = content;
+        const {entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl} = content;
         const entryFormat = ankiImport.makeTextOptions(entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl, false, false, this.config);
         ankiImport.addNote(entryFormat, entry, this.config);
         playAudio([entry]);
@@ -94,20 +94,20 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
     switch (type) {
         case "wordSearch":
             return rebuilt.wordSearch(content).then(response => {
-                return { response };
+                return {response};
             }, f => console.log(f));
         case "unload":
             rebuilt.unloadTab(sender.tab.id);
-            return { response: '' };
+            return {response: ''};
         case "playAudio":
             playAudio(content);
-            return { response: '' };
+            return {response: ''};
         case "sendToAnki":
             rebuilt.sendToAnki(content);
             return 0;
         case 'selectNextDictionary':
             rebuilt.getData().selectNextDictionary();
-            return { response: null };
+            return {response: null};
         case "importDictionary":
             const {name, id, entries} = content;
             const testDb = new IndexedDictionary(id);
@@ -121,27 +121,31 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
                         browser.tabs.sendMessage(sender.tab.id, {
                             type: 'DICTIONARY_IMPORT_UPDATE',
                             content: {id, item, total}
-                        }).then(() => {}, rejected => { console.log(rejected); canSend = false;});
+                        }).then(() => {
+                        }, rejected => {
+                            console.log(rejected);
+                            canSend = false;
+                        });
 
                         lastPercent = percentage;
                     }
                 });
             }, f => console.log(f)).then(async () => {
-                    const diff = new Date().getTime() - startTime;
+                const diff = new Date().getTime() - startTime;
                 if (canSend) {
-                    browser.tabs.sendMessage(sender.tab.id, { type: 'DICTIONARY_IMPORT_COMPLETE', content: { id }});
+                    browser.tabs.sendMessage(sender.tab.id, {type: 'DICTIONARY_IMPORT_COMPLETE', content: {id}});
                 } else {
-                    config.installedDictionaries.push({ name, id });
-                    browser.storage.local.set({ config })
+                    config.installedDictionaries.push({name, id});
+                    browser.storage.local.set({config})
                 }
             }, f => console.log(f));
-            return { response: '' };
+            return {response: ''};
         case "deleteDictionary":
             const dictionary = new IndexedDictionary(content.id);
             dictionary.open().then(async () => {
                 dictionary.deleteDatabase();
             });
-            return { response: '' };
+            return {response: ''};
     }
 });
 
@@ -156,14 +160,16 @@ browser.storage.onChanged.addListener((changes, areaName) => {
     rebuilt.updateConfig(config);
 });
 
-browser.storage.local.set({ enabled: false });
+browser.storage.local.set({enabled: false});
 
-browser.runtime.onInstalled.addListener(({ id, previousVersion, reason }) => {
-    const optionsPageUrl = browser.extension.getURL('src/options/options.html');
+browser.runtime.onInstalled.addListener(({id, previousVersion, reason}) => {
+    browser.storage.local.get('config').then(({ config }) => {
+        if (!config || !config.openChangelogOnUpdate) return;
 
-    if (reason === 'update') {
-        browser.tabs.create({ url: `${optionsPageUrl}#changelog` });
-    } else if (reason === 'install') {
-        browser.tabs.create({ url: `${optionsPageUrl}#dictionaries` });
-    }
+        const optionsPageUrl = browser.extension.getURL('src/options/options.html');
+
+        if (reason === 'update') {
+            browser.tabs.create({url: `${optionsPageUrl}#changelog`});
+        }
+    });
 });
