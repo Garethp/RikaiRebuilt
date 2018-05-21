@@ -173,3 +173,12 @@ browser.runtime.onInstalled.addListener(({id, previousVersion, reason}) => {
         }
     });
 });
+
+browser.contextMenus.removeAll();
+browser.contextMenus.create({
+    title: "Options",
+    contexts: ["browser_action"],
+    onclick: () => {
+        browser.tabs.create({ url: browser.extension.getURL('src/options/options.html') });
+    }
+});

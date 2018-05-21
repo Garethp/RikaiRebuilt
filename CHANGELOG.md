@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.9
+ * Added an options button if you right click on the Rikai icon, for Edge support
+
 #### Version 1.0.8
  * Add the option to open up the Changelog on each update
  * Added options for hiding X rated definitions, show maximum names and show maximum entries
