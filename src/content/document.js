@@ -55,6 +55,8 @@ function docImposterCreate(element) {
     document.body.appendChild(imposter);
     imposter.scrollTop = element.scrollTop;
     imposter.scrollLeft = element.scrollLeft;
+
+    return imposter;
 }
 
 function docImposterDestroy() {
@@ -65,11 +67,12 @@ function docImposterDestroy() {
 
 function docRangeFromPoint(point) {
     const element = document.elementFromPoint(point.x, point.y);
+    let imposter = null;
     if (element) {
         if (element.nodeName === 'IMG' || element.nodeName === 'BUTTON') {
             return new TextSourceElement(element);
         } else if (element.nodeName === 'INPUT' || element.nodeName === 'TEXTAREA') {
-            docImposterCreate(element);
+            imposter = docImposterCreate(element);
         }
     }
 
@@ -80,12 +83,15 @@ function docRangeFromPoint(point) {
                 const range = document.createRange();
                 range.setStart(position.offsetNode, position.offset);
                 range.setEnd(position.offsetNode, position.offset);
+                imposter.style.zIndex = -1000;
                 return range;
             }
         };
     }
 
     const range = document.caretRangeFromPoint(point.x, point.y);
+
+    imposter.style.zIndex = -1000;
     if (range) {
         return new TextSourceRange(range);
     }
