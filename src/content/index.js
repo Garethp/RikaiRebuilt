@@ -93,7 +93,9 @@ class Rikai {
         const tabData = this.tabData;
 
         //Not Firefox, need to query text in a different way
-        if (rangeParent === undefined) {
+        //Firefox seems to have changed rangeParent. In the newer ones it's null for inputs, so we'll
+        //always use Yomichan code
+        if (rangeParent === undefined || true) {
             return this.searchAt({x: event.clientX, y: event.clientY}, tabData, event);
         }
 
@@ -180,6 +182,8 @@ class Rikai {
     };
 
     async show(tabData) {
+        console.log('test in function');
+
         let {previousRangeParent} = tabData;
         let previousRangeOffset = tabData.previousRangeOffset + tabData.uofs;
         let i, j;
