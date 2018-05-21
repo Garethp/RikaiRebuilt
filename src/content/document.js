@@ -83,7 +83,7 @@ function docRangeFromPoint(point) {
                 const range = document.createRange();
                 range.setStart(position.offsetNode, position.offset);
                 range.setEnd(position.offsetNode, position.offset);
-                imposter.style.zIndex = -1000;
+                if(imposter !== null) imposter.style.zIndex = -1000;
                 return range;
             }
         };
@@ -91,7 +91,7 @@ function docRangeFromPoint(point) {
 
     const range = document.caretRangeFromPoint(point.x, point.y);
 
-    imposter.style.zIndex = -1000;
+    if(imposter !== null) imposter.style.zIndex = -1000;
     if (range) {
         return new TextSourceRange(range);
     }
