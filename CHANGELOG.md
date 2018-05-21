@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.10
+ * Fixing issue caused by last update
+
 #### Version 1.0.9
  * Added an options button if you right click on the Rikai icon, for future Edge support
  * Allow text in forms

@@ -121,7 +121,7 @@ class Rikai {
 
         if (rangeParent && rangeParent.data && rangeOffset < rangeParent.data.length) {
             tabData.pos = {screenX: event.screenX, screenY: event.screenY, pageX: event.pageX, pageY: event.pageY};
-            await this.show(tabData);
+            // await this.show(tabData);
         }
 
         if (tabData.pos) {
@@ -136,6 +136,7 @@ class Rikai {
     }
 
     async searchAt(point, tabData, event) {
+        const originalElement = document.elementFromPoint(point.x, point.y);
         const textSource = docRangeFromPoint(point);
 
         if (!textSource || !textSource.range || typeof textSource.range.startContainer.data === 'undefined') return;
@@ -182,8 +183,6 @@ class Rikai {
     };
 
     async show(tabData) {
-        console.log('test in function');
-
         let {previousRangeParent} = tabData;
         let previousRangeOffset = tabData.previousRangeOffset + tabData.uofs;
         let i, j;
@@ -660,6 +659,7 @@ class Rikai {
     }
 
     clear() {
+        docImposterDestroy();
         this.clearPopup();
         this.clearHighlight();
     }
