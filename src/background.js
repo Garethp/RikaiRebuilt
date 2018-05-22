@@ -232,7 +232,11 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
                 console.log(`Took ${diff / 1000} seconds to import`);
                 testDb.removeHook();
                 if (canSend) {
-                    browser.tabs.sendMessage(sender.tab.id, {type: 'DICTIONARY_IMPORT_COMPLETE', content: {id}});
+                    browser.tabs.sendMessage(sender.tab.id, {type: 'DICTIONARY_IMPORT_COMPLETE', content: {id}})
+                        .then(() => {}, () => {
+                            config.installedDictionaries.push({name, id});
+                            browser.storage.local.set({config})
+                        });
                 } else {
                     config.installedDictionaries.push({name, id});
                     browser.storage.local.set({config})
