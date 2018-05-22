@@ -2,9 +2,10 @@
   "manifest_version": 2,
   "author": "Gareth Parker",
   "name": "RikaiRebuilt",
-  "version": "1.0.11",
+  "version": "1.0.12",
 
   "browser_action": {
+    "browser_style": true,
     "default_icon": {
       "48": "icons/smile.png"
     }
@@ -35,6 +36,7 @@
       "src/deinflectText.js",
       "src/deinflect.js",
       "src/dictionary.js",
+      "src/FrequencyDb.js",
       "src/auto-bind.js",
       "src/data.js",
       "src/background.js"

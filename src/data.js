@@ -53,6 +53,12 @@ class Data {
         this.updateDictionaries();
     }
 
+    async getReadingCount(reading) {
+        const dictionary = this.dictionaries[this.selectedDictionary];
+        const readingsList = await dictionary.getReadings(reading);
+        return readingsList.length;
+    }
+
     async wordSearch(word, noKanji) {
         if (this.dictionaries.length === 0) return null;
 

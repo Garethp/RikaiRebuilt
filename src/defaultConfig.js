@@ -14,6 +14,7 @@ const defaultConfig = {
     ankiTags: '',
     importEmptyAudio: true,
     openChangelogOnUpdate: false,
+    showFrequency: false,
     installedDictionaries: [
     ],
     recommendedDictionaries: [

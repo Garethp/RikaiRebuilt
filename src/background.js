@@ -62,6 +62,10 @@ class RikaiRebuilt {
         return this.getData().wordSearch(text);
     }
 
+    async getReadingCount(reading) {
+        return this.getData().getReadingCount(reading);
+    }
+
     updateConfig(config) {
         this.config = config || defaultConfig;
         this.getData().updateConfig(config);
@@ -87,6 +91,8 @@ function playAudio(lastFound) {
 }
 
 const ankiImport = new AnkiImport();
+const frequencyDb = new FrequencyDb();
+frequencyDb.open();
 
 browser.runtime.onMessage.addListener(async (message, sender) => {
     const {type, content} = message;
@@ -96,6 +102,15 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
             return rebuilt.wordSearch(content).then(response => {
                 return {response};
             }, f => console.log(f));
+        case "getFrequency":
+            return frequencyDb.findFrequencyForExpression(content).then(results => {
+                console.log(results);
+                return { response: results[0] };
+            });
+        case "getReadingCount":
+            return rebuilt.getReadingCount(content).then(response => {
+                return { response };
+            });
         case "unload":
             rebuilt.unloadTab(sender.tab.id);
             return {response: ''};
@@ -162,8 +177,23 @@ browser.storage.onChanged.addListener((changes, areaName) => {
 
 browser.storage.local.set({enabled: false});
 
-browser.runtime.onInstalled.addListener(({id, previousVersion, reason}) => {
-    browser.storage.local.get('config').then(({ config }) => {
+browser.runtime.onInstalled.addListener(async ({id, previousVersion, reason}) => {
+    //Frequency Information
+    frequencyDb.open().then(_ => {
+        frequencyDb.findFrequencyForExpression('の').then(frequency => {
+            console.log(frequency.length);
+            if (frequency.length === 0) {
+                frequencyDb.importFromFile('../resources/frequency.json', function (item, total) {
+                    if (item % 10226 === 0) {
+                        console.log(`Frequency import ${(item / 10226) * 5} % complete`);
+                    }
+                });
+
+            }
+        });
+    });
+
+    browser.storage.local.get('config').then(({config}) => {
         if (!config || !config.openChangelogOnUpdate) return;
 
         const optionsPageUrl = browser.extension.getURL('src/options/options.html');

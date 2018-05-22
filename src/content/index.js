@@ -441,7 +441,7 @@ class Rikai {
         // @TODO: Add sanseido mode
         // @TODO: Add EPWING mode
 
-        this.showPopup(this.getKnownWordIndicatorText() + this.makeHTML(entry), tabData.previousTarget, tabData.pos);
+        this.showPopup(this.getKnownWordIndicatorText() + await this.makeHTML(entry), tabData.previousTarget, tabData.pos);
     }
 
     highlightMatch(document, rangeParent, rangeOffset, matchLen, selEndList, tabData) {
@@ -801,7 +801,7 @@ class Rikai {
     }
 
 
-    makeHTML(entry) {
+    async makeHTML(entry) {
         let k;
         let e;
         let returnValue = [];
@@ -994,23 +994,22 @@ class Rikai {
 
             if (entry.data[i][1]) returnValue.push(' <span class="w-conj">(' + entry.data[i][1] + ')</span>');
 
-            //TODO: Add config usage here
             // Add frequency
-            // if (rcxConfig.showfreq) {
-            //     const freqExpression = e[1];
-            //     var freqReading = e[2];
-            //
-            //     if (freqReading == null) {
-            //         var freqReading = freqExpression;
-            //     }
-            //
-            //     const freq = rcxMain.getFreq(freqExpression, freqReading, (i == 0));
-            //
-            //     if (freq && (freq.length > 0)) {
-            //         const freqClass = rcxMain.getFreqStyle(freq);
-            //         returnValue.push('<span class="' + freqClass + '"> ' + freq + '</span>');
-            //     }
-            // }
+            if (this.config.showFrequency) {
+                const freqExpression = e[1];
+                let freqReading = e[2];
+
+                if (freqReading === null) {
+                    freqReading = freqExpression;
+                }
+
+                const freq = await this.getFrequency(freqExpression, freqReading, i === 0);
+
+                if (freq && (freq.length > 0)) {
+                    const frequencyClass = this.getFrequencyStyle(freq);
+                    returnValue.push('<span class="' + frequencyClass + '"> ' + freq + '</span>');
+                }
+            }
 
             //TODO: Add config usage here
             s = e[3];
@@ -1030,6 +1029,104 @@ class Rikai {
         if (entry.more) returnValue.push('...<br/>');
 
         return returnValue.join('');
+    }
+
+    getFrequencyStyle(inFreqNum) {
+        let freqNum = inFreqNum.replace(/_r/g, "");
+
+        var freqStyle = 'w-freq-rare';
+
+        if (freqNum <= 5000) {
+            freqStyle = "w-freq-very-common";
+        }
+        else if (freqNum <= 10000) {
+            freqStyle = "w-freq-common";
+        }
+        else if (freqNum <= 20000) {
+            freqStyle = "w-freq-uncommon";
+        }
+
+        return freqStyle;
+    }
+
+    async getFrequency(inExpression, inReading, useHighlightedWord) {
+        const expression = inExpression;
+        const reading = inReading;
+        const hilitedWord = this.word; // Hilited word without de-inflection
+
+        let freqNum = "";
+        let freqStr = "";
+        let freqBasedOnReading = false;
+
+
+        try {
+            const readingFreqNum = await this.sendRequest('getFrequency', reading);
+            let readingSameAsExpression = (expression === reading);
+            let expressionFreqNum = readingFreqNum;
+
+            // Don't waste time looking up the expression freq if expression is same as the reading
+            if (!readingSameAsExpression) {
+                expressionFreqNum = await this.sendRequest('getFrequency', expression);
+            }
+
+            // If frequency was found for either frequency or reading
+            if ((expressionFreqNum.length > 0) || (readingFreqNum.length > 0)) {
+                // If the highlighted word does not contain kanji, and the reading is unique,
+                // use the reading frequency
+                if (useHighlightedWord
+                    && !readingSameAsExpression
+                    && !this.containsKanji(hilitedWord)
+                    && (readingFreqNum.length > 0)
+                    && (await this.sendRequest('getReadingCount', reading) === 1)) {
+                    freqNum = readingFreqNum;
+                    freqBasedOnReading = true;
+                }
+
+                // If expression and reading are the same, use the reading frequency
+                if ((freqNum.length == 0)
+                    && readingSameAsExpression
+                    && (readingFreqNum.length > 0)) {
+                    freqNum = readingFreqNum;
+                }
+
+                // If the expression is in the freq db, use the expression frequency
+                if ((freqNum.length == 0) && (expressionFreqNum.length > 0)) {
+                    freqNum = expressionFreqNum;
+                }
+
+                // If the reading is in the freq db, use the the reading frequency
+                if ((freqNum.length == 0) && (readingFreqNum.length > 0)) {
+                    freqNum = readingFreqNum;
+                    freqBasedOnReading = true;
+                }
+            }
+
+            freqStr = freqNum;
+
+            // Indicate that frequency was based on the reading
+            if (freqBasedOnReading) {
+                freqStr += "_r";
+            }
+        }
+        catch (ex) {
+            //@TODO: Throw an error here?
+            // Components.utils.reportError("getFreq() Exception: " + ex);
+            freqStr = "";
+        }
+
+        return freqStr;
+    }
+
+    containsKanji(text) {
+        for (let i = 0; i < text.length; i++) {
+            const c = text[i];
+
+            if ((c >= '\u4E00') && (c <= '\u9FBF')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     showPopup(textToShow, previousTarget, position) {
@@ -1103,7 +1200,7 @@ class Rikai {
 }
 
 const rikai = new Rikai(document);
-browser.storage.local.get('enabled').then( ({ enabled }) => {
+browser.storage.local.get('enabled').then(({enabled}) => {
     if (enabled) {
         rikai.enable();
     }

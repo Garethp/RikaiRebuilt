@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.12
+ * Adding Frequency Information
+
 #### Version 1.0.11
  * Solving issue with inputs not working after being used
 
