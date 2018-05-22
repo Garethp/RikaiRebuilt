@@ -106,7 +106,7 @@ class Rikai {
         }
 
         tabData.previousTarget = event.target;
-        tabData.pos = event.pos;
+        tabData.pos = {screenX: event.screenX, screenY: event.screenY, pageX: event.pageX, pageY: event.pageY};
 
         //Not Firefox, need to query text in a different way
         //Firefox seems to have changed rangeParent. In the newer ones it's null for inputs, so we'll
