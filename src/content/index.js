@@ -92,6 +92,22 @@ class Rikai {
         let {rangeParent, rangeOffset} = event;
         const tabData = this.tabData;
 
+        if (event.buttons !== 0) return;
+
+        let distance = null;
+        if (tabData.pos) {
+            const distanceX = tabData.pos.screenX - event.screenX;
+            const distanceY = tabData.pos.screenY - event.screenY;
+            distance = Math.sqrt((distanceX * distanceX) + (distanceY * distanceY));
+        }
+
+        if (event.target === tabData.previousTarget && distance && distance <= 4) {
+            return;
+        }
+
+        tabData.previousTarget = event.target;
+        tabData.pos = event.pos;
+
         //Not Firefox, need to query text in a different way
         //Firefox seems to have changed rangeParent. In the newer ones it's null for inputs, so we'll
         //always use Yomichan code
@@ -117,7 +133,6 @@ class Rikai {
 
         this.uofsNext = 1;
 
-        if (event.button !== 0) return;
 
         if (rangeParent && rangeParent.data && rangeOffset < rangeParent.data.length) {
             tabData.pos = {screenX: event.screenX, screenY: event.screenY, pageX: event.pageX, pageY: event.pageY};
