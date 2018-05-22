@@ -1,6 +1,6 @@
 class FileReader {
     static read(uri) {
-        if (typeof browser !== 'undefined') {
+        if (typeof browser !== 'undefined' && uri.substr(0, 4) !== "http") {
             uri = browser.extension.getURL(uri);
         }
 

@@ -112,7 +112,9 @@ class Rikai {
         //Firefox seems to have changed rangeParent. In the newer ones it's null for inputs, so we'll
         //always use Yomichan code
         if (rangeParent === undefined || true) {
-            return this.searchAt({x: event.clientX, y: event.clientY}, tabData, event);
+            return setTimeout(() => {
+                this.searchAt({x: event.clientX, y: event.clientY}, tabData, event);
+            }, 1);
         }
 
         if (event.target === tabData.previousTarget) {
@@ -680,7 +682,9 @@ class Rikai {
     }
 
     clear() {
-        setTimeout(() => { docImposterDestroy(); }, 500);
+        setTimeout(() => {
+            docImposterDestroy();
+        }, 500);
         this.clearPopup();
         this.clearHighlight();
     }
@@ -692,7 +696,7 @@ class Rikai {
     clearHighlight() {
         const tabData = this.tabData;
 
-        const selection = tabData.prevSelView.getSelection();
+        const selection = document.defaultView.getSelection();
         if (!selection.isCollapsed && tabData.selText !== selection.toString()) {
             return;
         }
@@ -716,6 +720,7 @@ class Rikai {
         });
 
         this.document.addEventListener('mousemove', this.onMouseMove);
+        this.document.addEventListener('mousedown', this.onMouseDown);
         this.document.addEventListener('keydown', event => {
             const shouldStop = this.onKeyDown(event);
             if (shouldStop === true) {
@@ -735,6 +740,11 @@ class Rikai {
         this.createPopup();
 
         this.enabled = true;
+    }
+
+    onMouseDown(event) {
+        // console.log(event);
+        this.clearHighlight();
     }
 
     onKeyDown(event) {
@@ -764,6 +774,7 @@ class Rikai {
 
     disable() {
         this.document.removeEventListener('mousemove', this.onMouseMove);
+        this.document.removeEventListener('mousedown', this.onMouseDown);
         this.document.removeEventListener('keydown', event => {
             const shouldStop = this.onKeyDown(event);
             if (shouldStop === true) {
@@ -1064,7 +1075,7 @@ class Rikai {
 
     async getFrequency(inExpression, inReading, useHighlightedWord) {
         const highlightedWord = this.word;
-        return this.sendRequest('getFrequency', { inExpression, inReading, useHighlightedWord, highlightedWord });
+        return this.sendRequest('getFrequency', {inExpression, inReading, useHighlightedWord, highlightedWord});
     }
 
     showPopup(textToShow, previousTarget, position) {

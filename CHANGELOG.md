@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.14
+ * Fixed some issues with Chrome frequency
+
 #### Version 1.0.13
  * Fixed manual selections being removed by Rikai
 
