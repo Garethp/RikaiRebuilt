@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.13
+ * Fixed manual selections being removed by Rikai
+
 #### Version 1.0.12
  * Adding Frequency Information
  * Solving issue with selecting and copying text

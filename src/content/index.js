@@ -193,7 +193,13 @@ class Rikai {
 
         this.showFromText(text, sentence, previousSentence, textSource.range.startOffset, textClone.range.startContainer, entry => {
             textClone.setEndOffset(this.word.length);
+
+            const currentSelection = document.defaultView.getSelection();
+            if (!currentSelection.isCollapsed && currentSelection.toString() !== tabData.selText) {
+                return;
+            }
             textClone.select();
+            tabData.selText = textClone.text();
         }, tabData);
     };
 
@@ -686,24 +692,16 @@ class Rikai {
     clearHighlight() {
         const tabData = this.tabData;
 
+        const selection = tabData.prevSelView.getSelection();
+        if (!selection.isCollapsed && tabData.selText !== selection.toString()) {
+            return;
+        }
+
         if (tabData.previousTextSource) {
             tabData.previousTextSource.deselect();
             tabData.previousTextSource = null;
             return;
         }
-        if ((!tabData) || (!tabData.prevSelView)) return;
-        if (tabData.prevSelView.closed) {
-            tabData.prevSelView = null;
-            return;
-        }
-
-        const selelection = tabData.prevSelView.getSelection();
-        if ((selelection.isCollapsed) || (tabData.selText === selelection.toString())) {
-            selelection.removeAllRanges();
-        }
-        tabData.prevSelView = null;
-        tabData.kanjiChar = null;
-        tabData.selText = null;
     }
 
     enable() {
