@@ -212,7 +212,9 @@ browser.runtime.onMessage.addListener(async (message) => {
             item = content.item;
             total = content.total;
 
-            const percent = Math.floor((item / total) * 100);
+            let percent = Math.floor((item / total) * 100);
+
+            if (percent === 100) percent = 99;
 
             installStatus.html(`Installing ${percent}%`);
             progressBar.css({ width: `${percent}%`});
