@@ -674,7 +674,7 @@ class Rikai {
     }
 
     clear() {
-        docImposterDestroy();
+        setTimeout(() => { docImposterDestroy(); }, 500);
         this.clearPopup();
         this.clearHighlight();
     }
@@ -1065,83 +1065,8 @@ class Rikai {
     }
 
     async getFrequency(inExpression, inReading, useHighlightedWord) {
-        const expression = inExpression;
-        const reading = inReading;
-        const hilitedWord = this.word; // Hilited word without de-inflection
-
-        let freqNum = "";
-        let freqStr = "";
-        let freqBasedOnReading = false;
-
-
-        try {
-            const readingFreqNum = await this.sendRequest('getFrequency', reading);
-            let readingSameAsExpression = (expression === reading);
-            let expressionFreqNum = readingFreqNum;
-
-            // Don't waste time looking up the expression freq if expression is same as the reading
-            if (!readingSameAsExpression) {
-                expressionFreqNum = await this.sendRequest('getFrequency', expression);
-            }
-
-            // If frequency was found for either frequency or reading
-            if ((expressionFreqNum.length > 0) || (readingFreqNum.length > 0)) {
-                // If the highlighted word does not contain kanji, and the reading is unique,
-                // use the reading frequency
-                if (useHighlightedWord
-                    && !readingSameAsExpression
-                    && !this.containsKanji(hilitedWord)
-                    && (readingFreqNum.length > 0)
-                    && (await this.sendRequest('getReadingCount', reading) === 1)) {
-                    freqNum = readingFreqNum;
-                    freqBasedOnReading = true;
-                }
-
-                // If expression and reading are the same, use the reading frequency
-                if ((freqNum.length == 0)
-                    && readingSameAsExpression
-                    && (readingFreqNum.length > 0)) {
-                    freqNum = readingFreqNum;
-                }
-
-                // If the expression is in the freq db, use the expression frequency
-                if ((freqNum.length == 0) && (expressionFreqNum.length > 0)) {
-                    freqNum = expressionFreqNum;
-                }
-
-                // If the reading is in the freq db, use the the reading frequency
-                if ((freqNum.length == 0) && (readingFreqNum.length > 0)) {
-                    freqNum = readingFreqNum;
-                    freqBasedOnReading = true;
-                }
-            }
-
-            freqStr = freqNum;
-
-            // Indicate that frequency was based on the reading
-            if (freqBasedOnReading) {
-                freqStr += "_r";
-            }
-        }
-        catch (ex) {
-            //@TODO: Throw an error here?
-            // Components.utils.reportError("getFreq() Exception: " + ex);
-            freqStr = "";
-        }
-
-        return freqStr;
-    }
-
-    containsKanji(text) {
-        for (let i = 0; i < text.length; i++) {
-            const c = text[i];
-
-            if ((c >= '\u4E00') && (c <= '\u9FBF')) {
-                return true;
-            }
-        }
-
-        return false;
+        const highlightedWord = this.word;
+        return this.sendRequest('getFrequency', { inExpression, inReading, useHighlightedWord, highlightedWord });
     }
 
     showPopup(textToShow, previousTarget, position) {

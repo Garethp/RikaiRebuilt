@@ -85,15 +85,13 @@ class AnkiImport {
     // sentenceWBlank = Like sentence except the highlighted word is replaced with blanks
     // saveKana       = Replace kanji with kana (that is, $d=$r)
     // saveFormat     = Token-based save format
-    makeTextOptions (entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl, saveKana, saveFormat, config)
-    {
+    async makeTextOptions(entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl, saveKana, saveFormat, config, rebuilt) {
         let entryData;
         let b;
         let i, j, k;
         let t;
 
-        if ((entry == null) || (entry.data == null))
-        {
+        if ((entry == null) || (entry.data == null)) {
             return '';
         }
 
@@ -113,14 +111,12 @@ class AnkiImport {
         let reading = entryData[2];
 
         // Does the user want to use the reading in place of kanji for the $d token?
-        if(entryData[2] && saveKana)
-        {
+        if (entryData[2] && saveKana) {
             dictionaryForm = entryData[2];
         }
 
         // Ensure that reading is never blank
-        if(!reading)
-        {
+        if (!reading) {
             reading = dictionaryForm;
         }
 
@@ -128,8 +124,7 @@ class AnkiImport {
 
         let definition = "";
 
-        if(config.epwingMode)
-        {
+        if (config.epwingMode) {
             //@TODO: Add code for Epwing
         }
         else // Not EPWING mode
@@ -137,14 +132,12 @@ class AnkiImport {
             definition = entryData[3].replace(/\//g, "; ");
 
             // Remove word type indicators? [example: (v1,n)]
-            if(!config.showWordTypeIndicator)
-            {
+            if (!config.showWordTypeIndicator) {
                 definition = definition.replace(/^\([^)]+\)\s*/, '');
             }
 
             // Remove popular indicator? [example: (P)]
-            if(!config.showPopularWordIndicator)
-            {
+            if (!config.showPopularWordIndicator) {
                 definition = definition.replace('; (P)', '');
             }
         }
@@ -154,15 +147,29 @@ class AnkiImport {
 
         // Frequency
         // const frequency = rcxMain.getFreq(dictionaryForm, reading, true);
-        const frequency = '';
+        const frequency = await rebuilt.getFrequency(dictionaryForm, reading, true, word);
 
         // Pitch accent
         // const pitch = rcxMain.getPitchAccent(dictionaryForm, reading);
         const pitch = '';
 
-        const { saveNotes } = config;
+        const {saveNotes} = config;
         const audioUrl = AudioPlayer.getAudioUrl(entry);
-        return { audioFile, audioUrl, dictionaryForm, word, reading, saveNotes, sentence, sentenceWithBlank, sourceUrl, pageTitle, definition, frequency, pitch };
+        return {
+            audioFile,
+            audioUrl,
+            dictionaryForm,
+            word,
+            reading,
+            saveNotes,
+            sentence,
+            sentenceWithBlank,
+            sourceUrl,
+            pageTitle,
+            definition,
+            frequency,
+            pitch
+        };
     }
 }
 

@@ -1,13 +1,14 @@
 let config = defaultConfig;
 
 class RikaiRebuilt {
-    constructor() {
+    constructor(frequencyDb) {
         autobind(this);
 
         this.enabled = false;
         this.isSetUp = false;
         this.data = null;
         this.config = defaultConfig;
+        this.frequencyDb = frequencyDb;
     }
 
     setup() {
@@ -71,16 +72,103 @@ class RikaiRebuilt {
         this.getData().updateConfig(config);
     }
 
-    sendToAnki(content) {
+    async sendToAnki(content) {
         const {entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl} = content;
-        const entryFormat = ankiImport.makeTextOptions(entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl, false, false, this.config);
+        const entryFormat = await ankiImport.makeTextOptions(entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl, false, false, this.config, this);
         ankiImport.addNote(entryFormat, entry, this.config);
         playAudio([entry]);
     }
+
+    async getFrequencyNumber(content) {
+        return frequencyDb.findFrequencyForExpression(content).then(results => {
+            return results[0];
+        });
+    }
+
+    async getFrequency(inExpression, inReading, useHighlightedWord, highlightedWord) {
+        const expression = inExpression;
+        const reading = inReading;
+
+        let freqNum = "";
+        let freqStr = "";
+        let freqBasedOnReading = false;
+
+        try {
+            const readingFreqNum = await this.getFrequencyNumber(reading);
+            let readingSameAsExpression = (expression === reading);
+            let expressionFreqNum = readingFreqNum;
+
+            // Don't waste time looking up the expression freq if expression is same as the reading
+            if (!readingSameAsExpression) {
+                expressionFreqNum = await this.getFrequencyNumber(expression);
+            }
+
+            // If frequency was found for either frequency or reading
+            if ((expressionFreqNum.length > 0) || (readingFreqNum.length > 0)) {
+                // If the highlighted word does not contain kanji, and the reading is unique,
+                // use the reading frequency
+                if (useHighlightedWord
+                    && !readingSameAsExpression
+                    && !this.containsKanji(highlightedWord)
+                    && (readingFreqNum.length > 0)
+                    && (await this.getReadingCount(reading) === 1)) {
+                    freqNum = readingFreqNum;
+                    freqBasedOnReading = true;
+                }
+
+                // If expression and reading are the same, use the reading frequency
+                if ((freqNum.length == 0)
+                    && readingSameAsExpression
+                    && (readingFreqNum.length > 0)) {
+                    freqNum = readingFreqNum;
+                }
+
+                // If the expression is in the freq db, use the expression frequency
+                if ((freqNum.length == 0) && (expressionFreqNum.length > 0)) {
+                    freqNum = expressionFreqNum;
+                }
+
+                // If the reading is in the freq db, use the the reading frequency
+                if ((freqNum.length == 0) && (readingFreqNum.length > 0)) {
+                    freqNum = readingFreqNum;
+                    freqBasedOnReading = true;
+                }
+            }
+
+            freqStr = freqNum;
+
+            // Indicate that frequency was based on the reading
+            if (freqBasedOnReading) {
+                freqStr += "_r";
+            }
+        }
+        catch (ex) {
+            //@TODO: Throw an error here?
+            // Components.utils.reportError("getFreq() Exception: " + ex);
+            freqStr = "";
+        }
+
+        return freqStr;
+    }
+
+    containsKanji(text) {
+        for (let i = 0; i < text.length; i++) {
+            const c = text[i];
+
+            if ((c >= '\u4E00') && (c <= '\u9FBF')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
+const ankiImport = new AnkiImport();
+const frequencyDb = new FrequencyDb();
+frequencyDb.open();
 
-const rebuilt = new RikaiRebuilt();
+const rebuilt = new RikaiRebuilt(frequencyDb);
 
 function playAudio(lastFound) {
     if (!lastFound || lastFound.length === 0) return;
@@ -89,10 +177,6 @@ function playAudio(lastFound) {
 
     AudioPlayer.play(entry);
 }
-
-const ankiImport = new AnkiImport();
-const frequencyDb = new FrequencyDb();
-frequencyDb.open();
 
 browser.runtime.onMessage.addListener(async (message, sender) => {
     const {type, content} = message;
@@ -103,10 +187,8 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
                 return {response};
             }, f => console.log(f));
         case "getFrequency":
-            return frequencyDb.findFrequencyForExpression(content).then(results => {
-                console.log(results);
-                return { response: results[0] };
-            });
+            return rebuilt.getFrequency(content.inExpression, content.inReading, content.useHighlightedWord, content.highlightedWord)
+                .then(response => { return { response } });
         case "getReadingCount":
             return rebuilt.getReadingCount(content).then(response => {
                 return { response };
@@ -183,7 +265,6 @@ browser.runtime.onInstalled.addListener(async ({id, previousVersion, reason}) =>
     //Frequency Information
     frequencyDb.open().then(_ => {
         frequencyDb.findFrequencyForExpression('の').then(frequency => {
-            console.log(frequency.length);
             if (frequency.length === 0) {
                 frequencyDb.importFromFile('../resources/frequency.json');
             }

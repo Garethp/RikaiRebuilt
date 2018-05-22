@@ -157,7 +157,6 @@ class Data {
             let variants = dictionary.isName ? [{word: word, type: 0xFF, reason: null}] : this.deinflect.go(word);
             for (let i = 0; i < variants.length; i++) {
                 let v = variants[i];
-                console.log(`Find ${v.word}`)
                 let entries = await dictionary.findWord(v.word);
                 for (let j = 0; j < entries.length; ++j) {
                     let dentry = entries[j];

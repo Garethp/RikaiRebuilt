@@ -49,9 +49,7 @@ class IndexedDictionary {
     }
 
     async findWord(word) {
-        console.log("Find?");
         word = await this.db.dictionary.where('kanji').equals(word).or('kana').equals(word).toArray();
-        console.log(word);
         return word.map(entry => {
             if (entry.entry[entry.entry.length - 1] === '/') return entry.entry;
             return ((entry.kanji ? (`${entry.kanji} [${entry.kana}]`) : entry.kana) + ` /${entry.entry}/`);
