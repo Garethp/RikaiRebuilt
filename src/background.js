@@ -147,6 +147,8 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
                 });
             }, f => console.log(f)).then(async () => {
                 const diff = new Date().getTime() - startTime;
+                console.log(`Took ${diff / 1000} seconds to import`);
+                testDb.removeHook();
                 if (canSend) {
                     browser.tabs.sendMessage(sender.tab.id, {type: 'DICTIONARY_IMPORT_COMPLETE', content: {id}});
                 } else {
@@ -183,12 +185,7 @@ browser.runtime.onInstalled.addListener(async ({id, previousVersion, reason}) =>
         frequencyDb.findFrequencyForExpression('の').then(frequency => {
             console.log(frequency.length);
             if (frequency.length === 0) {
-                frequencyDb.importFromFile('../resources/frequency.json', function (item, total) {
-                    if (item % 10226 === 0) {
-                        console.log(`Frequency import ${(item / 10226) * 5} % complete`);
-                    }
-                });
-
+                frequencyDb.importFromFile('../resources/frequency.json');
             }
         });
     });

@@ -1,5 +1,74 @@
 class IndexedDictionary {
     constructor(name) {
+        this.name = name;
+        this.store = 'dictionary';
+
+        this.version = 1;
+    }
+
+    async open() {
+        this.db = new Dexie(this.name);
+        this.db.version(1).stores({
+            'dictionary': '++,kanji, kana, entry'
+        });
+
+        return this.db.open();
+    }
+
+    async close() {
+        if (!this.db) return;
+        return this.db.close();
+    }
+
+    async deleteDatabase() {
+        this.db.delete();
+    }
+
+    async importFromFile(file, progressCallback) {
+        return FileReader.readJson(file).then(entries => {
+            return this.import(entries.entries, progressCallback);
+        });
+    }
+
+    async import(entries, progressCallback) {
+        const entryTotal = entries.length;
+        let currentProcessed = 0;
+        if (typeof progressCallback === 'function') {
+            this.db.dictionary.hook('creating', () => {
+                currentProcessed++;
+
+                progressCallback(currentProcessed, entryTotal);
+            });
+        }
+
+        return this.db.dictionary.bulkAdd(entries);
+    }
+
+    removeHook() {
+        // this.db.dictionary.removeHook();
+    }
+
+    async findWord(word) {
+        console.log("Find?");
+        word = await this.db.dictionary.where('kanji').equals(word).or('kana').equals(word).toArray();
+        console.log(word);
+        return word.map(entry => {
+            if (entry.entry[entry.entry.length - 1] === '/') return entry.entry;
+            return ((entry.kanji ? (`${entry.kanji} [${entry.kana}]`) : entry.kana) + ` /${entry.entry}/`);
+        });
+    }
+
+    async getReadings(reading) {
+        const results = await this.db.dictionary.where('kana').equals(reading).toArray();
+        return results.map(entry => {
+            if (entry.entry[entry.entry.length - 1] === '/') return entry.entry;
+            return ((entry.kanji ? (`${entry.kanji} [${entry.kana}]`) : entry.kana) + ` /${entry.entry}/`);
+        });
+    }
+}
+
+class IndexedDictionaryOld {
+    constructor(name) {
         this.store = 'dictionary';
 
         this.name = name;

@@ -25,6 +25,7 @@
   "background": {
     "persistent": true,
     "scripts": [
+      "dist/dexie.min.js",
       "dist/idb.js",
       "dist/browser-polyfill.min.js",
       "src/defaultConfig.js",

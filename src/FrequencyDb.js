@@ -7,14 +7,12 @@ class FrequencyDb {
     }
 
     async open() {
-        this.db = await idb.open(this.name, this.version, upgradeDb => {
-            try {
-                upgradeDb.deleteObjectStore(this.store);
-            } catch (e) {}
-            const store = upgradeDb.createObjectStore(this.store, {autoIncrement: true});
-
-            store.createIndex('expression', 'expression');
+        this.db = new Dexie(this.name);
+        this.db.version(1).stores({
+            'dictionary': '++,expression, frequency'
         });
+
+        return this.db.open();
     }
 
     async close() {
@@ -23,10 +21,8 @@ class FrequencyDb {
     }
 
     async findFrequencyForExpression(expression) {
-        const results = await this.findByIndex('expression', expression);
-        return results.map(result => {
-            return result.frequency;
-        });
+        const results = await this.db.dictionary.where('expression').equals(expression).toArray();
+        return results.map(result => result.frequency);
     }
 
     async findByIndex(index, value)
@@ -34,38 +30,8 @@ class FrequencyDb {
         return this.db.transaction(this.store).objectStore(this.store).index(index).getAll(value);
     }
 
-    async addMultiple(entries, progressCallback) {
-        return new Promise((resolve, reject) => {
-            const openRequest = window.indexedDB.open(this.name, this.version);
-
-            openRequest.onerror = reject;
-            openRequest.onsuccess = () => {
-                const db = openRequest.result;
-                db.onerror = reject;
-
-                const transaction = db.transaction(this.store, 'readwrite');
-                const itemStore = transaction.objectStore(this.store);
-                const length = entries.length;
-                let i = 0;
-                const addNext = async () => {
-                    if (i === length || entries[i] === null) return resolve();
-
-                    const {expression, frequency} = entries[i];
-                    const addRequest = itemStore.add({ expression, frequency });
-                    addRequest.onsuccess = addNext;
-                    addRequest.onerror = reject;
-
-                    i++;
-                    progressCallback(i, length)
-                };
-
-                return addNext();
-            };
-        });
-    }
-
     async deleteDatabase() {
-        return idb.delete(this.name);
+        this.db.delete();
     }
 
     async importFromFile(file, progressCallback) {
@@ -75,12 +41,20 @@ class FrequencyDb {
     }
 
     async import(entries, progressCallback) {
-        return this.addMultiple(entries, progressCallback);
+        const entryTotal = entries.length;
+        let currentProcessed = 0;
+        if (typeof progressCallback === 'function') {
+            this.db.dictionary.hook('creating', () => {
+                currentProcessed++;
+
+                progressCallback(currentProcessed, entryTotal);
+            });
+        }
+
+        return this.db.dictionary.bulkAdd(entries);
     }
 
-    async clear() {
-        const transaction = this.db.transaction(this.store, 'readwrite');
-        transaction.objectStore(this.store).clear();
-        return transaction.complete;
+    removeHook() {
+        this.db.dictionary.removeHook();
     }
 }
