@@ -1,2 +1,5 @@
 .idea/
 web-ext-artifacts/
+node_modules/
+package-lock.json
+RikaiRebuilt.zip
