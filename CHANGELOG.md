@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.17
+ * Hopefully fixed some issues regarding text selection in form fields
+
 #### Version 1.0.16
  * Fixed popup positioning
 

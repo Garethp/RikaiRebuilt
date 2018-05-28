@@ -83,7 +83,15 @@ function docRangeFromPoint(point) {
                 const range = document.createRange();
                 range.setStart(position.offsetNode, position.offset);
                 range.setEnd(position.offsetNode, position.offset);
-                if(imposter !== null) imposter.style.zIndex = -1000;
+                if(imposter !== null) {
+                    imposter.style.zIndex = -1000;
+
+                    const rect = range.getClientRects()[0];
+                    if (y > rect.bottom + 2) {
+                        return;
+                    }
+                }
+
                 return range;
             }
         };

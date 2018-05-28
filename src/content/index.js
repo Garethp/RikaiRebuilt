@@ -156,7 +156,10 @@ class Rikai {
         const originalElement = document.elementFromPoint(point.x, point.y);
         const textSource = docRangeFromPoint(point);
 
-        if (!textSource || !textSource.range || typeof textSource.range.startContainer.data === 'undefined') return;
+        if (!textSource || !textSource.range || typeof textSource.range.startContainer.data === 'undefined') {
+            this.clear();
+            return;
+        }
 
         if (event.target === tabData.previousTarget && textSource.equals(tabData.previousTextSource)) {
             return;
@@ -197,7 +200,7 @@ class Rikai {
             textClone.setEndOffset(this.word.length);
 
             const currentSelection = document.defaultView.getSelection();
-            if (!currentSelection.isCollapsed && currentSelection.toString() !== tabData.selText) {
+            if (currentSelection.toString() !== '' && currentSelection.toString() !== tabData.selText) {
                 return;
             }
             textClone.select();
@@ -697,7 +700,8 @@ class Rikai {
         const tabData = this.tabData;
 
         const selection = document.defaultView.getSelection();
-        if (!selection.isCollapsed && tabData.selText !== selection.toString()) {
+        //Changed !selection.isCollapsed to selection.toString() !== '' because of Chrome issue with input text boxes
+        if (selection && selection.toString() !== '' && tabData.selText !== selection.toString()) {
             return;
         }
 
@@ -745,7 +749,7 @@ class Rikai {
     }
 
     onMouseDown(event) {
-        this.clearHighlight();
+        this.clear();
     }
 
     onKeyDown(event) {
