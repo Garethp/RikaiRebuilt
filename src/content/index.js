@@ -96,8 +96,8 @@ class Rikai {
 
         let distance = null;
         if (tabData.pos) {
-            const distanceX = tabData.pos.screenX - event.screenX;
-            const distanceY = tabData.pos.screenY - event.screenY;
+            const distanceX = tabData.pos.clientX - event.clientX;
+            const distanceY = tabData.pos.clientY - event.clientY;
             distance = Math.sqrt((distanceX * distanceX) + (distanceY * distanceY));
         }
 
@@ -106,7 +106,7 @@ class Rikai {
         }
 
         tabData.previousTarget = event.target;
-        tabData.pos = {screenX: event.screenX, screenY: event.screenY, pageX: event.pageX, pageY: event.pageY};
+        tabData.pos = {clientX: event.clientX, clientY: event.clientY, pageX: event.pageX, pageY: event.pageY};
 
         //Not Firefox, need to query text in a different way
         //Firefox seems to have changed rangeParent. In the newer ones it's null for inputs, so we'll
@@ -173,7 +173,7 @@ class Rikai {
             return -2;
         }
 
-        tabData.pos = {screenX: event.screenX, screenY: event.screenY, pageX: event.pageX, pageY: event.pageY};
+        tabData.pos = {clientX: event.clientX, clientY: event.clientY, pageX: event.pageX, pageY: event.pageY};
         tabData.previousRangeOffset = textSource.range.startOffset;
 
         tabData.previousTarget = event.target;
@@ -745,7 +745,6 @@ class Rikai {
     }
 
     onMouseDown(event) {
-        // console.log(event);
         this.clearHighlight();
     }
 
@@ -1081,7 +1080,7 @@ class Rikai {
     }
 
     showPopup(textToShow, previousTarget, position) {
-        let {pageX, pageY} = position || {pageX: 10, pageY: 10};
+        let {pageX, pageY, clientX, clientY} = position || {pageX: 10, pageY: 10, clientX: 10, clientY: 10};
         const popup = this.getPopup();
 
         popup.innerHTML = textToShow;
@@ -1102,8 +1101,7 @@ class Rikai {
             //TODO: Stuff for box object and zoom?
             //TODO: Check for Option Element? What?
 
-
-            if (pageX + width > window.innerWidth - 20) {
+            if (clientX + width > window.innerWidth - 20) {
                 pageX = window.innerWidth - width - 20;
                 if (pageX < 0) pageX = 0;
             }
@@ -1111,7 +1109,7 @@ class Rikai {
             let v = 25;
             if (previousTarget.title && previousTarget.title !== '') v += 20;
 
-            if (pageY + v + height > window.innerHeight) {
+            if (clientY + v + height > window.innerHeight) {
                 let t = pageY - height - 30;
                 if (t >= 0) pageY = t;
             } else {

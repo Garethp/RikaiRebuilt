@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.16
+ * Fixed popup positioning
+
 #### Version 1.0.15
  * Added theme selections
  * Allowing adding multiple values to a field (by separating with spaces)
