@@ -57,7 +57,7 @@
         "src/content/index.js"
       ],
       "css": [
-        "styles/popup-blue.css"
+        "styles/popup.css"
       ]
     }
   ],
