@@ -177,7 +177,7 @@
 /** Blue Theme **/
 #rikaichan-window.rikai-blue {
   background: #5C73B8; }
-  #rikaichan-window.rikai-blue * {
+  #rikaichan-window.rikai-blue, #rikaichan-window.rikai-blue * {
     color: #FFFFFF; }
   #rikaichan-window.rikai-blue .w-kanji {
     color: #B7E7FF; }
@@ -242,7 +242,7 @@
 /** Black Theme **/
 #rikaichan-window.rikai-black {
   background: #000000; }
-  #rikaichan-window.rikai-black * {
+  #rikaichan-window.rikai-black, #rikaichan-window.rikai-black * {
     color: #FFFFFF; }
   #rikaichan-window.rikai-black .w-kanji {
     color: #7070E0; }
@@ -307,7 +307,7 @@
 /** Light Blue Theme */
 #rikaichan-window.rikai-light-blue {
   background: #E6F4FE; }
-  #rikaichan-window.rikai-light-blue * {
+  #rikaichan-window.rikai-light-blue, #rikaichan-window.rikai-light-blue * {
     color: #000000; }
   #rikaichan-window.rikai-light-blue .w-kanji {
     color: #3082BF; }
@@ -372,7 +372,7 @@
 /** Yellow Theme */
 #rikaichan-window.rikai-yellow {
   background: #FFFFBF; }
-  #rikaichan-window.rikai-yellow * {
+  #rikaichan-window.rikai-yellow, #rikaichan-window.rikai-yellow * {
     color: #000000; }
   #rikaichan-window.rikai-yellow .w-kanji {
     color: #7070E0; }
@@ -434,4 +434,4 @@
   #rikaichan-window.rikai-yellow hr {
     background-color: #A0A0A0; }
 
-/*# sourceMappingURL=popup.css*/
+/*# sourceMappingURL=popup.css.map */

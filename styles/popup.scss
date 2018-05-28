@@ -231,7 +231,7 @@
 /** Blue Theme **/
 #rikaichan-window.rikai-blue {
     background: #5C73B8;
-    * { color: #FFFFFF; }
+    &, * { color: #FFFFFF; }
 
     .w-kanji { color: #B7E7FF; }
     .w-kana { color: #C0FFC0; }
@@ -271,7 +271,7 @@
 /** Black Theme **/
 #rikaichan-window.rikai-black {
     background: #000000;
-    * { color: #FFFFFF; }
+    &, * { color: #FFFFFF; }
 
     .w-kanji { color: #7070E0; }
     .w-kana { color: #20A020; }
@@ -311,7 +311,7 @@
 /** Light Blue Theme */
 #rikaichan-window.rikai-light-blue {
     background: #E6F4FE;
-    * { color: #000000; }
+    &, * { color: #000000; }
 
     .w-kanji { color: #3082BF; }
     .w-kana { color: #00B366; }
@@ -351,7 +351,7 @@
 /** Yellow Theme */
 #rikaichan-window.rikai-yellow {
     background: #FFFFBF;
-    * { color: #000000; }
+    &, * { color: #000000; }
 
     .w-kanji { color: #7070E0; }
     .w-kana { color: #20A020; }

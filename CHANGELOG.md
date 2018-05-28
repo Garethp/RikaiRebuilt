@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.15
+ * Added theme selections
+
 #### Version 1.0.14
  * Fixed some issues with Chrome frequency
 

@@ -76,6 +76,11 @@ function setFormFieldsFromConfig(config) {
         $checkbox.prop('checked', config[$checkbox.data('config-option')]);
     });
 
+    $('select[data-config-option]').each((_, select) => {
+        const $select = $(select);
+        $select.val(config[$select.data('config-option')]);
+    });
+
     $('[data-config-option]:text').each((_, input) => {
         const $input = $(input);
         let configValue = config[$input.data('config-option')];
@@ -253,6 +258,14 @@ $('[data-config-option]:checkbox').on('change', event => {
     const $element = $(event.target);
 
     config[$element.data('config-option')] = $element.is(':checked');
+    browser.storage.local.set({ config });
+    setFormFieldsFromConfig(config);
+});
+
+$('select[data-config-option]').on('change', event => {
+    const $element = $(event.target);
+
+    config[$element.data('config-option')] = $element.val();
     browser.storage.local.set({ config });
     setFormFieldsFromConfig(config);
 });

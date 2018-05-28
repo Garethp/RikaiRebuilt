@@ -15,6 +15,7 @@ const defaultConfig = {
     importEmptyAudio: true,
     openChangelogOnUpdate: false,
     showFrequency: false,
+    theme: 'blue',
     installedDictionaries: [
     ],
     recommendedDictionaries: [

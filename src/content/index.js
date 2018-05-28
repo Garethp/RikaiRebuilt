@@ -717,6 +717,7 @@ class Rikai {
 
         browser.storage.local.get('config').then(config => {
             this.config = config.config || defaultConfig;
+            this.document.documentElement.removeChild(this.getPopup());
         });
 
         this.document.addEventListener('mousemove', this.onMouseMove);
@@ -735,6 +736,7 @@ class Rikai {
             if (typeof changes.config === 'undefined') return;
 
             this.config = changes.config.newValue || defaultConfig;
+            this.document.documentElement.removeChild(this.getPopup());
         });
 
         this.createPopup();
@@ -786,7 +788,7 @@ class Rikai {
         this.document.removeEventListener('keyup', this.onKeyUp);
 
         if (this.hasPopup()) {
-            this.document.documentElement.removeChild(this.getPopup());
+           this.document.documentElement.removeChild(this.getPopup());
         }
 
         this.enabled = false;
@@ -810,7 +812,7 @@ class Rikai {
         const popup = this.document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
         popup.setAttribute('id', this.popupId);
         popup.setAttribute('style', 'display: none;');
-        popup.setAttribute('class', 'rikai-blue');
+        popup.setAttribute('class', `rikai-${this.config.theme}`);
         document.documentElement.appendChild(popup);
     }
 

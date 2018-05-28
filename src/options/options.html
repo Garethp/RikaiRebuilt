@@ -54,6 +54,18 @@
         <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
             <div class="form-group row">
                 <div class="col-3">
+                    <label class="col-form-label" for="theme">Theme</label>
+                </div>
+                <div class="col-9">
+                    <select id="theme" data-config-option="theme">
+                        <option value="blue">Blue</option>
+                        <option value="light-blue">Light Blue</option>
+                        <option value="black">Black</option>
+                        <option value="yellow">Yellow</option>
+                    </select>
+                </div>
+
+                <div class="col-3">
                     <label
                             title="With this selected, the changelog page will automatically open in a new tab whenever RikaiRebuilt updates, so you know what's added"
                             class="col-form-label"
@@ -206,6 +218,11 @@
     </div>
 
     <div class="tab-pane fade" id="changelog" role="tabpanel" aria-labelledby="changelog-tab">
+        <h4>Version 1.0.15</h4>
+        <ul>
+            <li>Added theme selections</li>
+        </ul>
+
         <h4>Version 1.0.14</h4>
         <ul>
             <li>Fixing some issues importing Frequency in to Chrome</li>
