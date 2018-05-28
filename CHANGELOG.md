@@ -2,6 +2,7 @@
 
 #### Version 1.0.15
  * Added theme selections
+ * Allowing adding multiple values to a field (by separating with spaces)
 
 #### Version 1.0.14
  * Fixed some issues with Chrome frequency

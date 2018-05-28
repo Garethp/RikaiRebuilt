@@ -17,62 +17,73 @@ class AnkiImport {
 
         const fields = {};
         for(const key in config.ankiFields) {
-            let newValue = null;
-            switch(config.ankiFields[key]) {
-                case 'audio':
-                    if (isNoAudio && !config.importEmptyAudio) {
-                        newValue = null;
-                    } else {
-                        audio = true;
-                        newValue = `[sound:${entryFormat.audioFile}]`;
-                    }
-                    break;
-                case 'dictionaryFormat':
-                    newValue = entryFormat.dictionaryForm;
-                    break;
-                case 'word':
-                    newValue = entryFormat.word;
-                    break;
-                case 'reading':
-                    newValue = entryFormat.reading;
-                    break;
-                case 'saveNotes':
-                    newValue = entryFormat.saveNotes;
-                    break;
-                case 'sentence':
-                    newValue = entryFormat.sentence;
-                    break;
-                case 'sentenceWithBlank':
-                    newValue = entryFormat.sentenceWithBlank;
-                    break;
-                case 'sourceUrl':
-                    newValue = entryFormat.sourceUrl;
-                    break;
-                case 'pageTitle':
-                    newValue = entryFormat.pageTitle;
-                    break;
-                case 'definition':
-                    newValue = entryFormat.definition;
-                    break;
-                case 'frequency':
-                    newValue = entryFormat.frequency;
-                    break;
-                case 'pitch':
-                    newValue = entryFormat.pitch;
-                    break;
+            let values = config.ankiFields[key].split(' ');
+            let newValues = [];
+
+            for(const valueKey in values) {
+                let newValue = null;
+                switch (values[valueKey]) {
+                    case 'audio':
+                        if (isNoAudio && !config.importEmptyAudio) {
+                            newValue = null;
+                        } else {
+                            audio = true;
+                            newValue = `[sound:${entryFormat.audioFile}]`;
+                        }
+                        break;
+                    case 'dictionaryFormat':
+                        newValue = entryFormat.dictionaryForm;
+                        break;
+                    case 'word':
+                        newValue = entryFormat.word;
+                        break;
+                    case 'reading':
+                        newValue = entryFormat.reading;
+                        break;
+                    case 'saveNotes':
+                        newValue = entryFormat.saveNotes;
+                        break;
+                    case 'sentence':
+                        newValue = entryFormat.sentence;
+                        break;
+                    case 'sentenceWithBlank':
+                        newValue = entryFormat.sentenceWithBlank;
+                        break;
+                    case 'sourceUrl':
+                        newValue = entryFormat.sourceUrl;
+                        break;
+                    case 'pageTitle':
+                        newValue = entryFormat.pageTitle;
+                        break;
+                    case 'definition':
+                        newValue = entryFormat.definition;
+                        break;
+                    case 'frequency':
+                        newValue = entryFormat.frequency;
+                        break;
+                    case 'pitch':
+                        newValue = entryFormat.pitch;
+                        break;
+                }
+
+                if (newValue !== null) {
+                    newValues.push(newValue);
+                }
             }
 
-            if (newValue !== null) {
-                fields[key] = newValue;
+            newValues = newValues.filter(value => value !== null).join(' ');
+            if (newValues !== '') {
+                fields[key] = newValues;
             }
         }
 
+        console.log(fields);
         const tags = config.ankiTags;
-        promises.push(this.makeCall('addNote', { fields, tags }));
+        // promises.push(this.makeCall('addNote', { fields, tags }));
 
         // If Audio
         if (audio && !isNoAudio) {
-            promises.push(this.makeCall('downloadAudio', { filename: entryFormat.audioFile, url: entryFormat.audioUrl }));
+            // promises.push(this.makeCall('downloadAudio', { filename: entryFormat.audioFile, url: entryFormat.audioUrl }));
         }
 
         return Promise.all(promises);
