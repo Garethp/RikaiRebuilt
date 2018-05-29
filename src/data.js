@@ -7,7 +7,6 @@ class Data {
         autobind(this);
         this.config = config;
         this.dictionaries = [];
-        this.updateDictionaries();
 
         this.deinflect = new Deinflect();
 
@@ -30,7 +29,7 @@ class Data {
         }
     }
 
-    async updateDictionaries() {
+    async updateDictionaries(dictionaries) {
         // let dictionary = new Dictionary('rikaichan');
         // await dictionary.open();
         // this.dictionaries = [dictionary];
@@ -39,7 +38,7 @@ class Data {
             await dictionaryDb.close();
         }
 
-        this.dictionaries = this.config.installedDictionaries.map(dictionary => {
+        this.dictionaries = dictionaries.map(dictionary => {
             const dictionaryDb = new IndexedDictionary(dictionary.id);
             dictionaryDb.open();
             return dictionaryDb;
@@ -50,7 +49,6 @@ class Data {
 
     updateConfig(config) {
         this.config = config;
-        this.updateDictionaries();
     }
 
     async getReadingCount(reading) {

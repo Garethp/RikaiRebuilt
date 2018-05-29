@@ -1,5 +1,10 @@
 ## Changelog
 
+#### Version 1.0.19
+ * Moved most settings to sync storage
+ * Changed options page to use port messaging, so having the options page doesn't cause the addon to stop working
+ * Made the progress bar for importing dictionaries actually show the progress
+
 #### Version 1.0.18
  * Fixed broken Anki Import
 

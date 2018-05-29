@@ -719,7 +719,7 @@ class Rikai {
             prevSelView: null
         };
 
-        browser.storage.local.get('config').then(config => {
+        browser.storage.sync.get('config').then(config => {
             this.config = config.config || defaultConfig;
             this.document.documentElement.removeChild(this.getPopup());
         });
@@ -736,7 +736,7 @@ class Rikai {
         this.document.addEventListener('keyup', this.onKeyUp);
 
         browser.storage.onChanged.addListener((changes, areaSet) => {
-            if (areaSet !== 'local') return;
+            if (areaSet !== 'sync') return;
             if (typeof changes.config === 'undefined') return;
 
             this.config = changes.config.newValue || defaultConfig;

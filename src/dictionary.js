@@ -32,17 +32,21 @@ class IndexedDictionary {
 
     async import(entries, progressCallback) {
         const entryTotal = entries.length;
+
+        let hook = function () { };
+
         let currentProcessed = 0;
         if (typeof progressCallback === 'function') {
-            this.db.dictionary.hook('creating', () => {
+            hook = () => {
                 currentProcessed++;
 
                 progressCallback(currentProcessed, entryTotal);
-            });
+            };
         }
 
-        return this.db.dictionary.bulkAdd(entries);
+        return this.db.dictionary.bulkAdd(entries, null, hook);
     }
+
 
     removeHook() {
         // this.db.dictionary.removeHook();

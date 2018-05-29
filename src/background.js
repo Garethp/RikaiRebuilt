@@ -1,4 +1,6 @@
 let config = defaultConfig;
+let installedDictionaries = [];
+let optionsPort;
 
 class RikaiRebuilt {
     constructor(frequencyDb) {
@@ -9,6 +11,7 @@ class RikaiRebuilt {
         this.data = null;
         this.config = defaultConfig;
         this.frequencyDb = frequencyDb;
+        this.dictionaries = [];
     }
 
     setup() {
@@ -26,10 +29,14 @@ class RikaiRebuilt {
         }
 
         browser.storage.local.set({enabled: true});
-        browser.storage.local.get('config').then(config => {
+        browser.storage.sync.get('config').then(config => {
             if (!config.config) return;
 
             this.updateConfig(config.config);
+        });
+
+        browser.storage.local.get('installedDictionaries').then(config => {
+            if (config.installedDictionaries) this.updateDictionaries(config.installedDictionaries);
         });
 
         browser.browserAction.setIcon({
@@ -70,6 +77,11 @@ class RikaiRebuilt {
     updateConfig(config) {
         this.config = config || defaultConfig;
         this.getData().updateConfig(config);
+    }
+
+    updateDictionaries(dictionaries) {
+        this.dictionaries = dictionaries;
+        this.getData().updateDictionaries(dictionaries);
     }
 
     async sendToAnki(content) {
@@ -205,65 +217,75 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
         case 'selectNextDictionary':
             rebuilt.getData().selectNextDictionary();
             return {response: null};
-        case "importDictionary":
-            const {name, id, entries} = content;
-            const testDb = new IndexedDictionary(id);
-            const startTime = new Date().getTime();
-            let lastPercent = 0;
-            let canSend = true;
-            testDb.open().then(async () => {
-                return testDb.import(entries, (item, total) => {
-                    let percentage = Math.floor((item / total) * 100);
-                    if (percentage > lastPercent && canSend) {
-                        browser.tabs.sendMessage(sender.tab.id, {
-                            type: 'DICTIONARY_IMPORT_UPDATE',
-                            content: {id, item, total}
-                        }).then(() => {
-                        }, rejected => {
-                            console.log(rejected);
-                            canSend = false;
-                        });
-
-                        lastPercent = percentage;
-                    }
-                });
-            }, f => console.log(f)).then(async () => {
-                const diff = new Date().getTime() - startTime;
-                console.log(`Took ${diff / 1000} seconds to import`);
-                testDb.removeHook();
-                if (canSend) {
-                    browser.tabs.sendMessage(sender.tab.id, {type: 'DICTIONARY_IMPORT_COMPLETE', content: {id}})
-                        .then(() => {}, () => {
-                            config.installedDictionaries.push({name, id});
-                            browser.storage.local.set({config})
-                        });
-                } else {
-                    config.installedDictionaries.push({name, id});
-                    browser.storage.local.set({config})
-                }
-            }, f => console.log(f));
-            return {response: ''};
-        case "deleteDictionary":
-            const dictionary = new IndexedDictionary(content.id);
-            dictionary.open().then(async () => {
-                dictionary.deleteDatabase();
-            });
-            return {response: ''};
     }
+});
+
+browser.runtime.onConnect.addListener(port => {
+    optionsPort = port;
+
+    optionsPort.onMessage.addListener(message => {
+        const { type, content } = message;
+
+        switch(type) {
+            case "deleteDictionary":
+                const dictionary = new IndexedDictionary(content.id);
+                dictionary.open().then(async () => {
+                    dictionary.deleteDatabase();
+                });
+                break;
+
+            case "importDictionary":
+                const {name, id, entries} = content;
+                const testDb = new IndexedDictionary(id);
+                const startTime = new Date().getTime();
+                let lastPercent = 0;
+                let canSend = true;
+                testDb.open().then(async () => {
+                    return testDb.import(entries, (item, total) => {
+                        let percentage = Math.floor((item / total) * 100);
+                        if (percentage > lastPercent && canSend) {
+                            optionsPort.postMessage({
+                                type: 'DICTIONARY_IMPORT_UPDATE',
+                                content: {id, item, total}
+                            });
+
+                            lastPercent = percentage;
+                        }
+                    });
+                }, f => console.log(f)).then(async () => {
+                    const diff = new Date().getTime() - startTime;
+                    console.log(`Took ${diff / 1000} seconds to import`);
+                    testDb.removeHook();
+
+                    installedDictionaries.push({name, id});
+                    browser.storage.local.set({ installedDictionaries })
+                }, f => console.log(f));
+                return {response: ''};
+        }
+    });
 });
 
 browser.browserAction.onClicked.addListener(rebuilt.enable);
 
 browser.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName !== 'local') return;
-    if (typeof changes.config === 'undefined') return;
+    if (areaName !== 'sync' && areaName !== 'local') return;
 
-    config = changes.config.newValue;
+    if (changes.config) {
+        config = changes.config.newValue;
 
-    rebuilt.updateConfig(config);
+        rebuilt.updateConfig(config);
+    } else if (changes.installedDictionaries) {
+        installedDictionaries = changes.installedDictionaries.newValue;
+        rebuilt.updateDictionaries(installedDictionaries);
+    }
 });
 
 browser.storage.local.set({enabled: false});
+browser.storage.local.get('installedDictionaries').then(config => {
+    if (config.installedDictionaries) {
+        installedDictionaries = config.installedDictionaries;
+    }
+});
 
 browser.runtime.onInstalled.addListener(async ({id, previousVersion, reason}) => {
     //Frequency Information
@@ -275,7 +297,7 @@ browser.runtime.onInstalled.addListener(async ({id, previousVersion, reason}) =>
         });
     });
 
-    browser.storage.local.get('config').then(({config}) => {
+    browser.storage.sync.get('config').then(({config}) => {
         if (!config || !config.openChangelogOnUpdate) return;
 
         const optionsPageUrl = browser.extension.getURL('src/options/options.html');

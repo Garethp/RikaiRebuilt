@@ -2,6 +2,8 @@ keyCodeToChar = {8:"Backspace",9:"Tab",13:"Enter",16:"Shift",17:"Ctrl",18:"Alt",
 keyCharToCode = {"Backspace":8,"Tab":9,"Enter":13,"Shift":16,"Ctrl":17,"Alt":18,"Pause/Break":19,"Caps Lock":20,"Esc":27,"Space":32,"Page Up":33,"Page Down":34,"End":35,"Home":36,"Left":37,"Up":38,"Right":39,"Down":40,"Insert":45,"Delete":46,"0":48,"1":49,"2":50,"3":51,"4":52,"5":53,"6":54,"7":55,"8":56,"9":57,"A":65,"B":66,"C":67,"D":68,"E":69,"F":70,"G":71,"H":72,"I":73,"J":74,"K":75,"L":76,"M":77,"N":78,"O":79,"P":80,"Q":81,"R":82,"S":83,"T":84,"U":85,"V":86,"W":87,"X":88,"Y":89,"Z":90,"Windows":91,"Right Click":93,"Numpad 0":96,"Numpad 1":97,"Numpad 2":98,"Numpad 3":99,"Numpad 4":100,"Numpad 5":101,"Numpad 6":102,"Numpad 7":103,"Numpad 8":104,"Numpad 9":105,"Numpad *":106,"Numpad +":107,"Numpad -":109,"Numpad .":110,"Numpad /":111,"F1":112,"F2":113,"F3":114,"F4":115,"F5":116,"F6":117,"F7":118,"F8":119,"F9":120,"F10":121,"F11":122,"F12":123,"Num Lock":144,"Scroll Lock":145,"My Computer":182,"My Calculator":183,";":186,"=":187,",":188,"-":189,".":190,"/":191,"`":192,"[":219,"\\":220,"]":221,"'":222};
 
 let config = defaultConfig;
+let installedDictionaries = [];
+const backgroundPort = browser.runtime.connect({ name: 'options-page' });
 
 function getKeymapFromInputs() {
     const keyMap = {};
@@ -16,20 +18,13 @@ function getKeymapFromInputs() {
     return keyMap;
 }
 
-async function setPreferences() {
-    return browser.storage.local.set({ config });
-}
-
 $("#resetPreferences").on('click', () => {
-    const installedDictionaries = config.installedDictionaries;
     const ankiFields = config.ankiFields;
 
     config = defaultConfig;
-
-    config.installedDictionaries = installedDictionaries;
     config.ankiFields = ankiFields;
 
-    browser.storage.local.set({ config });
+    browser.storage.sync.set({ config });
     setFormFieldsFromConfig(config);
 });
 
@@ -59,11 +54,18 @@ function makeAnkiFields(values, fromConfig) {
     }
 }
 
-function makeKeyValues(value, fromConfig) {
-}
+browser.storage.local.get('installedDictionaries').then(config => {
+    if (!config.installedDictionaries) {
+        browser.storage.local.set({ installedDictionaries: [] });
+        config = { installedDictionaries };
+    }
 
-browser.storage.local.get('config').then(extensionConfig => {
-    if (typeof extensionConfig.config === 'undefined') { extensionConfig = { config }; browser.storage.local.set({ config }); }
+    installedDictionaries = config.installedDictionaries;
+    setDictionaries(installedDictionaries);
+});
+
+browser.storage.sync.get('config').then(extensionConfig => {
+    if (typeof extensionConfig.config === 'undefined') { extensionConfig = { config }; browser.storage.sync.set({ config }); }
 
     config = extensionConfig.config;
 
@@ -95,7 +97,12 @@ function setFormFieldsFromConfig(config) {
     });
 
     setKeymapFields(config.keymap);
-    const installedDictionaryIds = config.installedDictionaries.map(dictionary => dictionary.id);
+
+    $('#configArea').html(JSON.stringify(config, null, 4));
+}
+
+function setDictionaries(installedDictionaries) {
+    const installedDictionaryIds = installedDictionaries.map(dictionary => dictionary.id);
 
     $('#recommendedDictionaries').html(defaultConfig.recommendedDictionaries.filter(dictionary => {
         return installedDictionaryIds.indexOf(dictionary.id) === -1;
@@ -114,7 +121,7 @@ function setFormFieldsFromConfig(config) {
     `;
     }).join(''));
 
-    $('#installedDictionaries').html(config.installedDictionaries.map((dictionary, index) => {
+    $('#installedDictionaries').html(installedDictionaries.map((dictionary, index) => {
         return `<div class="row">
             <div class="col-5">${dictionary.name}</div>
             <div class="col-5">
@@ -123,11 +130,9 @@ function setFormFieldsFromConfig(config) {
             </div>
         </div>`;
     }).join(''));
-    if (config.installedDictionaries.length === 0) {
+    if (installedDictionaries.length === 0) {
         $('#installedDictionaries').html('You have no dictionaries');
     }
-
-    $('#configArea').html(JSON.stringify(config, null, 4));
 }
 
 function setKeymapFields(keymap) {
@@ -167,26 +172,26 @@ $('#recommendedDictionaries').delegate('.install-dictionary', 'click', (event) =
 
 $('#installedDictionaries').delegate('.remove-dictionary', 'click', async (event) => {
     const removeButton = $(event.target);
-    const dictionary = getDictionaryById(config.installedDictionaries, removeButton.data('dictionary-id'));
+    const dictionary = getDictionaryById(installedDictionaries, removeButton.data('dictionary-id'));
 
-    config.installedDictionaries = config.installedDictionaries.filter(installed => {
+    installedDictionaries = installedDictionaries.filter(installed => {
         return installed !== dictionary;
     });
 
     sendRequest('deleteDictionary', dictionary);
 
-    browser.storage.local.set({config});
-    setFormFieldsFromConfig(config);
+    browser.storage.local.set({ installedDictionaries });
+    setDictionaries(installedDictionaries);
 });
 
 $('#installedDictionaries').delegate('.move-dictionary-up', 'click', async(event) => {
     const index = $(event.target).data('index');
     if (index === 0) return;
 
-    config.installedDictionaries.splice(index - 1, 0, config.installedDictionaries.splice(index, 1)[0]);
+    installedDictionaries.splice(index - 1, 0, installedDictionaries.splice(index, 1)[0]);
 
-    browser.storage.local.set({config});
-    setFormFieldsFromConfig(config);
+    browser.storage.local.set({ installedDictionaries });
+    setDictionaries(installedDictionaries);
 });
 
 getDictionaryById = (dictionaries, id) => {
@@ -197,13 +202,21 @@ getDictionaryById = (dictionaries, id) => {
     return null;
 };
 
+browser.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== 'local' || !changes.installedDictionaries) return;
+
+    installedDictionaries = changes.installedDictionaries.newValue;
+    setDictionaries(installedDictionaries);
+});
+
 sendRequest = (type, content = '') => {
-    return browser.runtime.sendMessage({type, content}).then(response => {
-        return response.response;
-    });
+    backgroundPort.postMessage({type, content});
+    // return browser.runtime.sendMessage({type, content}).then(response => {
+    //     return response.response;
+    // });
 };
 
-browser.runtime.onMessage.addListener(async (message) => {
+backgroundPort.onMessage.addListener(message => {
     const { type, content } = message;
     let item, total;
 
@@ -222,17 +235,41 @@ browser.runtime.onMessage.addListener(async (message) => {
             if (percent === 100) percent = 99;
 
             installStatus.html(`Installing ${percent}%`);
-            progressBar.css({ width: `${percent}%`});
+            progressBar.css({width: `${percent}%`});
             return;
-        case 'DICTIONARY_IMPORT_COMPLETE':
-            progressBar.parent().hide();
-            installStatus.html('');
-            config.installedDictionaries.push(getDictionaryById(defaultConfig.recommendedDictionaries, id));
-
-            browser.storage.local.set({ config });
-            setFormFieldsFromConfig(config);
     }
 });
+// browser.runtime.onMessage.addListener(async (message) => {
+//     const { type, content } = message;
+//     let item, total;
+//
+//     let id = content.id;
+//
+//     const installStatus = $(`.install-status[data-dictionary-id=${id}]`);
+//     const progressBar = $(`.progress-bar[data-dictionary-id=${id}]`);
+//
+//     switch (type) {
+//         case 'DICTIONARY_IMPORT_UPDATE':
+//             item = content.item;
+//             total = content.total;
+//
+//             let percent = Math.floor((item / total) * 100);
+//
+//             if (percent === 100) percent = 99;
+//
+//             installStatus.html(`Installing ${percent}%`);
+//             progressBar.css({ width: `${percent}%`});
+//             return;
+//         case 'DICTIONARY_IMPORT_COMPLETE':
+//             progressBar.parent().hide();
+//             installStatus.html('');
+//             installedDictionaries.push(getDictionaryById(defaultConfig.recommendedDictionaries, id));
+//
+//             browser.storage.local.set({ installedDictionaries });
+//             setDictionaries(installedDictionaries);
+//             return;
+//     }
+// });
 
 $('#showConfig').on('click', () => {
     $('#configArea').show();
@@ -258,7 +295,7 @@ $('[data-config-option]:checkbox').on('change', event => {
     const $element = $(event.target);
 
     config[$element.data('config-option')] = $element.is(':checked');
-    browser.storage.local.set({ config });
+    browser.storage.sync.set({ config });
     setFormFieldsFromConfig(config);
 });
 
@@ -266,7 +303,7 @@ $('select[data-config-option]').on('change', event => {
     const $element = $(event.target);
 
     config[$element.data('config-option')] = $element.val();
-    browser.storage.local.set({ config });
+    browser.storage.sync.set({ config });
     setFormFieldsFromConfig(config);
 });
 
@@ -280,14 +317,14 @@ $('[data-config-option]:text').on('blur', event => {
     }
 
     config[$element.data('config-option')] = configValue;
-    browser.storage.local.set({config});
+    browser.storage.sync.set({config});
     setFormFieldsFromConfig(config)
 });
 
 $('.keymap-input').on('blur', event => {
     config.keymap = getKeymapFromInputs();
 
-    browser.storage.local.set({ config });
+    browser.storage.sync.set({ config });
     setFormFieldsFromConfig(config);
 });
 
