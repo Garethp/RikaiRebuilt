@@ -77,13 +77,12 @@ class AnkiImport {
             }
         }
 
-        console.log(fields);
         const tags = config.ankiTags;
-        // promises.push(this.makeCall('addNote', { fields, tags }));
+        promises.push(this.makeCall('addNote', { fields, tags }));
 
         // If Audio
         if (audio && !isNoAudio) {
-            // promises.push(this.makeCall('downloadAudio', { filename: entryFormat.audioFile, url: entryFormat.audioUrl }));
+            promises.push(this.makeCall('downloadAudio', { filename: entryFormat.audioFile, url: entryFormat.audioUrl }));
         }
 
         return Promise.all(promises);
