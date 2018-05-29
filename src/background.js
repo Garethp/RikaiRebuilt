@@ -187,7 +187,7 @@ function playAudio(lastFound) {
 
     const entry = lastFound[0];
 
-    AudioPlayer.play(entry);
+    AudioPlayer.play(entry, config);
 }
 
 browser.runtime.onMessage.addListener(async (message, sender) => {

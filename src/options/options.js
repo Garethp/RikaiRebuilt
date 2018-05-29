@@ -83,7 +83,7 @@ function setFormFieldsFromConfig(config) {
         $select.val(config[$select.data('config-option')]);
     });
 
-    $('[data-config-option]:text').each((_, input) => {
+    $('[data-config-option]:text, [data-config-option][type=number]').each((_, input) => {
         const $input = $(input);
         let configValue = config[$input.data('config-option')];
         if ($input.data('config-map')) {
@@ -311,6 +311,24 @@ $('[data-config-option]:text').on('blur', event => {
     const $element = $(event.target);
 
     let configValue = $element.val();
+
+    if ($element.data('config-map') && typeof window[$element.data('config-map')] === 'function') {
+        configValue = window[$element.data('config-map')](configValue, false);
+    }
+
+    config[$element.data('config-option')] = configValue;
+    browser.storage.sync.set({config});
+    setFormFieldsFromConfig(config)
+});
+
+$('[data-config-option][type=number]').on('blur', event => {
+    const $element = $(event.target);
+
+    let configValue = parseInt($element.val());
+    console.log(configValue);
+    if (isNaN(configValue)) configValue = 0;
+    if ($element.attr('min') && configValue < $element.attr('min')) configValue = $element.attr('min');
+    if ($element.attr('max') && configValue > $element.attr('max')) configValue = $element.attr('max');
 
     if ($element.data('config-map') && typeof window[$element.data('config-map')] === 'function') {
         configValue = window[$element.data('config-map')](configValue, false);

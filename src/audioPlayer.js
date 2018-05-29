@@ -69,10 +69,11 @@ class AudioPlayer {
         return audio === longNoAudio;
     }
 
-    static async play(entry) {
+    static async play(entry, config) {
         this.getAudioBase64(entry)
             .then(content => {
                 const audio = new Audio("data:audio/wav;base64," + content);
+                audio.volume = (config.audioVolume / 100) || 1;
                 audio.play();
             });
     }
