@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.20
+ * Drastically reduce the amount of memory used to import a dictionary
+
 #### Version 1.0.19
  * Moved most settings to sync storage
  * Changed options page to use port messaging, so having the options page doesn't cause the addon to stop working

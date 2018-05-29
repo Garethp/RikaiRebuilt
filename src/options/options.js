@@ -163,11 +163,7 @@ $('#recommendedDictionaries').delegate('.install-dictionary', 'click', (event) =
     installButton.hide();
     installStatus.html('Downloading');
 
-    fetch(dictionary.url).then(response => response.json()).then(dictionary => {
-        installStatus.html('Installing 0%');
-        progressBar.parent().show();
-        sendRequest('importDictionary', dictionary);
-    });
+    sendRequest('importDictionary', dictionary);
 });
 
 $('#installedDictionaries').delegate('.remove-dictionary', 'click', async (event) => {
@@ -211,9 +207,6 @@ browser.storage.onChanged.addListener((changes, areaName) => {
 
 sendRequest = (type, content = '') => {
     backgroundPort.postMessage({type, content});
-    // return browser.runtime.sendMessage({type, content}).then(response => {
-    //     return response.response;
-    // });
 };
 
 backgroundPort.onMessage.addListener(message => {
@@ -224,6 +217,7 @@ backgroundPort.onMessage.addListener(message => {
 
     const installStatus = $(`.install-status[data-dictionary-id=${id}]`);
     const progressBar = $(`.progress-bar[data-dictionary-id=${id}]`);
+    progressBar.parent().show();
 
     switch (type) {
         case 'DICTIONARY_IMPORT_UPDATE':
@@ -239,37 +233,6 @@ backgroundPort.onMessage.addListener(message => {
             return;
     }
 });
-// browser.runtime.onMessage.addListener(async (message) => {
-//     const { type, content } = message;
-//     let item, total;
-//
-//     let id = content.id;
-//
-//     const installStatus = $(`.install-status[data-dictionary-id=${id}]`);
-//     const progressBar = $(`.progress-bar[data-dictionary-id=${id}]`);
-//
-//     switch (type) {
-//         case 'DICTIONARY_IMPORT_UPDATE':
-//             item = content.item;
-//             total = content.total;
-//
-//             let percent = Math.floor((item / total) * 100);
-//
-//             if (percent === 100) percent = 99;
-//
-//             installStatus.html(`Installing ${percent}%`);
-//             progressBar.css({ width: `${percent}%`});
-//             return;
-//         case 'DICTIONARY_IMPORT_COMPLETE':
-//             progressBar.parent().hide();
-//             installStatus.html('');
-//             installedDictionaries.push(getDictionaryById(defaultConfig.recommendedDictionaries, id));
-//
-//             browser.storage.local.set({ installedDictionaries });
-//             setDictionaries(installedDictionaries);
-//             return;
-//     }
-// });
 
 $('#showConfig').on('click', () => {
     $('#configArea').show();

@@ -200,10 +200,12 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
             }, f => console.log(f));
         case "getFrequency":
             return rebuilt.getFrequency(content.inExpression, content.inReading, content.useHighlightedWord, content.highlightedWord)
-                .then(response => { return { response } });
+                .then(response => {
+                    return {response}
+                });
         case "getReadingCount":
             return rebuilt.getReadingCount(content).then(response => {
-                return { response };
+                return {response};
             });
         case "unload":
             rebuilt.unloadTab(sender.tab.id);
@@ -224,9 +226,9 @@ browser.runtime.onConnect.addListener(port => {
     optionsPort = port;
 
     optionsPort.onMessage.addListener(message => {
-        const { type, content } = message;
+        const {type, content} = message;
 
-        switch(type) {
+        switch (type) {
             case "deleteDictionary":
                 const dictionary = new IndexedDictionary(content.id);
                 dictionary.open().then(async () => {
@@ -235,32 +237,40 @@ browser.runtime.onConnect.addListener(port => {
                 break;
 
             case "importDictionary":
-                const {name, id, entries} = content;
-                const testDb = new IndexedDictionary(id);
-                const startTime = new Date().getTime();
+                const {name, id, url} = content;
+                const testDb = new IndexedDictionary(content.id);
                 let lastPercent = 0;
-                let canSend = true;
+
                 testDb.open().then(async () => {
-                    return testDb.import(entries, (item, total) => {
+                    let startTime;
+                    let lastPercent = 0;
+                    const progressCallback = (item, total) => {
                         let percentage = Math.floor((item / total) * 100);
-                        if (percentage > lastPercent && canSend) {
+                        if (percentage > lastPercent) {
                             optionsPort.postMessage({
                                 type: 'DICTIONARY_IMPORT_UPDATE',
                                 content: {id, item, total}
                             });
-
-                            lastPercent = percentage;
                         }
-                    });
-                }, f => console.log(f)).then(async () => {
-                    const diff = new Date().getTime() - startTime;
-                    console.log(`Took ${diff / 1000} seconds to import`);
-                    testDb.removeHook();
 
-                    installedDictionaries.push({name, id});
-                    browser.storage.local.set({ installedDictionaries })
-                }, f => console.log(f));
-                return {response: ''};
+                        lastPercent = percentage;
+                    };
+
+                    return fetch(url).then(response => response.json())
+                        .then(json => {
+                            startTime = new Date().getTime();
+                            return testDb.import(json.entries, progressCallback)
+                        })
+                        .then(() => {
+                            console.log('Done');
+
+                            const endTime = new Date().getTime();
+                            console.log(`Download took ${(endTime - startTime) / 1000} seconds`);
+
+                            installedDictionaries.push({name, id});
+                            browser.storage.local.set({installedDictionaries})
+                        })
+                });
         }
     });
 });
@@ -313,6 +323,6 @@ browser.contextMenus.create({
     title: "Options",
     contexts: ["browser_action"],
     onclick: () => {
-        browser.tabs.create({ url: browser.extension.getURL('src/options/options.html') });
+        browser.tabs.create({url: browser.extension.getURL('src/options/options.html')});
     }
 });

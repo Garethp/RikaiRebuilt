@@ -31,7 +31,21 @@ class IndexedDictionary {
     }
 
     async import(entries, progressCallback) {
+        function chunkArray(myArray, chunk_size) {
+            let index = 0;
+            const arrayLength = myArray.length;
+            const tempArray = [];
+
+            for (index = 0; index < arrayLength; index += chunk_size) {
+                tempArray.push(myArray.slice(index, index + chunk_size));
+            }
+
+            return tempArray;
+        }
+
+
         const entryTotal = entries.length;
+        const batches = chunkArray(entries, 5000);
 
         let hook = function () { };
 
@@ -44,7 +58,17 @@ class IndexedDictionary {
             };
         }
 
-        return this.db.dictionary.bulkAdd(entries, null, hook);
+        const runBulkAdd = async (batchIndex) => {
+            if (batchIndex >= batches.length) return;
+
+            return this.db.dictionary.bulkAdd(batches[batchIndex], null, hook).then(() => {
+                batches[batchIndex] = null;
+                return batchIndex + 1;
+            }).then(runBulkAdd);
+        };
+
+        return runBulkAdd(0);
+        // return this.db.dictionary.bulkAdd(entries, null, hook);
     }
 
 
