@@ -88,6 +88,91 @@ class Rikai {
         this.keysDown = [];
     }
 
+    enable() {
+        if (this.enabled) return;
+
+        this.tabData = {
+            prevSelView: null
+        };
+
+        browser.storage.sync.get('config').then(config => {
+            this.config = config.config || defaultConfig;
+            this.document.documentElement.removeChild(this.getPopup());
+        });
+
+        this.document.addEventListener('mousemove', this.onMouseMove);
+        this.document.addEventListener('mousedown', this.onMouseDown);
+        this.document.addEventListener('keydown', event => {
+            const shouldStop = this.onKeyDown(event);
+            if (shouldStop === true) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+        });
+        this.document.addEventListener('keyup', this.onKeyUp);
+
+        browser.storage.onChanged.addListener((changes, areaSet) => {
+            if (areaSet !== 'sync') return;
+            if (typeof changes.config === 'undefined') return;
+
+            this.config = changes.config.newValue || defaultConfig;
+            this.document.documentElement.removeChild(this.getPopup());
+        });
+
+        this.createPopup();
+
+        this.enabled = true;
+    }
+
+    disable() {
+        this.document.removeEventListener('mousemove', this.onMouseMove);
+        this.document.removeEventListener('mousedown', this.onMouseDown);
+        this.document.removeEventListener('keydown', event => {
+            const shouldStop = this.onKeyDown(event);
+            if (shouldStop === true) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+        });
+
+        this.document.removeEventListener('keyup', this.onKeyUp);
+
+        if (this.hasPopup()) {
+            this.document.documentElement.removeChild(this.getPopup());
+        }
+
+        this.enabled = false;
+    }
+
+    onKeyDown(event) {
+        if ((event.altKey) || (event.metaKey) || (event.ctrlKey)) return;
+        if ((event.shiftKey) && (event.keyCode !== 16)) return;
+        if (this.keysDown[event.keyCode]) return;
+        if (!this.isVisible()) return;
+
+        this.keysDown[event.keyCode] = 1;
+
+        switch (event.keyCode) {
+            case this.config.keymap.playAudio:
+                return this.playAudio();
+            case this.config.keymap.sendToAnki:
+                return this.sendToAnki();
+            case this.config.keymap.selectNextDictionary:
+                this.sendRequest('selectNextDictionary');
+                return;
+        }
+
+        return false;
+    }
+
+    onKeyUp(event) {
+        if (this.keysDown[event.keyCode]) this.keysDown[event.keyCode] = 0;
+    }
+
+    onMouseDown(event) {
+        this.clear();
+    }
+
     async onMouseMove(event) {
         let {rangeParent, rangeOffset} = event;
         const tabData = this.tabData;
@@ -115,40 +200,6 @@ class Rikai {
             return setTimeout(() => {
                 this.searchAt({x: event.clientX, y: event.clientY}, tabData, event);
             }, 1);
-        }
-
-        if (event.target === tabData.previousTarget) {
-            if (tabData.title) return;
-            if (rangeParent === tabData.previousRangeParent && rangeOffset === tabData.previousRangeOffset) return;
-        }
-
-        if (event.explicitOriginalTarget.nodeType !== Node.TEXT_NODE && !('form' in event.target)) {
-            rangeParent = null;
-            rangeOffset = -1;
-        }
-
-        tabData.previousTarget = event.target;
-        tabData.previousRangeParent = rangeParent;
-        tabData.previousRangeOffset = rangeOffset;
-        tabData.title = null;
-        tabData.uofs = 0;
-
-        this.uofsNext = 1;
-
-
-        if (rangeParent && rangeParent.data && rangeOffset < rangeParent.data.length) {
-            tabData.pos = {screenX: event.screenX, screenY: event.screenY, pageX: event.pageX, pageY: event.pageY};
-            // await this.show(tabData);
-        }
-
-        if (tabData.pos) {
-            const distanceX = tabData.pos.screenX - event.screenX;
-            const distanceY = tabData.pos.screenY - event.screenY;
-            const distance = Math.sqrt((distanceX * distanceX) + (distanceY * distanceY));
-
-            if (distance > 4) {
-                this.clear();
-            }
         }
     }
 
@@ -207,150 +258,6 @@ class Rikai {
             tabData.selText = textClone.text();
         }, tabData);
     };
-
-    async show(tabData) {
-        let {previousRangeParent} = tabData;
-        let previousRangeOffset = tabData.previousRangeOffset + tabData.uofs;
-        let i, j;
-
-        tabData.uofsNext = 1;
-
-        if (!previousRangeParent) {
-            this.clear();
-            return 0;
-        }
-
-        if (previousRangeOffset < 0 || previousRangeOffset > previousRangeParent.data.length) {
-            this.clear();
-            return 0;
-        }
-
-
-        let charCode = previousRangeParent.data.charCodeAt(previousRangeOffset);
-        if ((isNaN(charCode)) ||
-            ((charCode !== 0x25CB) &&
-                ((charCode < 0x3001) || (charCode > 0x30FF)) &&
-                ((charCode < 0x3400) || (charCode > 0x9FFF)) &&
-                ((charCode < 0xF900) || (charCode > 0xFAFF)) &&
-                ((charCode < 0xFF10) || (charCode > 0xFF9D)))) {
-            this.clear();
-            return -2;
-        }
-
-
-        this.configureInlineNames();
-
-
-        let selectionEndList = [];
-        let text = this.getTextFomRange(previousRangeParent, previousRangeOffset, selectionEndList, 20);
-        let sentence = this.getTextFomRange(previousRangeParent, 0, selectionEndList, previousRangeParent.data.length + 50);
-        let previousSentence = this.getTextFromRangePrev(previousRangeParent, 0, selectionEndList, 50);
-
-        sentence = previousSentence + sentence;
-
-
-        // Get the position of the first selected character in the sentence variable
-        i = previousRangeOffset + previousSentence.length;
-
-        let sentenceStartPos;
-        let sentenceEndPos;
-
-        // Find the last character of the sentence
-        while (i < sentence.length) {
-            if (sentence[i] === "。" || sentence[i] === "\n" || sentence[i] === "？" || sentence[i] === "！") {
-                sentenceEndPos = i;
-                break;
-            }
-            else if (i === (sentence.length - 1)) {
-                sentenceEndPos = i;
-            }
-
-            i++;
-        }
-
-
-        i = previousRangeOffset + previousSentence.length;
-
-        // Find the first character of the sentence
-        while (i >= 0) {
-            if (sentence[i] === "。" || sentence[i] === "\n" || sentence[i] === "？" || sentence[i] === "！") {
-                sentenceStartPos = i + 1;
-                break;
-            }
-            else if (i === 0) {
-                sentenceStartPos = i;
-            }
-
-            i--;
-        }
-
-        // Extract the sentence
-        sentence = sentence.substring(sentenceStartPos, sentenceEndPos + 1);
-
-        let startingWhitespaceMatch = sentence.match(/^\s+/);
-
-        // Strip out control characters
-        sentence = sentence.replace(/[\n\r\t]/g, '');
-
-        let startOffset = 0;
-
-        // Adjust offset of selected word according to the number of
-        // whitespace chars at the beginning of the sentence
-        if (startingWhitespaceMatch) {
-            startOffset -= startingWhitespaceMatch[0].length;
-        }
-
-        // Trim
-        sentence = this.trim(sentence);
-
-        this.sentence = sentence;
-
-        if (text.length === 0) {
-            this.clear();
-            return 0;
-        }
-
-        let e = await this.sendRequest('wordSearch', text);
-        if (e === -1) {
-            return 0;
-        }
-        if (e === null) {
-            this.clear();
-            return 0;
-        }
-
-        this.lastFound = [e];
-
-        this.word = text.substr(0, e.matchLen);
-
-        const wordPositionInString = previousRangeOffset + previousSentence.length - sentenceStartPos + startOffset;
-        this.sentenceWithBlank = sentence.substr(0, wordPositionInString) + "___"
-            + sentence.substr(wordPositionInString + e.matchLen, sentence.length);
-
-        if (!e.matchLen) e.matchLen = 1;
-        tabData.uofsNext = e.matchLen;
-        tabData.uofs = previousRangeOffset - tabData.previousRangeOffset;
-
-        // @TODO: Add config check for "shouldHighlight"
-        const shouldHighlight = (!('form' in tabData.previousTarget));
-        if (shouldHighlight) {
-            let document = tabData.previousRangeParent.ownerDocument;
-            if (!document) {
-                this.clear();
-                return 0;
-            }
-
-            this.highlightMatch(document, tabData.previousRangeParent, previousRangeOffset, e.matchLen, selectionEndList, tabData);
-            tabData.prevSelView = document.defaultView;
-        }
-
-        // @TODO: Add audio playing
-        // @TODO: Add checks for super sticky
-        // @TODO: Add sanseido mode
-        // @TODO: Add EPWING mode
-
-        this.showPopup(this.getKnownWordIndicatorText() + this.makeHTML(e), tabData.previousTarget, tabData.pos);
-    }
 
     getSentenceStuff(rangeOffset, sentence, previousSentence) {
         let i = rangeOffset + previousSentence.length;
@@ -448,18 +355,7 @@ class Rikai {
         // const shouldHighlight = (!('form' in tabData.previousTarget));
         const shouldHighlight = true;
         if (shouldHighlight) {
-            if (typeof highlightFunction === 'undefined') {
-                let document = rangeContainer.ownerDocument;
-                if (!document) {
-                    this.clear();
-                    return 0;
-                }
-
-                this.highlightMatch(document, tabData.previousRangeParent, previousRangeOffset, entry.matchLen, selectionEndList, tabData);
-                tabData.prevSelView = document.defaultView;
-            } else {
-                highlightFunction(entry);
-            }
+            highlightFunction(entry);
         }
 
         // @TODO: Add audio playing
@@ -469,41 +365,6 @@ class Rikai {
 
         this.showPopup(this.getKnownWordIndicatorText() + await this.makeHTML(entry), tabData.previousTarget, tabData.pos);
     }
-
-    highlightMatch(document, rangeParent, rangeOffset, matchLen, selEndList, tabData) {
-        if (selEndList.length === 0) return;
-
-        let selEnd;
-        let offset = matchLen + rangeOffset;
-        // before the loop
-        // |----!------------------------!!-------|
-        // |(------)(---)(------)(---)(----------)|
-        // offset: '!!' lies in the fifth node
-        // rangeOffset: '!' lies in the first node
-        // both are relative to the first node
-        // after the loop
-        // |---!!-------|
-        // |(----------)|
-        // we have found the node in which the offset lies and the offset
-        // is now relative to this node
-        for (let i = 0; i < selEndList.length; ++i) {
-            selEnd = selEndList[i];
-            if (offset <= selEnd.data.length) break;
-            offset -= selEnd.data.length;
-        }
-
-        const range = document.createRange();
-        range.setStart(rangeParent, rangeOffset);
-        range.setEnd(selEnd, offset);
-
-        const sel = document.defaultView.getSelection();
-        if ((!sel.isCollapsed) && (tabData.selText !== sel.toString()))
-            return;
-        sel.removeAllRanges();
-        sel.addRange(range);
-        tabData.selText = sel.toString();
-    }
-
 
     getKnownWordIndicatorText() {
         return '';
@@ -577,113 +438,6 @@ class Rikai {
         return text.replace(/^\s\s*/, "").replace(/\s\s*$/, "");
     }
 
-    getTextFomRange(rangeParent, offset, selelectionEndList, maxLength) {
-        if (rangeParent.ownerDocument.evaluate('boolean(parent::rp or ancestor::rt)',
-            rangeParent, null, XPathResult.BOOLEAN_TYPE, null).booleanValue)
-            return '';
-
-        if (rangeParent.nodeType !== Node.TEXT_NODE)
-            return '';
-
-        let text = rangeParent.data.substr(offset, maxLength);
-        selelectionEndList.push(rangeParent);
-
-        let nextNode = rangeParent;
-        while ((text.length < maxLength) &&
-        ((nextNode = this.getNext(nextNode)) != null) &&
-        (this.inlineNames[nextNode.nodeName])) {
-            text += this.getInlineText(nextNode, selelectionEndList, maxLength - text.length);
-        }
-
-        return text;
-    }
-
-    getPrev(node) {
-        do {
-            if (node.previousSibling) {
-                return node.previousSibling;
-            }
-
-            node = node.parentNode;
-        }
-        while ((node) && (this.inlineNames[node.nodeName]));
-
-        return null;
-    }
-
-    getInlineText(node, selEndList, maxLength) {
-        if ((node.nodeType === Node.TEXT_NODE) && (node.data.length === 0)) return '';
-
-        let text = '';
-        let result = node.ownerDocument.evaluate('descendant-or-self::text()[not(parent::rp) and not(ancestor::rt)]',
-            node, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
-        while ((maxLength > 0) && (node = result.iterateNext())) {
-            text += node.data.substr(0, maxLength);
-            maxLength -= node.data.length;
-            selEndList.push(node);
-        }
-        return text;
-    }
-
-    // Given a node which must not be null, returns either the next sibling or
-    // the next sibling of the father or the next sibling of the fathers father
-    // and so on or null
-    getNext(node) {
-        do {
-            if (node.nextSibling) return node.nextSibling;
-            node = node.parentNode;
-        } while ((node) && (this.inlineNames[node.nodeName]));
-        return null;
-    }
-
-    getTextFromRangePrev(rangeParent, offset, selEndList, maxLength) {
-        if (rangeParent.ownerDocument.evaluate('boolean(parent::rp or ancestor::rt)',
-            rangeParent, null, XPathResult.BOOLEAN_TYPE, null).booleanValue) {
-            return '';
-        }
-
-        let text = '';
-        let prevNode = rangeParent;
-
-        while ((text.length < maxLength) &&
-        ((prevNode = this.getPrev(prevNode)) != null) &&
-        (this.inlineNames[prevNode.nodeName])) {
-            let textTemp = text;
-            text = this.getInlineTextPrev(prevNode, selEndList, maxLength - text.length) + textTemp;
-        }
-
-        return text;
-    }
-
-    getInlineTextPrev(node, selEndList, maxLength) {
-        if ((node.nodeType === Node.TEXT_NODE) && (node.data.length === 0)) {
-            return ''
-        }
-
-        let text = '';
-
-
-        let result = node.ownerDocument.evaluate('descendant-or-self::text()[not(parent::rp) and not(ancestor::rt)]',
-            node, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
-
-        while ((text.length < maxLength) && (node = result.iterateNext())) {
-            if (text.length + node.data.length >= maxLength) {
-                text += node.data.substr(node.data.length - (maxLength - text.length), maxLength - text.length);
-            }
-            else {
-                text += node.data;
-            }
-
-            selEndList.push(node);
-        }
-
-        return text;
-    }
-
-    configureInlineNames() {
-
-    }
-
     clear() {
         setTimeout(() => {
             docImposterDestroy();
@@ -710,91 +464,6 @@ class Rikai {
             tabData.previousTextSource = null;
             return;
         }
-    }
-
-    enable() {
-        if (this.enabled) return;
-
-        this.tabData = {
-            prevSelView: null
-        };
-
-        browser.storage.sync.get('config').then(config => {
-            this.config = config.config || defaultConfig;
-            this.document.documentElement.removeChild(this.getPopup());
-        });
-
-        this.document.addEventListener('mousemove', this.onMouseMove);
-        this.document.addEventListener('mousedown', this.onMouseDown);
-        this.document.addEventListener('keydown', event => {
-            const shouldStop = this.onKeyDown(event);
-            if (shouldStop === true) {
-                event.stopPropagation();
-                event.preventDefault();
-            }
-        });
-        this.document.addEventListener('keyup', this.onKeyUp);
-
-        browser.storage.onChanged.addListener((changes, areaSet) => {
-            if (areaSet !== 'sync') return;
-            if (typeof changes.config === 'undefined') return;
-
-            this.config = changes.config.newValue || defaultConfig;
-            this.document.documentElement.removeChild(this.getPopup());
-        });
-
-        this.createPopup();
-
-        this.enabled = true;
-    }
-
-    onMouseDown(event) {
-        this.clear();
-    }
-
-    onKeyDown(event) {
-        if ((event.altKey) || (event.metaKey) || (event.ctrlKey)) return;
-        if ((event.shiftKey) && (event.keyCode != 16)) return;
-        if (this.keysDown[event.keyCode]) return;
-        if (!this.isVisible()) return;
-
-        this.keysDown[event.keyCode] = 1;
-
-        switch (event.keyCode) {
-            case this.config.keymap.playAudio:
-                return this.playAudio();
-            case this.config.keymap.sendToAnki:
-                return this.sendToAnki();
-            case this.config.keymap.selectNextDictionary:
-                this.sendRequest('selectNextDictionary');
-                return;
-        }
-
-        return false;
-    }
-
-    onKeyUp(event) {
-        if (this.keysDown[event.keyCode]) this.keysDown[event.keyCode] = 0;
-    }
-
-    disable() {
-        this.document.removeEventListener('mousemove', this.onMouseMove);
-        this.document.removeEventListener('mousedown', this.onMouseDown);
-        this.document.removeEventListener('keydown', event => {
-            const shouldStop = this.onKeyDown(event);
-            if (shouldStop === true) {
-                event.stopPropagation();
-                event.preventDefault();
-            }
-        });
-
-        this.document.removeEventListener('keyup', this.onKeyUp);
-
-        if (this.hasPopup()) {
-           this.document.documentElement.removeChild(this.getPopup());
-        }
-
-        this.enabled = false;
     }
 
     async sendRequest(type, content = '') {
@@ -829,6 +498,47 @@ class Rikai {
         return this.document.getElementById(this.popupId);
     }
 
+    showPopup(textToShow, previousTarget, position) {
+        let {pageX, pageY, clientX, clientY} = position || {pageX: 10, pageY: 10, clientX: 10, clientY: 10};
+        const popup = this.getPopup();
+
+        popup.innerHTML = textToShow;
+        popup.style.display = 'block';
+        popup.style.maxWidth = '600px';
+
+        if (previousTarget && (typeof previousTarget !== 'undefined')
+            && previousTarget.parentNode && (typeof previousTarget.parentNode !== 'undefined')) {
+
+            let width = popup.offsetWidth;
+            let height = popup.offsetHeight;
+
+            popup.style.top = '-1000px';
+            popup.style.left = '0px';
+            popup.style.display = '';
+
+            //TODO: Add alt-views here
+            //TODO: Stuff for box object and zoom?
+            //TODO: Check for Option Element? What?
+
+            if (clientX + width > window.innerWidth - 20) {
+                pageX = window.innerWidth - width - 20;
+                if (pageX < 0) pageX = 0;
+            }
+
+            let v = 25;
+            if (previousTarget.title && previousTarget.title !== '') v += 20;
+
+            if (clientY + v + height > window.innerHeight) {
+                let t = pageY - height - 30;
+                if (t >= 0) pageY = t;
+            } else {
+                pageY += v;
+            }
+        }
+
+        popup.style.left = pageX + 'px';
+        popup.style.top = pageY + 'px';
+    }
 
     async makeHTML(entry) {
         let k;
@@ -1081,48 +791,6 @@ class Rikai {
     async getFrequency(inExpression, inReading, useHighlightedWord) {
         const highlightedWord = this.word;
         return this.sendRequest('getFrequency', {inExpression, inReading, useHighlightedWord, highlightedWord});
-    }
-
-    showPopup(textToShow, previousTarget, position) {
-        let {pageX, pageY, clientX, clientY} = position || {pageX: 10, pageY: 10, clientX: 10, clientY: 10};
-        const popup = this.getPopup();
-
-        popup.innerHTML = textToShow;
-        popup.style.display = 'block';
-        popup.style.maxWidth = '600px';
-
-        if (previousTarget && (typeof previousTarget !== 'undefined')
-            && previousTarget.parentNode && (typeof previousTarget.parentNode !== 'undefined')) {
-
-            let width = popup.offsetWidth;
-            let height = popup.offsetHeight;
-
-            popup.style.top = '-1000px';
-            popup.style.left = '0px';
-            popup.style.display = '';
-
-            //TODO: Add alt-views here
-            //TODO: Stuff for box object and zoom?
-            //TODO: Check for Option Element? What?
-
-            if (clientX + width > window.innerWidth - 20) {
-                pageX = window.innerWidth - width - 20;
-                if (pageX < 0) pageX = 0;
-            }
-
-            let v = 25;
-            if (previousTarget.title && previousTarget.title !== '') v += 20;
-
-            if (clientY + v + height > window.innerHeight) {
-                let t = pageY - height - 30;
-                if (t >= 0) pageY = t;
-            } else {
-                pageY += v;
-            }
-        }
-
-        popup.style.left = pageX + 'px';
-        popup.style.top = pageY + 'px';
     }
 
     sendToAnki() {
