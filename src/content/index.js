@@ -174,7 +174,6 @@ class Rikai {
     }
 
     async onMouseMove(event) {
-        let {rangeParent, rangeOffset} = event;
         const tabData = this.tabData;
 
         if (event.buttons !== 0) return;
@@ -193,18 +192,13 @@ class Rikai {
         tabData.previousTarget = event.target;
         tabData.pos = {clientX: event.clientX, clientY: event.clientY, pageX: event.pageX, pageY: event.pageY};
 
-        //Not Firefox, need to query text in a different way
-        //Firefox seems to have changed rangeParent. In the newer ones it's null for inputs, so we'll
-        //always use Yomichan code
-        if (rangeParent === undefined || true) {
-            return setTimeout(() => {
-                this.searchAt({x: event.clientX, y: event.clientY}, tabData, event);
-            }, 1);
-        }
+        return setTimeout(() => {
+            this.searchAt({x: event.clientX, y: event.clientY}, tabData, event);
+        }, 1);
     }
 
     async searchAt(point, tabData, event) {
-        const originalElement = document.elementFromPoint(point.x, point.y);
+
         const textSource = docRangeFromPoint(point);
 
         if (!textSource || !textSource.range || typeof textSource.range.startContainer.data === 'undefined') {
@@ -233,7 +227,7 @@ class Rikai {
         tabData.previousTarget = event.target;
         tabData.previousTextSource = textSource;
 
-        let hideResults = !textSource || !textSource.containsPoint(point);
+
         const textClone = textSource.clone();
         const sentenceClone = textSource.clone();
         const previousSentenceClone = textSource.clone();
@@ -311,7 +305,7 @@ class Rikai {
         }
 
         // Trim
-        sentence = this.trim(sentence);
+        sentence = Rikai.trim(sentence);
 
         return {sentence, sentenceStartPos, startOffset};
     }
@@ -369,72 +363,72 @@ class Rikai {
     getKnownWordIndicatorText() {
         return '';
 
-        let outText = "";
-        let expression = "";
-        let reading = "";
-
-        // Get the last highlighted word
-        if (this.lastFound[0].data) {
-            // Extract needed data from the hilited entry
-            //   entryData[0] = kanji/kana + kana + definition
-            //   entryData[1] = kanji (or kana if no kanji)
-            //   entryData[2] = kana (null if no kanji)
-            //   entryData[3] = definition
-
-            const entryData = this.lastFound[0].data[0][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//);
-            expression = entryData[1];
-
-            if (entryData[2]) {
-                reading = entryData[2];
-            }
-        }
-        else {
-            return "";
-        }
-
-        // Reload the known words associative array if needed
-        if (!this.knownWordsDic || (this.prevKnownWordsFilePath !== rcxConfig.vocabknownwordslistfile)) {
-            rcxMain.knownWordsDic = {};
-            rcxMain.readWordList(rcxConfig.vocabknownwordslistfile, rcxMain.knownWordsDic, rcxConfig.vocabknownwordslistcolumn);
-            this.prevKnownWordsFilePath = rcxConfig.vocabknownwordslistfile;
-        }
-
-        // Reload the to-do words associative array if needed
-        if (!this.todoWordsDic || (this.prevTodoWordsFilePath !== rcxConfig.vocabtodowordslistfile)) {
-            rcxMain.todoWordsDic = {};
-            rcxMain.readWordList(rcxConfig.vocabtodowordslistfile, rcxMain.todoWordsDic, rcxConfig.vocabtodowordslistcolumn);
-            this.prevTodoWordsFilePath = rcxConfig.vocabtodowordslistfile;
-        }
-
+        // let outText = "";
+        // let expression = "";
+        // let reading = "";
         //
-        // First try the expression
+        // // Get the last highlighted word
+        // if (this.lastFound[0].data) {
+        //     // Extract needed data from the highlighted entry
+        //     //   entryData[0] = kanji/kana + kana + definition
+        //     //   entryData[1] = kanji (or kana if no kanji)
+        //     //   entryData[2] = kana (null if no kanji)
+        //     //   entryData[3] = definition
         //
-
-        if (this.knownWordsDic[expression]) {
-            outText = "* ";
-        }
-        else if (this.todoWordsDic[expression]) {
-            outText = "*t ";
-        }
-
+        //     const entryData = this.lastFound[0].data[0][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//);
+        //     expression = entryData[1];
         //
-        // If expression not found in either the known words or to-do lists, try the reading
+        //     if (entryData[2]) {
+        //         reading = entryData[2];
+        //     }
+        // }
+        // else {
+        //     return "";
+        // }
         //
-
-        if (outText.length === 0) {
-            if (this.knownWordsDic[reading]) {
-                outText = "*_r ";
-            }
-            else if (this.todoWordsDic[reading]) {
-                outText = "*t_r ";
-            }
-        }
-
-        return outText;
+        // // Reload the known words associative array if needed
+        // if (!this.knownWordsDic || (this.prevKnownWordsFilePath !== rcxConfig.vocabknownwordslistfile)) {
+        //     rcxMain.knownWordsDic = {};
+        //     rcxMain.readWordList(rcxConfig.vocabknownwordslistfile, rcxMain.knownWordsDic, rcxConfig.vocabknownwordslistcolumn);
+        //     this.prevKnownWordsFilePath = rcxConfig.vocabknownwordslistfile;
+        // }
+        //
+        // // Reload the to-do words associative array if needed
+        // if (!this.todoWordsDic || (this.prevTodoWordsFilePath !== rcxConfig.vocabtodowordslistfile)) {
+        //     rcxMain.todoWordsDic = {};
+        //     rcxMain.readWordList(rcxConfig.vocabtodowordslistfile, rcxMain.todoWordsDic, rcxConfig.vocabtodowordslistcolumn);
+        //     this.prevTodoWordsFilePath = rcxConfig.vocabtodowordslistfile;
+        // }
+        //
+        // //
+        // // First try the expression
+        // //
+        //
+        // if (this.knownWordsDic[expression]) {
+        //     outText = "* ";
+        // }
+        // else if (this.todoWordsDic[expression]) {
+        //     outText = "*t ";
+        // }
+        //
+        // //
+        // // If expression not found in either the known words or to-do lists, try the reading
+        // //
+        //
+        // if (outText.length === 0) {
+        //     if (this.knownWordsDic[reading]) {
+        //         outText = "*_r ";
+        //     }
+        //     else if (this.todoWordsDic[reading]) {
+        //         outText = "*t_r ";
+        //     }
+        // }
+        //
+        // return outText;
 
     }
 
-    trim(text) {
+    static trim(text) {
         return text.replace(/^\s\s*/, "").replace(/\s\s*$/, "");
     }
 
@@ -745,7 +739,7 @@ class Rikai {
                 const freq = await this.getFrequency(freqExpression, freqReading, i === 0);
 
                 if (freq && (freq.length > 0)) {
-                    const frequencyClass = this.getFrequencyStyle(freq);
+                    const frequencyClass = Rikai.getFrequencyStyle(freq);
                     returnValue.push('<span class="' + frequencyClass + '"> ' + freq + '</span>');
                 }
             }
@@ -770,10 +764,10 @@ class Rikai {
         return returnValue.join('');
     }
 
-    getFrequencyStyle(inFreqNum) {
+    static getFrequencyStyle(inFreqNum) {
         let freqNum = inFreqNum.replace(/_r/g, "");
 
-        var freqStyle = 'w-freq-rare';
+        let freqStyle = 'w-freq-rare';
 
         if (freqNum <= 5000) {
             freqStyle = "w-freq-very-common";
