@@ -15,6 +15,7 @@ const defaultConfig = {
     importEmptyAudio: true,
     openChangelogOnUpdate: false,
     showFrequency: false,
+    showPitchAccent: false, //showpitchaccent
     theme: 'blue',
     audioVolume: 100,
     installedDictionaries: [

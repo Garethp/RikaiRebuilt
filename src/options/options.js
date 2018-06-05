@@ -240,7 +240,8 @@ $('#showConfig').on('click', () => {
 
 $('#myTab a').on('click', function (e) {
     e.preventDefault();
-    $(this).tab('show')
+    $(this).tab('show');
+    return false;
 });
 
 // Javascript to enable link to tab
@@ -248,10 +249,12 @@ let url = document.location.toString();
 if (url.match('#')) {
     $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').tab('show');
 }
+console.log('Show');
 
 // Change hash for page-reload
 $('.nav-tabs a').on('shown.bs.tab', function (e) {
-    window.location.hash = e.target.hash;
+    history.replaceState(null, null, e.target.hash);
+    return false;
 });
 
 $('[data-config-option]:checkbox').on('change', event => {

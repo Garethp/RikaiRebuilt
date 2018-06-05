@@ -124,6 +124,14 @@
                     <div class="col-9">
                         <input class="form-check-input" type="checkbox" id="showFrequency" data-config-option="showFrequency" />
                     </div>
+
+                    <div class="col-3">
+                        <label title="Show pitch accent" for="showPitch" class="col-form-label">Show Pitch Accent</label>
+                    </div>
+                    <div class="col-9">
+                        <input class="form-check-inline" type="checkbox" id="showPitch" data-config-option="showPitchAccent" />
+                    </div>
+
                     <div class="col-3">
                         <label title="Hide the definition of the word when showing the popup" class="col-form-label"
                                for="hideDefinitions">Hide Definitions</label></div>
@@ -225,6 +233,11 @@
     </div>
 
     <div class="tab-pane fade" id="changelog" role="tabpanel" aria-labelledby="changelog-tab">
+        <h4>Version 1.0.21</h4>
+        <ul>
+            <li>Added a pitch accent option</li>
+        </ul>
+
         <h4>Version 1.0.20</h4>
         <ul>
             <li>Drastically reduce the amount of memory used to install a dictionary</li>

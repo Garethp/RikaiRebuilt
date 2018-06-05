@@ -203,7 +203,7 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
                 return {response};
             }, f => console.log(f));
         case "getPitch":
-            return rebuilt.getFrequency(content.expression, content.reading).then(response => { return { response } });
+            return rebuilt.getPitch(content.expression, content.reading).then(response => { return { response } });
         case "getFrequency":
             return rebuilt.getFrequency(content.inExpression, content.inReading, content.useHighlightedWord, content.highlightedWord)
                 .then(response => {

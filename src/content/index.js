@@ -689,13 +689,14 @@ class Rikai {
 
             //TODO: Add config usage here
             // Add pitch accent right after the reading
-            // if (rcxConfig.showpitchaccent) {
-            //     const pitchAccent = rcxMain.getPitchAccent(e[1], e[2]);
-            //
-            //     if (pitchAccent && (pitchAccent.length > 0)) {
-            //         returnValue.push('<span class="w-conj"> ' + pitchAccent + '</span>');
-            //     }
-            // }
+            if (this.config.showPitchAccent) {
+                const pitchAccent = await this.sendRequest('getPitch', { expression: e[1], reading: e[2] });
+                console.log(pitchAccent);
+
+                if (pitchAccent && (pitchAccent.length > 0)) {
+                    returnValue.push('<span class="w-conj"> ' + pitchAccent + '</span>');
+                }
+            }
 
             if (entry.data[i][1]) returnValue.push(' <span class="w-conj">(' + entry.data[i][1] + ')</span>');
 

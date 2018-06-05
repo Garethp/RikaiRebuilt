@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.21
+ * Added pitch accents
+
 #### Version 1.0.20
  * Drastically reduce the amount of memory used to import a dictionary
 
