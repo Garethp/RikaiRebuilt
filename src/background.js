@@ -3,14 +3,13 @@ let installedDictionaries = [];
 let optionsPort;
 
 class RikaiRebuilt {
-    constructor(frequencyDb) {
+    constructor() {
         autobind(this);
 
         this.enabled = false;
         this.isSetUp = false;
         this.data = null;
         this.config = defaultConfig;
-        this.frequencyDb = frequencyDb;
         this.dictionaries = [];
     }
 
@@ -97,6 +96,10 @@ class RikaiRebuilt {
         });
     }
 
+    async getPitch(expression, reading) {
+        return pitchDb.getPitchAccent(expression, reading).then(results => results[0]);
+    }
+
     async getFrequency(inExpression, inReading, useHighlightedWord, highlightedWord) {
         const expression = inExpression;
         const reading = inReading;
@@ -178,9 +181,10 @@ class RikaiRebuilt {
 
 const ankiImport = new AnkiImport();
 const frequencyDb = new FrequencyDb();
+const pitchDb = new PitchDb();
 frequencyDb.open();
 
-const rebuilt = new RikaiRebuilt(frequencyDb);
+const rebuilt = new RikaiRebuilt();
 
 function playAudio(lastFound) {
     if (!lastFound || lastFound.length === 0) return;
@@ -198,6 +202,8 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
             return rebuilt.wordSearch(content).then(response => {
                 return {response};
             }, f => console.log(f));
+        case "getPitch":
+            return rebuilt.getFrequency(content.expression, content.reading).then(response => { return { response } });
         case "getFrequency":
             return rebuilt.getFrequency(content.inExpression, content.inReading, content.useHighlightedWord, content.highlightedWord)
                 .then(response => {
@@ -301,9 +307,17 @@ browser.runtime.onInstalled.addListener(async ({id, previousVersion, reason}) =>
     //Frequency Information
     frequencyDb.open().then(_ => {
         frequencyDb.findFrequencyForExpression('の').then(frequency => {
-            console.log(frequency.length);
             if (frequency.length === 0) {
                 frequencyDb.importFromFile('https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/frequency.json');
+            }
+        });
+    });
+
+    //Import pitch DB on first install
+    pitchDb.open().then(_ => {
+        pitchDb.getPitchAccent('・').then(pitch => {
+            if (pitch.length === 0) {
+                pitchDb.importFromFile('https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/pitch.json');
             }
         });
     });
