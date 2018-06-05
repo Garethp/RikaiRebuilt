@@ -1,5 +1,5 @@
 require('../src/deinflectText');
-require('../src/auto-bind');
+require('../src/autobind');
 require('../src/deinflect.js');
 
 const assert = require('assert');

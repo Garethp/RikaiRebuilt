@@ -1,4 +1,4 @@
-if (typeof process !== 'undefined') { Dictionary = require('./dictionary.js'); Deinflect = require('./deinflect.js'); }
+if (typeof process !== 'undefined') { Dictionary = require('./IndexedDictionary.js'); Deinflect = require('./deinflect.js'); }
 
 class Data {
     // katakana -> hiragana conversion tables

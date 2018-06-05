@@ -34,17 +34,18 @@
       "dist/dexie.min.js",
       "dist/idb.js",
       "dist/browser-polyfill.min.js",
+      "dist/autobind.js",
       "src/defaultConfig.js",
       "src/utils.js",
       "src/audioPlayer.js",
       "src/ankiImport.js",
-      "src/removeFromArray.js",
       "src/FileReader.js",
       "src/deinflectText.js",
       "src/deinflect.js",
-      "src/dictionary.js",
-      "src/FrequencyDb.js",
-      "src/auto-bind.js",
+      "src/database/RikaiDatabase.js",
+      "src/database/IndexedDictionary.js",
+      "src/database/PitchDb.js",
+      "src/database/FrequencyDb.js",
       "src/data.js",
       "src/background.js"
     ]
@@ -56,6 +57,7 @@
         "<all_urls>"
       ],
       "js": [
+        "dist/autobind.js",
         "src/defaultConfig.js",
         "dist/browser-polyfill.min.js",
         "src/content/document.js",

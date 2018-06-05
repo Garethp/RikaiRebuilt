@@ -301,6 +301,7 @@ browser.runtime.onInstalled.addListener(async ({id, previousVersion, reason}) =>
     //Frequency Information
     frequencyDb.open().then(_ => {
         frequencyDb.findFrequencyForExpression('の').then(frequency => {
+            console.log(frequency.length);
             if (frequency.length === 0) {
                 frequencyDb.importFromFile('https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/frequency.json');
             }
