@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "author": "Gareth Parker",
   "name": "RikaiRebuilt",
-  "version": "1.0.22",
+  "version": "1.0.23",
 
   "applications": {
     "gecko": {

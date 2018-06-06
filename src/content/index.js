@@ -434,7 +434,7 @@ class Rikai {
         this.abortController.abort();
         this.abortController = new AbortController();
         const { signal } = this.abortController;
-        return fetch(`http://www.sanseido.biz/User/Dic/Index.aspx?TWords=${searchTerm}&st=0&DailyJJ=checkbox`, { signal })
+        return fetch(`https://www.sanseido.biz/User/Dic/Index.aspx?TWords=${searchTerm}&st=0&DailyJJ=checkbox`, { signal })
             .then(response => response.text())
             .then(response => this.parseAndDisplaySanseido(response));
     }

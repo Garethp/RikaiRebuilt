@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.23
+ * Made Sanseido Mode work over HTTPS
+
 #### Version 1.0.22
  * Sanseido Mode added
 
