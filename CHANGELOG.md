@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.22
+ * Sanseido Mode added
+
 #### Version 1.0.21
  * Added pitch accents
 

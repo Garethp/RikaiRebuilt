@@ -58,6 +58,8 @@ class Rikai {
         this.popupId = 'rikaichan-window';
         this.config = defaultConfig;
         this.keysDown = [];
+        this.sanseidoFallback = 0;
+        this.sanseidoMode = false;
     }
 
     enable() {
@@ -329,7 +331,240 @@ class Rikai {
         // @TODO: Add sanseido mode
         // @TODO: Add EPWING mode
 
+        //Sanseido mode
+        if (this.sanseidoMode) {
+            return this.lookupSanseido();
+        }
+
         this.showPopup(this.getKnownWordIndicatorText() + await this.makeHTML(entry), tabData.previousTarget, tabData.pos);
+    }
+
+
+    // Extract the first search term from the hilited word.
+    // Returns search term string or null on error.
+    // forceGetReading - true = force this routine to return the reading of the word
+    extractSearchTerm (forceGetReading) {
+        // Get the currently hilited entry
+        let highlightedEntry = this.lastFound;
+
+        if ((!highlightedEntry) || (highlightedEntry.length === 0)) {
+            return null;
+        }
+
+        let searchTerm = "";
+
+        // Get the search term to use
+        if (highlightedEntry[0] && highlightedEntry[0].kanji && highlightedEntry[0].onkun) {
+            // A single kanji was selected
+
+            searchTerm = highlightedEntry[0].kanji;
+        }  else if (highlightedEntry[0] && highlightedEntry[0].data[0]) {
+            // An entire word was selected
+
+            const entryData = highlightedEntry[0].data[0][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//);
+
+            // Example of what data[0][0] looks like (linebreak added by me):
+            //   乃 [の] /(prt,uk) indicates possessive/verb and adjective nominalizer (nominaliser)/substituting
+            //   for "ga" in subordinate phrases/indicates a confident conclusion/emotional emphasis (sentence end) (fem)/(P)/
+            //
+            // Extract needed data from the hilited entry
+            //   entryData[0] = kanji/kana + kana + definition
+            //   entryData[1] = kanji (or kana if no kanji)
+            //   entryData[2] = kana (null if no kanji)
+            //   entryData[3] = definition
+
+            if (forceGetReading) {
+                if (entryData[2]) {
+                    searchTerm = entryData[2];
+                }
+                else {
+                    searchTerm = entryData[1];
+                }
+            }
+            else {
+                // If the highlighted word is kana, don't use the kanji.
+                // Example1: if の is highlighted, use の rather than the kanji equivalent (乃)
+                // Example2: if された is highlighted, use される rather then 為れる
+                if (entryData[2] && !Utils.containsKanji(this.word)) {
+                    searchTerm = entryData[2];
+                }
+                else {
+                    searchTerm = entryData[1];
+                }
+            }
+        }
+        else {
+            return null;
+        }
+
+        return searchTerm;
+
+    }
+
+    async lookupSanseido() {
+        let searchTerm;
+        const {tabData} = this;
+
+        // Determine if we should use the kanji form or kana form when looking up the word
+        if (this.sanseidoFallback === 0) {
+            // Get this kanji form if it exists
+            searchTerm = this.extractSearchTerm(false);
+        }
+        else if (this.sanseidoFallback === 1) {
+            // Get the reading
+            searchTerm = this.extractSearchTerm(true);
+        }
+
+        if (!searchTerm) {
+            return;
+        }
+
+        // If the kanji form was requested but it returned the kana form anyway, then update the state
+        if ((this.sanseidoFallback === 0) && !Utils.containsKanji(searchTerm)) {
+            this.sanseidoFallback = 1;
+        }
+
+        // Show the loading message to the screen while we fetch the entry page
+        this.showPopup("Loading...", tabData.previousTarget, tabData.pos);
+
+        return fetch(`http://www.sanseido.biz/User/Dic/Index.aspx?TWords=${searchTerm}&st=0&DailyJJ=checkbox`)
+            .then(response => response.text())
+            .then(response => this.parseAndDisplaySanseido(response));
+    }
+
+    async parseAndDisplaySanseido(response) {
+        // Create DOM tree from entry page text
+        // var domPars = rcxMain.htmlParser(entryPageText);
+        const {tabData} = this;
+        const parser = new DOMParser();
+        const document = parser.parseFromString(response, 'text/html');
+        let domPars = document.body;
+
+        // Get list of div elements
+        const divList = domPars.getElementsByTagName("div");
+
+        // Will be set if the entry page actually contains a definition
+        let entryFound = false;
+
+        // Find the div that contains the definition
+        for (let divIdx = 0; divIdx < divList.length; divIdx++) {
+            // Did we reach the div the contains the definition?
+            if (divList[divIdx].className === "NetDicBody") {
+                entryFound = true;
+
+                // rcxDebug.echo("Raw definition: " + divList[divIdx].innerHTML);
+
+                // Will contain the final parsed definition text
+                let defText = "";
+
+                // A list of all child nodes in the div
+                const childList = divList[divIdx].childNodes;
+
+                // Set when we need to end the parse
+                let defFinished = false;
+
+                // Extract the definition from the div's child nodes
+                for (let nodeIdx = 0; nodeIdx < childList.length && !defFinished; nodeIdx++) {
+                    // Is this a b element?
+                    if (childList[nodeIdx].nodeName.toLowerCase() === "b") {
+                        // How many child nodes does this b element have?
+                        if (childList[nodeIdx].childNodes.length === 1) {
+                            // Check for definition number: ［１］, ［２］, ... and add to def
+                            const defNum = childList[nodeIdx].childNodes[0].nodeValue.match(/［([１２３４５６７８９０]+)］/);
+
+                            if (defNum) {
+                                defText += "<br />" + RegExp.$1;
+                            }
+                            else {
+                                // Check for sub-definition number: （１）, （２）, ... and add to def
+                                const subDefNum = childList[nodeIdx].childNodes[0].nodeValue.match(/（([１２３４５６７８９０]+)）/);
+
+                                if (subDefNum) {
+                                    // Convert sub def number to circled number
+                                    defText += Utils.convertIntegerToCircledNumStr(Utils.convertJapNumToInteger(RegExp.$1));
+                                }
+                            }
+                        }
+                        else // This b element has more than one child node
+                        {
+                            // Check the b children for any spans. A span marks the start
+                            // of non-definition portion, so end the parse.
+                            for (let bIdx = 0; bIdx < childList[nodeIdx].childNodes.length; bIdx++) {
+                                if (childList[nodeIdx].childNodes[bIdx].nodeName.toLowerCase() === "span") {
+                                    defFinished = true;
+                                }
+                            }
+                        }
+                    }
+
+                    // Have we finished parsing the text?
+                    if (defFinished) {
+                        break;
+                    }
+
+                    // If the current element is text, add it to the definition
+                    if ((childList[nodeIdx].nodeName.toLowerCase() === "#text")
+                        && (Rikai.trim(childList[nodeIdx].nodeValue) !== "")) {
+                        defText += childList[nodeIdx].nodeValue;
+                    }
+                }
+
+                // If the definition is blank (search ばかり for example), fallback
+                if (defText.length === 0) {
+                    // Set to a state that will ensure fallback to default JMDICT popup
+                    this.sanseidoFallbackState = 1;
+                    entryFound = false;
+                    break;
+                }
+
+                var jdicCode = "";
+
+                // Get the part-of-speech and other JDIC codes
+                this.lastFound[0].data[0][0].match(/\/(\(.+?\) ).+\//);
+
+                if (RegExp.$1) {
+                    jdicCode = RegExp.$1;
+                }
+
+                // Replace the definition with the one we parsed from sanseido
+                this.lastFound[0].data[0][0] = this.lastFound[0].data[0][0]
+                    .replace(/\/.+\//g, "/" + jdicCode + defText + "/");
+
+                // Remove all words except for the one we just looked up
+                this.lastFound[0].data = [this.lastFound[0].data[0]];
+
+                // Prevent the "..." from being displayed at the end of the popup text
+                this.lastFound[0].more = false;
+
+                // Show the definition
+                this.showPopup(this.getKnownWordIndicatorText() + await this.makeHTML(this.lastFound[0]),
+                    tabData.previousTarget, tabData.pos);
+
+                // Entry found, stop looking
+                break;
+            }
+
+        }
+
+        // If the entry was not on sanseido, either try to lookup the kana form of the word
+        // or display default JMDICT popup
+        if (!entryFound) {
+            this.sanseidoFallbackState++;
+
+            if (this.sanseidoFallbackState < 2) {
+                // Set a timer to lookup again using the kana form of the word instead
+                window.setTimeout
+                (
+                    () => {
+                        this.lookupSanseido();
+                    }, 10
+                );
+            }
+            else {
+                // Fallback to the default non-sanseido dictionary that comes with rikaichan (JMDICT)
+                this.showPopup(await this.makeHTML(this.lastFound[0]), tabData.previousTarget, tabData.pos);
+            }
+        }
     }
 
     getKnownWordIndicatorText() {
@@ -691,7 +926,6 @@ class Rikai {
             // Add pitch accent right after the reading
             if (this.config.showPitchAccent) {
                 const pitchAccent = await this.sendRequest('getPitch', { expression: e[1], reading: e[2] });
-                console.log(pitchAccent);
 
                 if (pitchAccent && (pitchAccent.length > 0)) {
                     returnValue.push('<span class="w-conj"> ' + pitchAccent + '</span>');

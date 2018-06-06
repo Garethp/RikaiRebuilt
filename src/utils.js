@@ -56,4 +56,54 @@ class Utils {
 
         return r;
     }
+
+    static containsKanji (text) {
+        for (let i = 0; i < text.length; i++) {
+            let c = text[i];
+
+            if ((c >= '\u4E00') && (c <= '\u9FBF')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    static convertIntegerToCircledNumStr (num) {
+        let circledNumStr = "(" + num + ")";
+
+        if (num === 0) {
+            circledNumStr = "⓪";
+        }
+        else if ((num >= 1) && (num <= 20)) {
+            circledNumStr = String.fromCharCode(("①".charCodeAt(0) - 1) + num);
+        }
+        else if ((num >= 21) && (num <= 35)) {
+            circledNumStr = String.fromCharCode(("㉑".charCodeAt(0) - 1) + num);
+        }
+        else if ((num >= 36) && (num <= 50)) {
+            circledNumStr = String.fromCharCode(("㊱".charCodeAt(0) - 1) + num);
+        }
+
+        return circledNumStr;
+    }
+
+    static convertJapNumToInteger (japNum) {
+        let numStr = "";
+
+        let c;
+        let convertedNum;
+        for (let i = 0; i < japNum.length; i++) {
+            c = japNum[i];
+
+            if ((c >= "０") && (c <= "９")) {
+                convertedNum = (c.charCodeAt(0) - "０".charCodeAt(0));
+                numStr += convertedNum;
+            }
+        }
+
+        return Number(numStr);
+
+    }
 }
