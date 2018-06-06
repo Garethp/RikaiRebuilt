@@ -161,7 +161,7 @@ class AnkiImport {
 
         // Pitch accent
         // const pitch = rcxMain.getPitchAccent(dictionaryForm, reading);
-        const pitch = '';
+        const pitch = await rebuilt.getPitch(dictionaryForm, reading);
 
         const {saveNotes} = config;
         const audioUrl = AudioPlayer.getAudioUrl(entry);
