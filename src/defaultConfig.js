@@ -1,8 +1,10 @@
 const defaultConfig = {
+    startWithSanseido: false,
     keymap: {
         playAudio: 70,
         sendToAnki: 82,
         selectNextDictionary: 16,
+        toggleSanseidoMode: 79,
     },
     hideDefinitions: false, //hidedef
     hideXRatedEntries: false, //hidex

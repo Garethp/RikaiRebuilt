@@ -60,6 +60,7 @@ class Rikai {
         this.keysDown = [];
         this.sanseidoFallback = 0;
         this.sanseidoMode = false;
+        this.abortController = new AbortController();
     }
 
     enable() {
@@ -134,6 +135,9 @@ class Rikai {
             case this.config.keymap.selectNextDictionary:
                 this.sendRequest('selectNextDictionary');
                 return;
+            case this.config.keymap.toggleSanseidoMode:
+                browser.storage.local.set({ sanseidoMode: !this.sanseidoMode });
+                return true;
         }
 
         return false;
@@ -427,7 +431,10 @@ class Rikai {
         // Show the loading message to the screen while we fetch the entry page
         this.showPopup("Loading...", tabData.previousTarget, tabData.pos);
 
-        return fetch(`http://www.sanseido.biz/User/Dic/Index.aspx?TWords=${searchTerm}&st=0&DailyJJ=checkbox`)
+        this.abortController.abort();
+        this.abortController = new AbortController();
+        const { signal } = this.abortController;
+        return fetch(`http://www.sanseido.biz/User/Dic/Index.aspx?TWords=${searchTerm}&st=0&DailyJJ=checkbox`, { signal })
             .then(response => response.text())
             .then(response => this.parseAndDisplaySanseido(response));
     }
@@ -640,6 +647,8 @@ class Rikai {
     }
 
     clear() {
+        this.abortController.abort();
+        this.abortController = new AbortController();
         setTimeout(() => {
             docImposterDestroy();
         }, 500);
@@ -1019,6 +1028,10 @@ class Rikai {
         this.sendRequest('playAudio', lastFound);
         return true;
     }
+
+    setSanseidoMode(sanseidoMode) {
+        this.sanseidoMode = sanseidoMode || false;
+    }
 }
 
 const rikai = new Rikai(document);
@@ -1028,13 +1041,21 @@ browser.storage.local.get('enabled').then(({enabled}) => {
     }
 });
 
+browser.storage.local.get('sanseidoMode').then(({ sanseidoMode }) => {
+    rikai.setSanseidoMode(sanseidoMode);
+});
+
 browser.storage.onChanged.addListener((change, storageArea) => {
     if (storageArea !== "local") return;
-    if (typeof change.enabled === 'undefined') return;
+    if (typeof change.enabled !== 'undefined') {
+        if (change.enabled.newValue === true) {
+            rikai.enable();
+        } else {
+            rikai.disable();
+        }
+    }
 
-    if (change.enabled.newValue === true) {
-        rikai.enable();
-    } else {
-        rikai.disable();
+    if (typeof change.sanseidoMode !== 'undefined') {
+        rikai.setSanseidoMode(change.sanseidoMode.newValue);
     }
 });

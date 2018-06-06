@@ -24,6 +24,14 @@
                 General
             </a>
         </li>
+
+        <li class="nav-item">
+            <a class="nav-link" id="startup-tab" data-toggle="tab" href="#startup" role="tab"
+               aria-controls="startup">
+                Startup
+            </a>
+        </li>
+
         <li class="nav-item">
             <a class="nav-link" id="keyboard-tab" data-toggle="tab" href="#keyboard" role="tab"
                aria-controls="keyboard">
@@ -84,9 +92,30 @@
                 </div>
             </div>
         </div>
+        <div class="tab-pane fade" id="startup" role="tabpanel" aria-labelledby="startup-tab">
+            <div class="row">
+                <div class="col-3">
+                    <label title="Enable sanseido mode when RikaiRebuilt is started" for="startWithSanseido"
+                           class="col-form-label">Startup in Sanseido Mode</label>
+                </div>
+                <div class="col-9">
+                    <input class="form-check-input" type="checkbox" id="startWithSanseido"
+                           data-config-option="startWithSanseido" />
+                </div>
+            </div>
+        </div>
         <div class="tab-pane fade" id="keyboard" role="tabpanel" aria-labelledby="keyboard-tab">
             <h4><b>Keymap</b></h4>
             <form class="">
+                <div class="row">
+                    <div class="col-4">
+                        <label class="my-1 mr-2" for="keymap-toggleSanseidoMode">Toggle Sanseido Mode</label>
+                    </div>
+                    <div class="col-3">
+                        <input type="text" class="form-control keymap-input" id="keymap-toggleSanseidoMode" />
+                    </div>
+                </div>
+
                 <div class="row">
                     <div class="col-4"><label class="my-1 mr-2" for="keymap-sendToAnki">Real-Time Anki
                         Import</label></div>

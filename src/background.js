@@ -30,8 +30,13 @@ class RikaiRebuilt {
         browser.storage.local.set({enabled: true});
         browser.storage.sync.get('config').then(config => {
             if (!config.config) return;
+            config = config.config;
 
-            this.updateConfig(config.config);
+            this.updateConfig(config);
+
+            if (typeof config.startWithSanseido !== 'undefined') {
+                browser.storage.local.set({ sanseidoMode: config.startWithSanseido });
+            }
         });
 
         browser.storage.local.get('installedDictionaries').then(config => {
@@ -268,8 +273,6 @@ browser.runtime.onConnect.addListener(port => {
                             return testDb.import(json.entries, progressCallback)
                         })
                         .then(() => {
-                            console.log('Done');
-
                             const endTime = new Date().getTime();
                             console.log(`Download took ${(endTime - startTime) / 1000} seconds`);
 

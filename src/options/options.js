@@ -249,7 +249,6 @@ let url = document.location.toString();
 if (url.match('#')) {
     $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').tab('show');
 }
-console.log('Show');
 
 // Change hash for page-reload
 $('.nav-tabs a').on('shown.bs.tab', function (e) {
@@ -291,7 +290,6 @@ $('[data-config-option][type=number]').on('blur', event => {
     const $element = $(event.target);
 
     let configValue = parseInt($element.val());
-    console.log(configValue);
     if (isNaN(configValue)) configValue = 0;
     if ($element.attr('min') && configValue < $element.attr('min')) configValue = $element.attr('min');
     if ($element.attr('max') && configValue > $element.attr('max')) configValue = $element.attr('max');
