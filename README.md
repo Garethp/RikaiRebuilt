@@ -21,23 +21,18 @@ Take a look at the Feature List below
  * Customizing the keyboard shortcuts
  * Support for Multiple dictionaries
  * Support for adding tags when importing in to Anki
-
-#### Not completed
- * EPWING dictionary support
  * Sanseido dictionary support
  * Showing pitch accents
  * Showing Frequency Information
+
+#### Not completed
+ * EPWING dictionary support
  * Super Sticky Mode
  * Saving words to files
 
 #### Roadmap
- * Showing Frequency Information
- * Adding themes
- * Syncing settings between computers
- * Showing Pitch Information
  * Adding alternate view
  * Adding sticky mode
  * Edge and Opera Support
  * Possible EPWING support
  * Add Jisho Stroke Orders
- * Possible Sansiedo mode
