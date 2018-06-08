@@ -326,6 +326,26 @@ browser.runtime.onInstalled.addListener(async ({id, previousVersion, reason}) =>
         });
     });
 
+    //Add the extra information to dictionaries on update
+    if (reason === 'update') {
+        browser.storage.local.get('installedDictionaries').then(response => {
+            if (!response.installedDictionaries) return;
+            const installedDictionaries = response.installedDictionaries.map(dictionary => {
+                if (typeof dictionary.hasType === 'undefined') {
+                    const defaultData = defaultConfig.recommendedDictionaries.find(dic => dic.id === dictionary.id);
+
+                    dictionary.hasType = defaultData.hasType;
+                    dictionary.isNameDictionary = defaultData.isNameDictionary;
+                    dictionary.isKanjiDictionary = defaultData.isKanjiDictionary;
+                }
+
+                return dictionary;
+            });
+
+            browser.storage.local.set({installedDictionaries});
+        });
+    }
+
     browser.storage.sync.get('config').then(({config}) => {
         if (!config || !config.openChangelogOnUpdate) return;
 

@@ -30,19 +30,16 @@ class Data {
     }
 
     async updateDictionaries(dictionaries) {
-        // let dictionary = new Dictionary('rikaichan');
-        // await dictionary.open();
-        // this.dictionaries = [dictionary];
-
-        for (const dictionaryDb of this.dictionaries) {
-            await dictionaryDb.close();
+        for (const dictionary of this.dictionaries) {
+            await dictionary.db.close();
         }
 
-        this.dictionaries = dictionaries.map(dictionary => {
-            const dictionaryDb = new IndexedDictionary(dictionary.id);
-            dictionaryDb.open();
-            return dictionaryDb;
-        });
+        this.dictionaries = [];
+        for (const dictionary of dictionaries) {
+            dictionary.db = new IndexedDictionary(dictionary.id);
+            dictionary.db.open();
+            this.dictionaries.push(dictionary);
+        }
 
         this.selectedDictionary = 0;
     }
@@ -52,7 +49,7 @@ class Data {
     }
 
     async getReadingCount(reading) {
-        const dictionary = this.dictionaries[this.selectedDictionary];
+        const dictionary = this.dictionaries[this.selectedDictionary].db;
         const readingsList = await dictionary.getReadings(reading);
         return readingsList.length;
     }
@@ -64,10 +61,10 @@ class Data {
         do {
             const dictionary = this.dictionaries[dictionaryIndex];
 
-            if (!noKanji || !dictionary.isKanji) {
+            if (!noKanji || !dictionary.isKanjiDictionary) {
                 let entry;
-                if (dictionary.isKanji) entry = this.kanjiSearch(word.charAt(0));
-                else entry = this._wordSearch(word, dictionary, null);
+                if (dictionary.isKanjiDictionary) entry = this.kanjiSearch(word.charAt(0));
+                else entry = this._wordSearch(word, dictionary.db, null);
 
                 if (entry) {
                     if (dictionaryIndex !== 0) entry.title = dictionary.name;
@@ -77,7 +74,7 @@ class Data {
             }
 
             dictionaryIndex++;
-            if (dictionaryIndex >= this.dictionary.length) {
+            if (dictionaryIndex >= this.dictionaries.length) {
                 dictionaryIndex = 0;
             }
 
@@ -136,7 +133,7 @@ class Data {
         let result = {data: []};
         let maxTrim;
 
-        if (dictionary.isName) {
+        if (dictionary.isNameDictionary) {
             maxTrim = this.config.nameMax;
             result.names = 1;
         }
@@ -152,7 +149,7 @@ class Data {
 
         while (word.length > 0) {
             let showInf = (count !== 0);
-            let variants = dictionary.isName ? [{word: word, type: 0xFF, reason: null}] : this.deinflect.go(word);
+            let variants = dictionary.isNameDictionary ? [{word: word, type: 0xFF, reason: null}] : this.deinflect.go(word);
             for (let i = 0; i < variants.length; i++) {
                 let v = variants[i];
                 let entries = await dictionary.findWord(v.word);
