@@ -188,6 +188,7 @@ const ankiImport = new AnkiImport();
 const frequencyDb = new FrequencyDb();
 const pitchDb = new PitchDb();
 frequencyDb.open();
+pitchDb.open();
 
 const rebuilt = new RikaiRebuilt();
 

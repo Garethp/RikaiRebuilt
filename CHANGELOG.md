@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.24
+ * Fixed issue with PitchDb not opening, which stops anki imports
+
 #### Version 1.0.23
  * Made Sanseido Mode work over HTTPS
 
