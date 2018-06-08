@@ -35,7 +35,7 @@ class RikaiRebuilt {
             this.updateConfig(config);
 
             if (typeof config.startWithSanseido !== 'undefined') {
-                browser.storage.local.set({ sanseidoMode: config.startWithSanseido });
+                browser.storage.local.set({sanseidoMode: config.startWithSanseido});
             }
         });
 
@@ -209,7 +209,9 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
                 return {response};
             }, f => console.log(f));
         case "getPitch":
-            return rebuilt.getPitch(content.expression, content.reading).then(response => { return { response } });
+            return rebuilt.getPitch(content.expression, content.reading).then(response => {
+                return {response}
+            });
         case "getFrequency":
             return rebuilt.getFrequency(content.inExpression, content.inReading, content.useHighlightedWord, content.highlightedWord)
                 .then(response => {
@@ -347,12 +349,25 @@ browser.runtime.onInstalled.addListener(async ({id, previousVersion, reason}) =>
     }
 
     browser.storage.sync.get('config').then(({config}) => {
-        if (!config || !config.openChangelogOnUpdate) return;
+        if (!config) return;
 
-        const optionsPageUrl = browser.extension.getURL('src/options/options.html');
+        if (config.openChangelogOnUpdate) {
+            const optionsPageUrl = browser.extension.getURL('src/options/options.html');
 
-        if (reason === 'update') {
-            browser.tabs.create({url: `${optionsPageUrl}#changelog`});
+            if (reason === 'update') {
+                browser.tabs.create({url: `${optionsPageUrl}#changelog`});
+            }
+        }
+
+        let newConfigs = false;
+        for (const key in defaultConfig) {
+            if(typeof config[key] === 'undefined') {
+                newConfigs = true;
+                config[key] = defaultConfig[key];
+            }
+        }
+        if (newConfigs) {
+            browser.storage.sync.set({ config });
         }
     });
 });

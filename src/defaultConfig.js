@@ -20,6 +20,7 @@ const defaultConfig = {
     showPitchAccent: false, //showpitchaccent
     theme: 'blue',
     audioVolume: 100,
+    showKanjiComponents: true, //kindex-COMP
     installedDictionaries: [
     ],
     recommendedDictionaries: [

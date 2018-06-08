@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.25
+ * Added Kanji Dictionary
+
 #### Version 1.0.24
  * Fixed issue with PitchDb not opening, which stops anki imports
 

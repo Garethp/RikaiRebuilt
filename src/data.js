@@ -41,6 +41,18 @@ class Data {
             this.dictionaries.push(dictionary);
         }
 
+        this.dictionaries.push({
+            name: 'Kanji',
+            id: '',
+            hasType: false,
+            isNameDictionary: false,
+            isKanjiDictionary: true,
+            db: {
+                open: () => {},
+                close: () => {},
+            }
+        });
+
         this.selectedDictionary = 0;
     }
 
@@ -265,7 +277,67 @@ class Data {
         return r;
     }
 
-    kanjiSearch(character) {
+    async kanjiSearch(character) {
+        const hex = '0123456789ABCDEF';
+        let kde;
+        let result;
+        let a, b;
+        let i;
+
+        i = character.charCodeAt(0);
+        if (i < 0x3000) return null;
+
+        if (!this.kanjiData) {
+            this.kanjiData = await FileReader.read('../resources/kanji.dat').then(response => response.text());
+            console.log(this.kanjiData);
+        }
+
+        kde = this.find(this.kanjiData, character);
+        if (!kde) return null;
+
+        a = kde.split('|');
+        if (a.length !== 6) return null;
+
+        result = { };
+        result.kanji = a[0];
+
+        result.misc = {};
+        result.misc['U'] = hex[(i >>> 12) & 15] + hex[(i >>> 8) & 15] + hex[(i >>> 4) & 15] + hex[i & 15];
+
+        b = a[1].split(' ');
+        for (i = 0; i < b.length; ++i) {
+            if (b[i].match(/^([A-Z]+)(.*)/)) {
+                if (!result.misc[RegExp.$1]) result.misc[RegExp.$1] = RegExp.$2;
+                else result.misc[RegExp.$1] += ' ' + RegExp.$2;
+            }
+        }
+
+        result.onkun = a[2].replace(/\s+/g, '\u3001 ');
+        result.nanori = a[3].replace(/\s+/g, '\u3001 ');
+        result.bushumei = a[4].replace(/\s+/g, '\u3001 ');
+        result.eigo = a[5];
+
+        return result;
+    }
+
+
+    find (data, text) {
+        const tlen = text.length;
+        let beg = 0;
+        let end = data.length - 1;
+        let i;
+        let mi;
+        let mis;
+
+        while (beg < end) {
+            mi = (beg + end) >> 1;
+            i = data.lastIndexOf('\n', mi) + 1;
+
+            mis = data.substr(i, tlen);
+            if (text < mis) end = i - 1;
+            else if (text > mis) beg = data.indexOf('\n', mi + 1) + 1;
+            else return data.substring(i, data.indexOf('\n', mi + 1));
+        }
         return null;
     }
 }

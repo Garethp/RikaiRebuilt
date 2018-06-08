@@ -220,6 +220,7 @@ class Rikai {
         const previousSentence = previousSentenceClone.text();
 
         this.showFromText(text, sentence, previousSentence, textSource.range.startOffset, textClone.range.startContainer, entry => {
+            console.log(this.word);
             textClone.setEndOffset(this.word.length);
 
             const currentSelection = document.defaultView.getSelection();
@@ -311,15 +312,15 @@ class Rikai {
             return 0;
         }
 
-        this.lastFound = [entry];
 
+        if (!entry.matchLen) entry.matchLen = 1;
+        this.lastFound = [entry];
         this.word = text.substr(0, entry.matchLen);
 
         const wordPositionInString = rangeOffset + previousSentence.length - sentenceStartPos + startOffset;
         this.sentenceWithBlank = sentence.substr(0, wordPositionInString) + "___"
             + sentence.substr(wordPositionInString + entry.matchLen, sentence.length);
 
-        if (!entry.matchLen) entry.matchLen = 1;
         tabData.uofsNext = entry.matchLen;
         tabData.uofs = rangeOffset - tabData.previousRangeOffset;
 
@@ -759,8 +760,10 @@ class Rikai {
 
         if (entry == null) return '';
 
-        // if (!this.ready) this.init();
-        // if (!this.radData) this.radData = rcxFile.readArray('chrome://rikaichan/content/radicals.dat');
+        if (!this.radData) this.radData = await FileReader.read('../resources/radicals.dat')
+            .then(response => response.text())
+            .then(text => text.split('\n'))
+            .then(array => array.filter(line => line.length !== 0));
 
         if (entry.kanji) {
             let yomi;
@@ -796,7 +799,7 @@ class Rikai {
                 '<td class="k-abox-f">freq<br/>' + (entry.misc['F'] ? entry.misc['F'] : '-') + '</td>' +
                 '<td class="k-abox-s">strokes<br/>' + entry.misc['S'] + '</td>' +
                 '</tr></table>';
-            if (this.kanjiShown['COMP']) {
+            if (this.config.showKanjiComponents) {
                 k = this.radData[bn].split('\t');
                 box += '<table class="k-bbox-tb">' +
                     '<tr><td class="k-bbox-1a">' + k[0] + '</td>' +
@@ -819,20 +822,35 @@ class Rikai {
             nums = '';
             j = 0;
 
-            for (i = 0; i < this.numList.length; i += 2) {
-                c = this.numList[i];
-                if (this.kanjiShown[c]) {
-                    s = entry.misc[c]; // The number
+            const numList = {
+                'H': ['showKanjiHalpern', 'Halpern'],
+                'L': ['showKanjiHeisig', 'Heisig'],
+                'E': ['showKanjiHenshall', 'Henshall'],
+                'DK': ['showKanjiLearnersDictionary', 'Kanji Learners Dictionary'],
+                'N': ['showKanjiNelson', 'Nelson'],
+                'V': ['showKanjiNewNelson', 'New Nelson'],
+                'Y': ['showKanjiPinYin', 'PinYin'],
+                'P': ['showKanjiSkipPattern', 'Skip Pattern'],
+                'IN': ['showKanjiTurtleAndKana', 'Turtle Kanji & Kana'],
+                'I': ['showKanjiTurtleDictionary', 'Turtle Kanji Dictionary'],
+                'U': ['showKanjiUnicode', 'Unicode']
+            };
+
+            for (const i in numList) {
+                const configName = numList[i][0];
+                const displayName = numList[i][1];
+
+                if (this.config[configName] || true) {
+                    s = entry.misc[i]; // The number
                     c = ' class="k-mix-td' + (j ^= 1) + '"';
 
-                    if (this.numList[i + 1] === "Heisig") {
+                    if (configName === "showKanjiHeisig") {
                         const revTkLink = 'http://kanji.koohii.com/study/kanji/' + entry.kanji;
-                        nums += '<tr><td' + c + '>' + '<a' + c + 'href="' + revTkLink + '">'
-                            + this.numList[i + 1] + '</a>' + '</td><td' + c + '>' + '<a' + c + 'href="' + revTkLink + '">'
+                        nums += '<tr><td' + c + '>' + '<a' + c + 'href="' + revTkLink + '">Heisig</a>' + '</td><td' + c + '>' + '<a' + c + 'href="' + revTkLink + '">'
                             + (s ? s : '-') + '</a>' + '</td></tr>';
                     }
                     else {
-                        nums += '<tr><td' + c + '>' + this.numList[i + 1] + '</td><td' + c + '>' + (s ? s : '-') + '</td></tr>';
+                        nums += '<tr><td' + c + '>' + displayName + '</td><td' + c + '>' + (s ? s : '-') + '</td></tr>';
                     }
                 }
             }
