@@ -7,6 +7,17 @@ class Data {
         autobind(this);
         this.config = config;
         this.dictionaries = [];
+        this.dictionaries = [{
+            name: 'Kanji',
+            id: '',
+            hasType: false,
+            isNameDictionary: false,
+            isKanjiDictionary: true,
+            db: {
+                open: () => {},
+                close: () => {},
+            }
+        }];
 
         this.deinflect = new Deinflect();
 
