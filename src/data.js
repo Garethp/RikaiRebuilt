@@ -308,6 +308,11 @@ class Data {
                 }, {}));
         }
 
+        if (!this.radData) this.radData = await FileReader.read('../resources/radicals.dat')
+            .then(response => response.text())
+            .then(text => text.split('\n'))
+            .then(array => array.filter(line => line.length !== 0));
+
         kde = this.kanjiData[character];
         if (!kde) return null;
 
@@ -327,6 +332,10 @@ class Data {
                 else result.misc[RegExp.$1] += ' ' + RegExp.$2;
             }
         }
+
+        result.radicalNumber = result.misc['B'];
+        result.radical = this.radData[result.radicalNumber - 1];
+        result.radicals = this.radData.filter((line, index) => index !== result.radicalNumber - 1 && line.indexOf(character) !== -1);
 
         result.onkun = a[2].replace(/\s+/g, '\u3001 ');
         result.nanori = a[3].replace(/\s+/g, '\u3001 ');

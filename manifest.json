@@ -61,7 +61,6 @@
         "src/defaultConfig.js",
         "dist/browser-polyfill.min.js",
         "src/utils.js",
-        "src/FileReader.js",
         "src/content/document.js",
         "src/content/source.js",
         "src/content/index.js"

@@ -220,7 +220,6 @@ class Rikai {
         const previousSentence = previousSentenceClone.text();
 
         this.showFromText(text, sentence, previousSentence, textSource.range.startOffset, textClone.range.startContainer, entry => {
-            console.log(this.word);
             textClone.setEndOffset(this.word.length);
 
             const currentSelection = document.defaultView.getSelection();
@@ -760,11 +759,6 @@ class Rikai {
 
         if (entry == null) return '';
 
-        if (!this.radData) this.radData = await FileReader.read('../resources/radicals.dat')
-            .then(response => response.text())
-            .then(text => text.split('\n'))
-            .then(array => array.filter(line => line.length !== 0));
-
         if (entry.kanji) {
             let yomi;
             let box;
@@ -793,28 +787,25 @@ class Rikai {
                     break;
             }
             box = '<table class="k-abox-tb"><tr>' +
-                '<td class="k-abox-r">radical<br/>' + this.radData[bn].charAt(0) + ' ' + (bn + 1) + '</td>' +
+                '<td class="k-abox-r">radical<br/>' + entry.radical.charAt(0) + ' ' + entry.radicalNumber + '</td>' +
                 '<td class="k-abox-g">' + k + '</td>' +
                 '</tr><tr>' +
                 '<td class="k-abox-f">freq<br/>' + (entry.misc['F'] ? entry.misc['F'] : '-') + '</td>' +
                 '<td class="k-abox-s">strokes<br/>' + entry.misc['S'] + '</td>' +
                 '</tr></table>';
             if (this.config.showKanjiComponents) {
-                k = this.radData[bn].split('\t');
+                k = entry.radical.split('\t');
                 box += '<table class="k-bbox-tb">' +
                     '<tr><td class="k-bbox-1a">' + k[0] + '</td>' +
                     '<td class="k-bbox-1b">' + k[2] + '</td>' +
                     '<td class="k-bbox-1b">' + k[3] + '</td></tr>';
                 j = 1;
-                for (i = 0; i < this.radData.length; ++i) {
-                    s = this.radData[i];
-                    if ((bn !== i) && (s.indexOf(entry.kanji) !== -1)) {
-                        k = s.split('\t');
-                        c = ' class="k-bbox-' + (j ^= 1);
-                        box += '<tr><td' + c + 'a">' + k[0] + '</td>' +
-                            '<td' + c + 'b">' + k[2] + '</td>' +
-                            '<td' + c + 'b">' + k[3] + '</td></tr>';
-                    }
+                for (const radical of entry.radicals) {
+                    k = radical.split('\t');
+                            c = ' class="k-bbox-' + (j ^= 1);
+                            box += '<tr><td' + c + 'a">' + k[0] + '</td>' +
+                                '<td' + c + 'b">' + k[2] + '</td>' +
+                                '<td' + c + 'b">' + k[3] + '</td></tr>';
                 }
                 box += '</table>';
             }
