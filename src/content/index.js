@@ -840,7 +840,7 @@ class Rikai {
                 const configName = numList[i][0];
                 const displayName = numList[i][1];
 
-                if (this.config[configName] || true) {
+                if (this.config[configName]) {
                     s = entry.misc[i]; // The number
                     c = ' class="k-mix-td' + (j ^= 1) + '"';
 

@@ -252,7 +252,8 @@ browser.runtime.onConnect.addListener(port => {
 
             case "importDictionary":
                 const {name, id, url} = content;
-                const testDb = new IndexedDictionary(content.id);
+                const testDb = new IndexedDictionary(id);
+                let hasType, isNameDictionary, isKanjiDictionary;
                 let lastPercent = 0;
 
                 testDb.open().then(async () => {
@@ -272,6 +273,10 @@ browser.runtime.onConnect.addListener(port => {
 
                     return fetch(url).then(response => response.json())
                         .then(json => {
+                            hasType = json.hasType;
+                            isKanjiDictionary = json.isKanjiDictionary;
+                            isNameDictionary = json.isNameDictionary;
+
                             startTime = new Date().getTime();
                             return testDb.import(json.entries, progressCallback)
                         })
@@ -279,7 +284,7 @@ browser.runtime.onConnect.addListener(port => {
                             const endTime = new Date().getTime();
                             console.log(`Download took ${(endTime - startTime) / 1000} seconds`);
 
-                            installedDictionaries.push({name, id});
+                            installedDictionaries.push({id, name, hasType, isNameDictionary, isKanjiDictionary});
                             browser.storage.local.set({installedDictionaries})
                         })
                 });

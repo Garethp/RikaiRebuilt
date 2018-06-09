@@ -20,7 +20,21 @@ const defaultConfig = {
     showPitchAccent: false, //showpitchaccent
     theme: 'blue',
     audioVolume: 100,
+
+    //Definitions for what we can show in the Kanji Dictionary display
     showKanjiComponents: true, //kindex-COMP
+    showKanjiHalpern: true, //kindex-H
+    showKanjiHeisig: true, //kindex-L
+    showKanjiHenshall: true, //kindex-E
+    showKanjiLearnersDictionary: true, //kindex-DK
+    showKanjiNelson: true, //kindex-N
+    showKanjiNewNelson: true, //kindex-V
+    showKanjiPinYin: true, //kindex-Y
+    showKanjiSkipPattern: true, //kindex-P
+    showKanjiTurtleAndKana: true, //kindex-IN
+    showKanjiTurtleDictionary: true, //kindex-I
+    showKanjiUnicode: true, //kindex-U
+
     installedDictionaries: [
     ],
     recommendedDictionaries: [

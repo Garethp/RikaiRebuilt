@@ -299,11 +299,16 @@ class Data {
         if (i < 0x3000) return null;
 
         if (!this.kanjiData) {
-            this.kanjiData = await FileReader.read('../resources/kanji.dat').then(response => response.text());
-            console.log(this.kanjiData);
+            this.kanjiData = await FileReader.read('../resources/kanji.dat')
+                .then(response => response.text())
+                .then(data => data.split('\n').filter(line => line.length !== 0))
+                .then(array => array.reduce((obj, current) => {
+                    obj[current.charAt(0)] = current;
+                    return obj;
+                }, {}));
         }
 
-        kde = this.find(this.kanjiData, character);
+        kde = this.kanjiData[character];
         if (!kde) return null;
 
         a = kde.split('|');
@@ -329,27 +334,6 @@ class Data {
         result.eigo = a[5];
 
         return result;
-    }
-
-
-    find (data, text) {
-        const tlen = text.length;
-        let beg = 0;
-        let end = data.length - 1;
-        let i;
-        let mi;
-        let mis;
-
-        while (beg < end) {
-            mi = (beg + end) >> 1;
-            i = data.lastIndexOf('\n', mi) + 1;
-
-            mis = data.substr(i, tlen);
-            if (text < mis) end = i - 1;
-            else if (text > mis) beg = data.indexOf('\n', mi + 1) + 1;
-            else return data.substring(i, data.indexOf('\n', mi + 1));
-        }
-        return null;
     }
 }
 

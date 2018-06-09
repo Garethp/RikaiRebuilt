@@ -45,6 +45,12 @@
             </a>
         </li>
         <li class="nav-item">
+            <a class="nav-link" id="kanji-dictionary-tab" data-toggle="tab" href="#kanji-dictionary" role="tab"
+               aria-controls="kanji-dictionary" aria-selected="false">
+                Kanji Dictionary
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" id="anki-tab" data-toggle="tab" href="#anki" role="tab" aria-controls="anki"
                aria-selected="false">
                 Anki Import
@@ -77,7 +83,7 @@
                     <label class="col-form-label" for="volume">Audio Volume</label>
                 </div>
                 <div class="col-9">
-                    <input type="number" min=0 max=100 id="volume" data-config-option="audioVolume" />
+                    <input type="number" min=0 max=100 id="volume" data-config-option="audioVolume"/>
                 </div>
 
                 <div class="col-3">
@@ -100,7 +106,7 @@
                 </div>
                 <div class="col-9">
                     <input class="form-check-input" type="checkbox" id="startWithSanseido"
-                           data-config-option="startWithSanseido" />
+                           data-config-option="startWithSanseido"/>
                 </div>
             </div>
         </div>
@@ -112,7 +118,7 @@
                         <label class="my-1 mr-2" for="keymap-toggleSanseidoMode">Toggle Sanseido Mode</label>
                     </div>
                     <div class="col-3">
-                        <input type="text" class="form-control keymap-input" id="keymap-toggleSanseidoMode" />
+                        <input type="text" class="form-control keymap-input" id="keymap-toggleSanseidoMode"/>
                     </div>
                 </div>
 
@@ -148,17 +154,21 @@
 
                 <div class="form-group row">
                     <div class="col-3">
-                        <label title="Show frequency information" for="showFrequency" class="col-form-label">Show Frequency Information</label>
+                        <label title="Show frequency information" for="showFrequency" class="col-form-label">Show
+                            Frequency Information</label>
                     </div>
                     <div class="col-9">
-                        <input class="form-check-input" type="checkbox" id="showFrequency" data-config-option="showFrequency" />
+                        <input class="form-check-input" type="checkbox" id="showFrequency"
+                               data-config-option="showFrequency"/>
                     </div>
 
                     <div class="col-3">
-                        <label title="Show pitch accent" for="showPitch" class="col-form-label">Show Pitch Accent</label>
+                        <label title="Show pitch accent" for="showPitch" class="col-form-label">Show Pitch
+                            Accent</label>
                     </div>
                     <div class="col-9">
-                        <input class="form-check-inline" type="checkbox" id="showPitch" data-config-option="showPitchAccent" />
+                        <input class="form-check-inline" type="checkbox" id="showPitch"
+                               data-config-option="showPitchAccent"/>
                     </div>
 
                     <div class="col-3">
@@ -197,138 +207,177 @@
                                data-config-map="makeInt"/>
                     </div>
                 </div>
-        </form>
-    </div>
-
-    <div class="tab-pane fade" id="anki" role="tabpanel" aria-labelledby="anki-tab">
-        <div>In order to use this, please install this <b>updated</b>
-            <a href="https://ankiweb.net/shared/info/1659361456">Real-Time Import plugin</a> for Anki. Don't worry,
-            it
-            will still work with Rikaisama if you use that in a different browser
+            </form>
         </div>
-        <form class="form-group">
+        <div class="tab-pane fade" id="kanji-dictionary" role="tabpanel" aria-labelledby="kanji-dictionary-tab">
             <div class="row">
-                <div class="col-3">
-                    <label title="The fields for the Card that will be created in Anki" for="fields"
-                           class="col-form-label">Card Fields</label></div>
-                <div class="col-7">
-                    <input type="text" id="fields" class="form-control" data-config-option="ankiFields"
-                           data-config-map="makeAnkiFields">
-                </div>
+                <div class="col-3"><label for="kanjiComponents">Kanji Components</label></div>
+                <div class="col-3"><input type="checkbox" id="kanjiComponents" data-config-option="showKanjiComponents" /></div>
+
+                <div class="col-3"><label for="kanjiHalpern">Halpern</label></div>
+                <div class="col-3"><input type="checkbox" id="kanjiHalpern" data-config-option="showKanjiHalpern"/></div>
+
+                <div class="col-3"><label for="kanjiHeisig">Heisig</label></div>
+                <div class="col-3"><input type="checkbox" id="kanjiHeisig" data-config-option="showKanjiHeisig"/></div>
+
+                <div class="col-3"><label for="kanjiHenshall">Henshall</label></div>
+                <div class="col-3"><input type="checkbox" id="kanjiHenshall" data-config-option="showKanjiHenshall"/></div>
+
+                <div class="col-3"><label for="kanjiLearnersDictionary">Kanji Learners Dictionary</label></div>
+                <div class="col-3"><input type="checkbox" id="kanjiLearnersDictionary" data-config-option="showKanjiLearnersDictionary" /></div>
+
+                <div class="col-3"><label for="kanjiNelson">Nelson</label></div>
+                <div class="col-3"><input type="checkbox" id="kanjiNelson" data-config-option="showKanjiNelson" /></div>
+
+                <div class="col-3"><label for="kanjiNewNelson">New Nelson</label></div>
+                <div class="col-3"><input type="checkbox" id="kanjiNewNelson" data-config-option="showKanjiNewNelson" /></div>
+
+                <div class="col-3"><label for="kanjiPinYin">PinYin</label></div>
+                <div class="col-3"><input type="checkbox" id="kanjiPinYin" data-config-option="showKanjiPinYin" /></div>
+
+                <div class="col-3"><label for="kanjiSkipPattern">Skip Pattern</label></div>
+                <div class="col-3"><input type="checkbox" id="kanjiSkipPattern" data-config-option="showKanjiSkipPattern" /></div>
+
+                <div class="col-3"><label for="kanjiTurtleAndKana">Turtle Kanji & Kana</label></div>
+                <div class="col-3"><input type="checkbox" id="kanjiTurtleAndKana" data-config-option="showKanjiTurtleAndKana"/></div>
+
+                <div class="col-3"><label for="kanjiTurtleDictionary">Turtle Dictionary</label></div>
+                <div class="col-3"><input type="checkbox" id="kanjiTurtleDictionary" data-config-option="showKanjiTurtleDictionary" /></div>
+
+                <div class="col-3"><label for="kanjiUnicode">Unicode</label></div>
+                <div class="col-3"><input type="checkbox" id="kanjiUnicode" data-config-option="showKanjiUnicode" /></div>
             </div>
-
-            <div class="row">
-                <div class="col-3">
-                    <label title="Tags to add to anki (Separated by spaces)" for="ankiTags"
-                           class="col-form-label">Anki Tags</label></div>
-                <div class="col-3">
-                    <input type="text" id="ankiTags" class="form-control" data-config-option="ankiTags">
-                </div>
+        </div>
+        <div class="tab-pane fade" id="anki" role="tabpanel" aria-labelledby="anki-tab">
+            <div>In order to use this, please install this <b>updated</b>
+                <a href="https://ankiweb.net/shared/info/1659361456">Real-Time Import plugin</a> for Anki. Don't worry,
+                it
+                will still work with Rikaisama if you use that in a different browser
             </div>
-
-            <div class="row">
-                <div class="col-3">
-                    <label for="importEmptyAudio" class="form-check-label"
-                           title="When importing, if there's no audio to download we can fill the field with the location of the file where the audio would be, or just leave it empty">Fill
-                        Audio Field Even When
-                        There's No Audio</label>
+            <form class="form-group">
+                <div class="row">
+                    <div class="col-3">
+                        <label title="The fields for the Card that will be created in Anki" for="fields"
+                               class="col-form-label">Card Fields</label></div>
+                    <div class="col-7">
+                        <input type="text" id="fields" class="form-control" data-config-option="ankiFields"
+                               data-config-map="makeAnkiFields">
+                    </div>
                 </div>
-                <div class="col-3">
-                    <input type="checkbox" id="importEmptyAudio" class="" data-config-option="importEmptyAudio"/>
+
+                <div class="row">
+                    <div class="col-3">
+                        <label title="Tags to add to anki (Separated by spaces)" for="ankiTags"
+                               class="col-form-label">Anki Tags</label></div>
+                    <div class="col-3">
+                        <input type="text" id="ankiTags" class="form-control" data-config-option="ankiTags">
+                    </div>
                 </div>
-            </div>
-        </form>
 
-        Example: <code>Vocabulary=dictionaryFormat; Reading=reading; Definition=definition; Audio=audio</code>
-        <hr/>
+                <div class="row">
+                    <div class="col-3">
+                        <label for="importEmptyAudio" class="form-check-label"
+                               title="When importing, if there's no audio to download we can fill the field with the location of the file where the audio would be, or just leave it empty">Fill
+                            Audio Field Even When
+                            There's No Audio</label>
+                    </div>
+                    <div class="col-3">
+                        <input type="checkbox" id="importEmptyAudio" class="" data-config-option="importEmptyAudio"/>
+                    </div>
+                </div>
+            </form>
 
-        Options:
-        <ul class="anki-field-options">
-            <li title="This field is where the audio file is injected">audio</li>
-            <li title="The dictionary format of the word">dictionaryFormat</li>
-            <li title="Just the word that you've selected">word</li>
-            <li title="The reading of the word">reading</li>
-            <li>saveNotes</li>
-            <li title="The sentence that the word you selected appears in">sentence</li>
-            <li title="The setence that the word you selected appears in, with the selected word replaced with _'s">
-                sentenceWithBlank
-            </li>
-            <li title="The url of the page you saved the word form">sourceUrl</li>
-            <li title="The titel fo the page you saved the word from">pageTitle</li>
-            <li title="The definition of the selected word">definition</li>
-            <li>frequency</li>
-            <li>pitch</li>
-        </ul>
+            Example: <code>Vocabulary=dictionaryFormat; Reading=reading; Definition=definition; Audio=audio</code>
+            <hr/>
+
+            Options:
+            <ul class="anki-field-options">
+                <li title="This field is where the audio file is injected">audio</li>
+                <li title="The dictionary format of the word">dictionaryFormat</li>
+                <li title="Just the word that you've selected">word</li>
+                <li title="The reading of the word">reading</li>
+                <li>saveNotes</li>
+                <li title="The sentence that the word you selected appears in">sentence</li>
+                <li title="The setence that the word you selected appears in, with the selected word replaced with _'s">
+                    sentenceWithBlank
+                </li>
+                <li title="The url of the page you saved the word form">sourceUrl</li>
+                <li title="The titel fo the page you saved the word from">pageTitle</li>
+                <li title="The definition of the selected word">definition</li>
+                <li>frequency</li>
+                <li>pitch</li>
+            </ul>
+        </div>
+        <div class="tab-pane fade" id="changelog" role="tabpanel" aria-labelledby="changelog-tab">
+            <h4>Version 1.0.25</h4>
+            <ul>
+                <li>Added Kanji dictionary</li>
+            </ul>
+
+            <h4>Version 1.0.24</h4>
+            <ul>
+                <li>Fixed an issue with pitches that were preventing Anki imports</li>
+            </ul>
+
+            <h4>Version 1.0.23</h4>
+            <ul>
+                <li>Change call to Sanseido to work over HTTPS</li>
+            </ul>
+
+            <h4>Version 1.0.22</h4>
+            <ul>
+                <li>Added Sanseido Mode</li>
+            </ul>
+
+            <h4>Version 1.0.21</h4>
+            <ul>
+                <li>Added a pitch accent option</li>
+            </ul>
+
+            <h4>Version 1.0.20</h4>
+            <ul>
+                <li>Drastically reduce the amount of memory used to install a dictionary</li>
+            </ul>
+
+            <h4>Version 1.0.19</h4>
+            <ul>
+                <li>Setting options to sync between browsers. You may need to uninstall and reinstall your addon after
+                    this update
+                </li>
+                <li>You can now have the options page open while you use the application</li>
+                <li>Made the progress bar for importing dictionaries actually show the progress</li>
+                <li>Added a volume option for playing sound</li>
+            </ul>
+
+            <h4>Version 1.0.18</h4>
+            <ul>
+                <li>Fixed broken Anki Import</li>
+            </ul>
+
+            <h4>Version 1.0.17</h4>
+            <ul>
+                <li>Hopefully fixed some issues regarding text selection in form fields</li>
+            </ul>
+
+            <h4>Version 1.0.16</h4>
+            <ul>
+                <li>Fixed popup positioning</li>
+            </ul>
+
+            <h4>Version 1.0.15</h4>
+            <ul>
+                <li>Added theme selections</li>
+                <li>Allow adding multiple values to a field with space separation</li>
+            </ul>
+        </div>
     </div>
 
-    <div class="tab-pane fade" id="changelog" role="tabpanel" aria-labelledby="changelog-tab">
-        <h4>Version 1.0.25</h4>
-        <ul>
-            <li>Added Kanji dictionary</li>
-        </ul>
+    <form>
+        <button type='button' class='btn btn-primary' id='resetPreferences'>Reset</button>
+        <button type='button' class='btn' id='showConfig'>Show Config</button>
+    </form>
 
-        <h4>Version 1.0.24</h4>
-        <ul>
-            <li>Fixed an issue with pitches that were preventing Anki imports</li>
-        </ul>
-
-        <h4>Version 1.0.23</h4>
-        <ul>
-            <li>Change call to Sanseido to work over HTTPS</li>
-        </ul>
-
-        <h4>Version 1.0.22</h4>
-        <ul>
-            <li>Added Sanseido Mode</li>
-        </ul>
-
-        <h4>Version 1.0.21</h4>
-        <ul>
-            <li>Added a pitch accent option</li>
-        </ul>
-
-        <h4>Version 1.0.20</h4>
-        <ul>
-            <li>Drastically reduce the amount of memory used to install a dictionary</li>
-        </ul>
-
-        <h4>Version 1.0.19</h4>
-        <ul>
-            <li>Setting options to sync between browsers. You may need to uninstall and reinstall your addon after this update</li>
-            <li>You can now have the options page open while you use the application</li>
-            <li>Made the progress bar for importing dictionaries actually show the progress</li>
-            <li>Added a volume option for playing sound</li>
-        </ul>
-
-        <h4>Version 1.0.18</h4>
-        <ul>
-            <li>Fixed broken Anki Import</li>
-        </ul>
-
-        <h4>Version 1.0.17</h4>
-        <ul>
-            <li>Hopefully fixed some issues regarding text selection in form fields</li>
-        </ul>
-
-        <h4>Version 1.0.16</h4>
-        <ul>
-            <li>Fixed popup positioning</li>
-        </ul>
-
-        <h4>Version 1.0.15</h4>
-        <ul>
-            <li>Added theme selections</li>
-            <li>Allow adding multiple values to a field with space separation</li>
-        </ul>
-    </div>
-</div>
-
-<form>
-    <button type='button' class='btn btn-primary' id='resetPreferences'>Reset</button>
-    <button type='button' class='btn' id='showConfig'>Show Config</button>
-</form>
-
-<pre><code id="configArea" style="display: none;"></code></pre>
+    <pre><code id="configArea" style="display: none;"></code></pre>
 </div>
 <script src="jquery.js"></script>
 <script src="bootstrap.min.js"></script>
