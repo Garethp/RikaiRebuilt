@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.0.26
+ * Small fixes in the Sanseido Mode Fallback
+
 #### Version 1.0.25
  * Added Kanji Dictionary
 

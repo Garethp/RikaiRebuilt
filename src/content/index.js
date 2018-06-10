@@ -337,6 +337,7 @@ class Rikai {
 
         //Sanseido mode
         if (this.sanseidoMode) {
+            this.sanseidoFallback = 0;
             return this.lookupSanseido();
         }
 
@@ -519,7 +520,7 @@ class Rikai {
                 // If the definition is blank (search ばかり for example), fallback
                 if (defText.length === 0) {
                     // Set to a state that will ensure fallback to default JMDICT popup
-                    this.sanseidoFallbackState = 1;
+                    this.sanseidoFallback = 1;
                     entryFound = false;
                     break;
                 }
@@ -556,9 +557,9 @@ class Rikai {
         // If the entry was not on sanseido, either try to lookup the kana form of the word
         // or display default JMDICT popup
         if (!entryFound) {
-            this.sanseidoFallbackState++;
+            this.sanseidoFallback++;
 
-            if (this.sanseidoFallbackState < 2) {
+            if (this.sanseidoFallback < 3) {
                 // Set a timer to lookup again using the kana form of the word instead
                 window.setTimeout
                 (

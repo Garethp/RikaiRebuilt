@@ -94,7 +94,7 @@ function docRangeFromPoint(point) {
     if(imposter !== null) imposter.style.zIndex = -2147483646;
 
     const rect = range.getClientRects()[0];
-    if (point.y > rect.bottom + 2) {
+    if (!rect || point.y > rect.bottom + 2) {
         return;
     }
 
