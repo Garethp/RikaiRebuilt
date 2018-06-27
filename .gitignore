@@ -1,5 +1,7 @@
 .idea/
 web-ext-artifacts/
 node_modules/
+cmake-build-debug
+src-windows/
 package-lock.json
 RikaiRebuilt.zip
