@@ -24,10 +24,13 @@
 //#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif
 
+#include <fcntl.h>
+#include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include "eb/eb.h"
 #include "eb/error.h"
@@ -54,6 +57,8 @@ static void die(int exit_code);
 static void parse_command_line(int argc, char *argv[]);
 
 static void usage(int exit_code, char *msg);
+
+static void handle_json(int exit_code);
 
 
 /* Hooks - Used to process certain constructs as they come up (such as gaiji) */
@@ -154,6 +159,14 @@ static void init(void) {
 
     if (out_file == NULL) {
         char *errorStr[100];
+
+
+        FILE *f = fopen("file.txt", "w");
+
+        const char *text = "This is the file not found text";
+        fprintf(f, "Some text: %s\n", text);
+
+        fclose(f);
 
         easyJSON json = easyJSON_create();
         sprintf(errorStr, "Error: Could not open output file \"%s\"", out_path);
@@ -600,6 +613,8 @@ static void die(int exit_code) {
 --
 ------------------------------------------------------------------------*/
 void parse_command_line(int argc, char *argv[]) {
+    handle_json(0);
+
     int i;
     FILE *fp = NULL;
     char *status_conv = NULL;
@@ -622,6 +637,8 @@ void parse_command_line(int argc, char *argv[]) {
             }
         } else if (strcmp(argv[i], "--help") == 0) {
             usage(0, "");
+        } else if (strcmp(argv[i], "--json") == 0) {
+            handle_json(0);
         } else if (strcmp(argv[i], "--hit") == 0) {
             i++;
             hit_to_output = atoi(argv[i]);
@@ -666,8 +683,10 @@ void parse_command_line(int argc, char *argv[]) {
         } else if (strcmp(argv[i], "--ver") == 0) {
             usage(0, "eplkup version 1.5 by Christopher Brochtrup.\n");
         } else {
+            //Since we can't actually pass arguments to the application, we're going to assume it's for JSON
             if ((argc - i) != 3) {
-                usage(1, "Error: Incorrect number of arguments!\n");
+                handle_json(0);
+//                usage(1, "Error: Incorrect number of arguments!\n");
             }
 
             /* Get the book path */
@@ -744,3 +763,53 @@ void usage(int exit_code, char *msg) {
     exit(exit_code);
 
 } /* usage */
+
+void handle_json(int exit_code) {
+    FILE *f = fopen("file.txt", "w");
+
+    // Read and unpack the first four bytes, which contain the message length
+    char ch[4];
+    read(_fileno(stdin), &ch, 4);
+
+    auto messageLength = (int) (ch[3] << 24 |
+                                ch[2] << 16 |
+                                ch[1] << 8 |
+                                ch[0]);
+
+    // Create a message string that's equal to the message length, plus a character for terminate
+    char *message = malloc((size_t) (messageLength + 1));
+    char characterBuffer;
+
+    //Fill the message object
+    for (int i = 0; i < messageLength; i++) {
+        read(_fileno(stdin), &characterBuffer, 1);
+
+        message[i] = characterBuffer;
+    }
+    message[messageLength] = '\0';
+
+    fprintf(f, "%s", message);
+    fclose(f);
+
+//    char *response = "\"pong\"";
+
+    easyJSON json = easyJSON_create();
+    json.AddString(json, "result", "pong");
+    json.AddString(json, "error", "none");
+    char *response = json.ToString(json);
+    //Create the length of the response and pack it in to four bytes
+    int lenStr = strlen(response);
+    char itemLen[4] = {(char) ((lenStr >> 0) & 0xFF),
+                (char) ((lenStr >> 8) & 0xFF),
+                (char) ((lenStr >> 16) & 0xFF),
+                (char) ((lenStr >> 24) & 0xFF)};
+
+
+    //Print the response length and then the response. Flush after printing
+    printf("%c%c%c%c", itemLen[0], itemLen[1], itemLen[2], itemLen[3]);
+    printf(response);
+
+    fflush(stdout);
+
+    exit(exit_code);
+}

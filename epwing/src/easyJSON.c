@@ -9,7 +9,7 @@ easyJSON easyJSON_AddString(easyJSON self, const char *name, const char *string)
 }
 
 char *easyJSON_ToString(easyJSON self) {
-    return cJSON_Print(self.object);
+    return cJSON_PrintUnformatted(self.object);
 }
 
 easyJSON easyJSON_create() {
