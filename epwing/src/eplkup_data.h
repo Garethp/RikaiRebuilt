@@ -41,6 +41,9 @@
 /* The maximum length of a text entry */
 #define MAXLEN_TEXT        30000
 
+/* We need to define a length for the error array */
+#define ERROR_LENGTH = 999;
+
 /* The maximum length of a buffer used for conversion to utf-8 */
 #define MAXLEN_CONV        (MAXLEN_TEXT * 2)
 

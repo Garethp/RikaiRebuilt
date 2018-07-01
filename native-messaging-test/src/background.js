@@ -15,18 +15,20 @@ On a click on the browser action, send the app a message.
 */
 browser.browserAction.onClicked.addListener(() => {
   console.log("Sending:  ping");
-  // const message = JSON.stringify({
-  //     'message': 'ping',
-  //     'requst': 'please say pong'
-  // });
+  const message = {
+      'book_path': 'C:\\Users\\Gareth\\Downloads\\RUIGO\\',
+      'options': {
+      },
+      'input': '別',
+  };
 
-    let message = 'ping';
+    // let message = 'ping';
 
     // let message = "hi";
 
   browser.runtime.sendNativeMessage('ping_pong', message)
       .then((r) => {
-        console.log(r.error);
+        console.log(JSON.stringify(r));
       });
   // port.postMessage("ping");
 });

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(eplkup LANGUAGES C CXX)
+project(eplkup LANGUAGES C)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 # Set the output directory for each operating system
@@ -16,7 +16,7 @@ find_library(EB_LIBRARY eb HINTS libraries/eb/lib REQUIRED)
 find_library(LIB_ICONV libiconv HINTS libraries/libiconv/lib)
 
 # Define what our source files are
-file(GLOB SRC_FILES "libraries/cJSON/include/*.c" "src/eb/*.h" "src/*.c" "libraries/cJSON/include/*.h")
+file(GLOB SRC_FILES "libraries/cJSON/include/*.c" "src/eb/*.h" "src/*.c" "src/*/*.c" "libraries/cJSON/include/*.h")
 
 include_directories(libraries/cJSON/include)
 
@@ -27,7 +27,7 @@ if (WIN32)
     add_definitions(-Dssize_t=int)
 endif()
 
-add_executable(eplkup ${SOURCE_FILES} ${SRC_FILES})
+add_executable(eplkup ${SOURCE_FILES} ${SRC_FILES} src/NativeMessaging/NativeMessaging.h src/NativeMessaging/NativeMessaging.h)
 
 # Link our executable
 target_link_libraries(eplkup PUBLIC ${EB_LIBRARY})

@@ -25,7 +25,7 @@
 #endif
 
 #include <fcntl.h>
-#include <io.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,6 +43,7 @@
 #include "eplkup_gaiji.h"
 
 #include "easyJSON.h"
+#include "NativeMessaging/NativeMessaging.h"
 
 static void init(void);
 
@@ -59,6 +60,14 @@ static void parse_command_line(int argc, char *argv[]);
 static void usage(int exit_code, char *msg);
 
 static void handle_json(int exit_code);
+
+static void write_out_file(char * output);
+
+static void write_output(char * output);
+
+static void write_error(char * error);
+static char* get_input();
+static char* str_append(char* string1, char* string2);
 
 
 /* Hooks - Used to process certain constructs as they come up (such as gaiji) */
@@ -100,6 +109,9 @@ static char final_buf[MAXLEN_CONV + 1];     /* Text that will be output to file 
 static char text[MAXLEN_TEXT + 1];          /* Entry text */
 static char heading[MAXLEN_HEADING + 1];    /* Entry heading */
 static char title[EB_MAX_TITLE_LENGTH + 1]; /* Subbook title */
+
+static bool json_mode = false;
+static easyJSON json_input;
 
 static EB_Book book; /* The EPWING book object */
 
@@ -151,33 +163,8 @@ int main(int argc, char *argv[]) {
 static void init(void) {
     EB_Error_Code error_code;
     EB_Subbook_Code subbook_list[EB_MAX_SUBBOOKS];
-    FILE *out_file = NULL;
     int subbook_count;
-
-    /* Blank the output file */
-    out_file = fopen(out_path, "w");
-
-    if (out_file == NULL) {
-        char *errorStr[100];
-
-
-        FILE *f = fopen("file.txt", "w");
-
-        const char *text = "This is the file not found text";
-        fprintf(f, "Some text: %s\n", text);
-
-        fclose(f);
-
-        easyJSON json = easyJSON_create();
-        sprintf(errorStr, "Error: Could not open output file \"%s\"", out_path);
-        json.AddString(json, "error", errorStr);
-        fprintf(stderr, json.ToString(json), out_path);
-
-        fprintf(stderr, "Error: Could not open output file, \"%s\"\n", out_path);
-        die(1);
-    }
-
-    fclose(out_file);
+    char error[999];
 
     /* Init EB Lib */
     eb_initialize_library();
@@ -217,38 +204,38 @@ static void init(void) {
     error_code = eb_bind(&book, book_path);
 
     if (error_code != EB_SUCCESS) {
-        fprintf(stderr, "Error: Failed to bind the book, %s: %s\n", eb_error_message(error_code), book_path);
-        die(1);
+        sprintf(error, "Failed to bind the book, %s: %s", eb_error_message(error_code), book_path);
+        write_error(error);
     }
 
     /* Get the subbook list */
     error_code = eb_subbook_list(&book, subbook_list, &subbook_count);
 
     if (error_code != EB_SUCCESS) {
-        fprintf(stderr, "Error: Failed to get the subbbook list, %s\n", eb_error_message(error_code));
-        die(1);
+        sprintf(error, "Failed to get the subbbook list, %s", eb_error_message(error_code));
+        write_error(error);
     }
 
     /* Get the subbook */
     error_code = eb_set_subbook(&book, subbook_list[subbook_index]);
 
     if (error_code != EB_SUCCESS) {
-        fprintf(stderr, "Error: Failed to set the current subbook, %s\n", eb_error_message(error_code));
-        die(1);
+        sprintf(error, "Failed to set the current subbook, %s", eb_error_message(error_code));
+        write_error(error);
     }
 
     /* Get the subbook directory (the name only, not the full path) */
     error_code = eb_subbook_directory(&book, subbook_directory);
 
     if (error_code != EB_SUCCESS) {
-        fprintf(stderr, "Error: Failed to get the subbook directory: %s\n", eb_error_message(error_code));
-        die(1);
+        sprintf(error, "Failed to get the subbook directory: %s", eb_error_message(error_code));
+        write_error(error);
     }
 
     /* Set the font */
     if (eb_set_font(&book, EB_FONT_16) < 0) {
-        fprintf(stderr, "Error: Failed to set the font size: %s\n", eb_error_message(error_code));
-        die(1);
+        sprintf(error, "Failed to set the font size: %s", eb_error_message(error_code));
+        write_error(error);
     }
 
 } /* init */
@@ -271,35 +258,24 @@ static void print_title_to_out_file(void) {
     EB_Error_Code error_code;
     char *status_conv = NULL;
     FILE *out_file = NULL;
+    char error[999];
 
     /* Get the title of the subbook */
     error_code = eb_subbook_title2(&book, subbook_index, title);
 
     if (error_code != EB_SUCCESS) {
-        fprintf(stderr, "Error: Failed to get the title: %s\n", eb_error_message(error_code));
-        die(1);
+        sprintf(error, "Failed to get the title: %s", eb_error_message(error_code));
+        write_error(error);
     }
 
     /* Convert title from EUC-JP to UTF-8 */
     status_conv = convert_encoding(conv_buf, MAXLEN_CONV, title, EB_MAX_TITLE_LENGTH, "UTF-8", "EUC-JP");
 
     if (status_conv == NULL) {
-        fprintf(stderr, "Error: Something went wrong when trying to encode the title\n");
-        die(1);
+        write_error("Something went wrong when trying to encode the title");
     }
 
-    out_file = fopen(out_path, "w");
-
-    if (out_file == NULL) {
-        fprintf(stderr, "Error: Could not open output file, \"%s\"\n", out_path);
-        die(1);
-    }
-
-    /* Output the text to file (in UTF-8) */
-    fwrite(conv_buf, 1, strlen(conv_buf), out_file);
-
-    fclose(out_file);
-
+    write_output(conv_buf);
 } /* print_title_to_out_file */
 
 
@@ -326,62 +302,46 @@ static void lookup_link(void) {
     ssize_t text_length;
     int parse_result;
 
-    in_file = fopen(in_path, "r");
+    char error[999];
+    char output_buffer[999];
+    char *output;
 
-    if (in_file == NULL) {
-        fprintf(stderr, "Error: Could not open input file: \"%s\"", in_path);
-        die(1);
-    }
-
-    if (fgets(link_text, MAXLEN_LOOKUP_WORD, in_file) == NULL) {
-        fclose(in_file);
-        fprintf(stderr, "Error: Could not read word from input file: \"%s\"", in_path);
-        die(1);
-    }
-
-    fclose(in_file);
+    strcpy(link_text, get_input());
 
     /* Parse the location of the link in the subbook */
     parse_result = sscanf(link_text, "%X %X", &position.page, &position.offset);
 
     /* If link was not parsed correctly (2 is the expected number of fields in the input file) */
     if (parse_result != 2) {
-        fprintf(stderr, "Error: Could not parse link from input file, %d.\n", parse_result);
-        die(1);
+        sprintf(error, "Could not parse link from input file, %d.", parse_result);
+        write_error(error);
     }
 
     error_code = eb_seek_text(&book, &position);
 
     if (error_code != EB_SUCCESS) {
-        fprintf(stderr, "Error: Failed to seek text, \"%s\"\n", eb_error_message(error_code));
-        die(1);
+        sprintf(error, "Failed to seek text, \"%s\"", eb_error_message(error_code));
+        write_error(error);
     }
 
     error_code = eb_read_text(&book, NULL, &hookset, NULL, MAXLEN_TEXT, text, &text_length);
 
     if (error_code != EB_SUCCESS) {
-        fprintf(stderr, "Error: Failed to read text, \"%s\"\n", eb_error_message(error_code));
-        die(1);
+        sprintf(error, "Failed to read text, \"%s\"", eb_error_message(error_code));
+        write_error(error);
     }
 
     /* Convert from EUC-JP to UTF-8 */
     status_conv = convert_encoding(conv_buf, MAXLEN_CONV, text, text_length, "UTF-8", "EUC-JP");
 
     if (status_conv == NULL) {
-        fprintf(stderr, "Error: Something went wrong when trying to encode the the text\n");
-        die(1);
+        write_error("Something went wrong when trying to encode the the text");
     }
 
     /* Replace gaiji that have UTF-8 equivalents */
     replace_gaiji_with_utf8(final_buf, conv_buf);
 
-    out_file = fopen(out_path, "w");
-
-    /* Output the text to file (in UTF-8) */
-    fwrite(final_buf, 1, strlen(final_buf), out_file);
-
-    fclose(out_file);
-
+    write_output(final_buf);
 } /* lookup_link */
 
 
@@ -410,44 +370,27 @@ static void lookup_word(void) {
     ssize_t heading_length;
     ssize_t text_length;
     int i;
+    char error[999];
+    char* output = "";
+    char output_buffer[999];
 
-    /* Get the word to lookup */
-    in_file = fopen(in_path, "r");
-
-    if (in_file == NULL) {
-        fprintf(stderr, "Error: Could not open input file: \"%s\"", in_path);
-        die(1);
-    }
-
-    if (fgets(lookup_word_utf8, MAXLEN_LOOKUP_WORD, in_file) == NULL) {
-        fclose(in_file);
-        fprintf(stderr, "Error: Could not read word from input file: \"%s\"", in_path);
-        die(1);
-    }
-
-    fclose(in_file);
-
-    /* Remove the final '\n' */
-    if (lookup_word_utf8[strlen(lookup_word_utf8) - 1] == '\n') {
-        lookup_word_utf8[strlen(lookup_word_utf8) - 1] = '\0';
-    }
+    strcpy(lookup_word_utf8, get_input());
 
     /* Convert the lookup word from UTF-8 to EUC-JP */
     status_conv = convert_encoding(lookup_word_eucjp, MAXLEN_LOOKUP_WORD, lookup_word_utf8, strlen(lookup_word_utf8),
                                    "EUC-JP", "UTF-8");
 
     if (status_conv == NULL) {
-        fprintf(stderr, "Error: Something went wront when trying to encode the lookup word\n");
-        die(1);
+        write_error("Something went wrong when trying to encode the lookup word");
     }
+
 
     /* Perform an exact search of the lookup word */
     error_code = eb_search_exactword(&book, lookup_word_eucjp);
 
     if (error_code != EB_SUCCESS) {
-        fprintf(stderr, "Error: Failed to search for the word, %s: %s\n", eb_error_message(error_code),
-                lookup_word_eucjp);
-        die(1);
+        sprintf("Failed to search for the word, %s: %s", eb_error_message(error_code), lookup_word_eucjp);
+        write_error(error);
     }
 
     while (1) {
@@ -455,8 +398,8 @@ static void lookup_word(void) {
         error_code = eb_hit_list(&book, MAX_HITS, hits, &hit_count);
 
         if (error_code != EB_SUCCESS) {
-            fprintf(stderr, "Error: Failed to get hit entries, %s\n", eb_error_message(error_code));
-            die(1);
+            sprintf(error, "Failed to get hit entries, %s", eb_error_message(error_code));
+            write_error(error);
         }
 
         /* Are we done? */
@@ -464,17 +407,11 @@ static void lookup_word(void) {
             break;
         }
 
-        /* Create the output file */
-        out_file = fopen(out_path, "w");
-
-        if (out_file == NULL) {
-            fprintf(stderr, "Error: Could not open output file, \"%s\"\n", out_path);
-            die(1);
-        }
 
         /* Output only the number of hits? */
         if (show_hit_count) {
-            fprintf(out_file, "{HITS: %d}\n", hit_count);
+            sprintf(output_buffer, "{HITS: %d}\n", hit_count);
+            output = str_append(output, output_buffer);
         }
 
         /* Determine the max number of hits to output */
@@ -489,7 +426,8 @@ static void lookup_word(void) {
 
             /* Output the hit number */
             if (print_hit_number && (hit_count > 1) && (hit_to_output == -1)) {
-                fprintf(out_file, "{ENTRY: %d}\n", i);
+                sprintf(output_buffer, "{ENTRY: %d}\n", i);
+                output = str_append(output, output_buffer);
             }
 
             /* Print the heading of the hit to file */
@@ -498,34 +436,30 @@ static void lookup_word(void) {
                 error_code = eb_seek_text(&book, &(hits[i].heading));
 
                 if (error_code != EB_SUCCESS) {
-                    fprintf(stderr, "Error: Failed to seek the subbook, %s\n", eb_error_message(error_code));
-                    fclose(out_file);
-                    die(1);
+                    sprintf(error, "Failed to seek the subbook, %s", eb_error_message(error_code));
+                    write_error(error);
                 }
 
                 /* Read the heading */
                 error_code = eb_read_heading(&book, NULL, &hookset, NULL, MAXLEN_HEADING, heading, &heading_length);
 
                 if (error_code != EB_SUCCESS) {
-                    fprintf(stderr, "Error: Failed to read the subbook, %s\n", eb_error_message(error_code));
-                    fclose(out_file);
-                    die(1);
+                    sprintf(error, "Failed to read the subbook, %s", eb_error_message(error_code));
+                    write_error(error);
                 }
 
                 /* Convert from EUC-JP to UTF-8 */
                 status_conv = convert_encoding(conv_buf, MAXLEN_CONV, heading, heading_length, "UTF-8", "EUC-JP");
 
                 if (status_conv == NULL) {
-                    fprintf(stderr, "Error: Something went wrong when trying to encode the the heading\n");
-                    fclose(out_file);
-                    die(1);
+                    write_error("Something went wrong when trying to encode the the heading");
                 }
 
                 /* Replace gaiji that have UTF-8 equivalents */
                 replace_gaiji_with_utf8(final_buf, conv_buf);
 
-                /* Output the header to file (in UTF-8) */
-                fprintf(out_file, "%s\n", conv_buf);
+                sprintf(output_buffer, "%s\n", conv_buf);
+                output = str_append(output, output_buffer);
             }
 
             /* Print the text of the hit to file */
@@ -534,18 +468,16 @@ static void lookup_word(void) {
                 error_code = eb_seek_text(&book, &(hits[i].text));
 
                 if (error_code != EB_SUCCESS) {
-                    fprintf(stderr, "Error: Failed to seek the subbook, %s\n", eb_error_message(error_code));
-                    fclose(out_file);
-                    die(1);
+                    sprintf(error, "Failed to seek the subbook, %s", eb_error_message(error_code));
+                    write_error(error);
                 }
 
                 /* Read the text*/
                 error_code = eb_read_text(&book, NULL, &hookset, NULL, MAXLEN_TEXT, text, &text_length);
 
                 if (error_code != EB_SUCCESS) {
-                    fprintf(stderr, "Error: Failed to read the subbook, %s\n", eb_error_message(error_code));
-                    fclose(out_file);
-                    die(1);
+                    sprintf(error, "Failed to read the subbook, %s", eb_error_message(error_code));
+                    write_error(error);
                 }
             }
 
@@ -553,16 +485,13 @@ static void lookup_word(void) {
             status_conv = convert_encoding(conv_buf, MAXLEN_CONV, text, text_length, "UTF-8", "EUC-JP");
 
             if (status_conv == NULL) {
-                fprintf(stderr, "Error: Something went wrong when trying to encode the the text\n");
-                fclose(out_file);
-                die(1);
+                write_error("Something went wrong when trying to encode the the text");
             }
 
             /* Replace gaiji that have UTF-8 equivalents */
             replace_gaiji_with_utf8(final_buf, conv_buf);
 
-            /* Output the text to file (in UTF-8) */
-            fwrite(final_buf, 1, strlen(final_buf), out_file);
+            output = str_append(output, final_buf);
 
             /* Since the user specified a hit index, don't display the other hits */
             if (hit_to_output >= 0) {
@@ -570,7 +499,8 @@ static void lookup_word(void) {
             }
         }
 
-        fclose(out_file);
+        write_output(output);
+//        fclose(out_file);
     }
 
 } /* lookup_word */
@@ -613,15 +543,12 @@ static void die(int exit_code) {
 --
 ------------------------------------------------------------------------*/
 void parse_command_line(int argc, char *argv[]) {
-    handle_json(0);
-
     int i;
     FILE *fp = NULL;
     char *status_conv = NULL;
 
     if (argv == NULL) {
-        fprintf(stderr, "Error: Could not determine arguments!\n");
-        exit(1);
+        write_error("Could not determine arguments");
     }
 
     /* For each argument */
@@ -684,21 +611,23 @@ void parse_command_line(int argc, char *argv[]) {
             usage(0, "eplkup version 1.5 by Christopher Brochtrup.\n");
         } else {
             //Since we can't actually pass arguments to the application, we're going to assume it's for JSON
-            if ((argc - i) != 3) {
+            if ((argc - i) < 3 && !json_mode) {
                 handle_json(0);
 //                usage(1, "Error: Incorrect number of arguments!\n");
             }
 
-            /* Get the book path */
-            strncpy_len(book_path, argv[i], MAXLEN_PATH);
+            if (!json_mode) {
+                /* Get the book path */
+                strncpy_len(book_path, argv[i], MAXLEN_PATH);
 
-            /* Get the input file */
-            i++;
-            strncpy_len(in_path, argv[i], MAXLEN_PATH);
+                /* Get the input file */
+                i++;
+                strncpy_len(in_path, argv[i], MAXLEN_PATH);
 
-            /* Get the output file */
-            i++;
-            strncpy_len(out_path, argv[i], MAXLEN_PATH);
+                /* Get the output file */
+                i++;
+                strncpy_len(out_path, argv[i], MAXLEN_PATH);
+            }
         }
     }
 
@@ -765,51 +694,171 @@ void usage(int exit_code, char *msg) {
 } /* usage */
 
 void handle_json(int exit_code) {
-    FILE *f = fopen("file.txt", "w");
+    json_mode = true;
 
-    // Read and unpack the first four bytes, which contain the message length
-    char ch[4];
-    read(_fileno(stdin), &ch, 4);
+    NativeMessaging nativeMessaging = newNativeMessaging();
 
-    auto messageLength = (int) (ch[3] << 24 |
-                                ch[2] << 16 |
-                                ch[1] << 8 |
-                                ch[0]);
+    easyJSON message = nativeMessaging.ReadJSON(fileno(stdin));
+    json_input = message;
 
-    // Create a message string that's equal to the message length, plus a character for terminate
-    char *message = malloc((size_t) (messageLength + 1));
-    char characterBuffer;
+    char error[999];
 
-    //Fill the message object
-    for (int i = 0; i < messageLength; i++) {
-        read(_fileno(stdin), &characterBuffer, 1);
-
-        message[i] = characterBuffer;
+    if (!message.IsString(message, "book_path")) {
+        nativeMessaging.WriteError("book_path is a required value");
+        exit(0);
     }
-    message[messageLength] = '\0';
 
-    fprintf(f, "%s", message);
-    fclose(f);
+    if (!message.IsString(message, "input")) {
+        write_error("field \"input\" is required, even if it's blank");
+    }
 
-//    char *response = "\"pong\"";
+    strncpy_len(book_path, message.GetString(message, "book_path"), MAXLEN_PATH);
+
+    if (message.Has(message, "options")) {
+        easyJSON options = message.Get(message, "options");
+
+        gaiji_option = GAIJI_OPTION_DEFAULT;
+        if (options.IsTrue(options, "emphasis")) {
+            set_emphasis_hook = 1;
+        }
+
+        if (options.IsTrue(options, "gaiji")) {
+            gaiji_option = GAIJI_OPTION_HTML_IMG;
+        }
+
+        if (options.IsInt(options, "hit")) {
+            hit_to_output = options.GetInt(options, "hit");
+        }
+
+        if (options.IsTrue(options, "hit-num")) {
+            print_hit_number = 1;
+        }
+
+        if (options.IsTrue(options, "html-sub")) {
+            set_subscript_hook = 1;
+        }
+
+        if (options.IsTrue(options, "html-sup")) {
+            set_superscript_hook = 1;
+        }
+
+        if (options.IsTrue(options, "keyword")) {
+            set_keyword_hook = 1;
+        }
+
+        if (options.IsTrue(options, "link")) {
+            set_reference_hook = 1;
+        }
+
+        if (options.IsTrue(options, "link-in")) {
+            input_is_link = 1;
+        }
+
+        if (options.IsInt(options, "max-hits")) {
+            int max_hits = options.GetInt(options, "max-hits");
+            if (max_hits > MAX_HITS) {
+                sprintf(error, "Cannot have max-hits higher than %i", MAX_HITS);
+                write_error(error);
+                exit(0);
+            }
+
+            max_hits_to_output = max_hits;
+        }
+
+        if (options.IsTrue(options, "no-header")) {
+            print_heading = 0;
+        }
+
+        if (options.IsTrue(options, "no-text")) {
+            print_text = 0;
+        }
+
+        if (options.IsTrue(options, "show-count")) {
+            show_hit_count = 1;
+        }
+
+        if (options.IsInt(options, "subbook")) {
+            subbook_index = options.GetInt(options, "subbook");
+        }
+
+        if (options.IsTrue(options, "title")) {
+            print_title = 1;
+        }
+    }
+}
+
+void write_out_file(char * output) {
+    FILE *out_file = NULL;
+
+    out_file = fopen(out_path, "w");
+    fwrite(output, 1, strlen(output), out_file);
+    fclose(out_file);
+}
+
+void write_output(char * output) {
+    if (!json_mode) {
+        write_out_file(output);
+        return;
+    }
 
     easyJSON json = easyJSON_create();
-    json.AddString(json, "result", "pong");
-    json.AddString(json, "error", "none");
-    char *response = json.ToString(json);
-    //Create the length of the response and pack it in to four bytes
-    int lenStr = strlen(response);
-    char itemLen[4] = {(char) ((lenStr >> 0) & 0xFF),
-                (char) ((lenStr >> 8) & 0xFF),
-                (char) ((lenStr >> 16) & 0xFF),
-                (char) ((lenStr >> 24) & 0xFF)};
+    json.AddString(json, "output", output);
 
+    NativeMessaging nativeMessaging = newNativeMessaging();
+    nativeMessaging.WriteJSON(json);
+    return;
+}
 
-    //Print the response length and then the response. Flush after printing
-    printf("%c%c%c%c", itemLen[0], itemLen[1], itemLen[2], itemLen[3]);
-    printf(response);
+void write_error(char * error) {
+    if (!json_mode) {
+        fprintf(stderr, "Error: %s\n", error);
 
-    fflush(stdout);
+        die(1);
+        return;
+    }
 
-    exit(exit_code);
+    NativeMessaging nativeMessaging = newNativeMessaging();
+    nativeMessaging.WriteError(error);
+
+    die(1);
+    return;
+}
+
+char* get_input() {
+    if (!json_mode) {
+        char input_buffer[MAXLEN_LOOKUP_WORD + 1] = { 0 };
+        char *ret;
+        FILE *in_file = fopen(in_path, "r");
+
+        if (in_file == NULL) {
+            fprintf(stderr, "Error: Could not open input file: \"%s\"", in_path);
+            exit(1);
+        }
+
+        fgets(input_buffer, MAXLEN_LOOKUP_WORD, in_file);
+        fclose(in_file);
+
+        if (input_buffer[strlen(input_buffer) - 1] == '\n') {
+            input_buffer[strlen(input_buffer) - 1] = '\0';
+        }
+
+        ret = malloc(strlen(input_buffer));
+        ret = input_buffer;
+        return ret;
+    }
+
+    return json_input.GetString(json_input, "input");
+}
+
+char* str_append(char* string1, char* string2) {
+    char * new_string;
+    if((new_string = malloc(strlen(string1) + strlen(string2) + 1)) != NULL){
+        new_string[0] = '\0';   // ensures the memory is an empty string
+        strcat(new_string,string1);
+        strcat(new_string,string2);
+    } else {
+        write_error("Unable to concatenate string. Memory allocation error");
+    }
+
+    return new_string;
 }
