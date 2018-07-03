@@ -824,8 +824,6 @@ void write_error(char * error) {
 }
 
 void get_input(char *input) {
-    size_t input_size = sizeof(input);
-
     if (!json_mode) {
         FILE *in_file = fopen(in_path, "r");
         char input_buffer[MAXLEN_LOOKUP_WORD + 1] = { 0 };
@@ -842,13 +840,13 @@ void get_input(char *input) {
             input_buffer[strlen(input_buffer) - 1] = '\0';
         }
 
-        strncpy(input, input_buffer, input_size - 1);
-        input[input_size - 1] = 0;
+        strncpy(input, input_buffer, MAXLEN_LOOKUP_WORD - 1);
+        input[MAXLEN_LOOKUP_WORD - 1] = 0;
         return;
     }
 
-    strncpy(input, json_input.GetString(json_input, "input"), input_size - 1);
-    input[input_size - 1] = 0;
+    strncpy(input, json_input.GetString(json_input, "input"), MAXLEN_LOOKUP_WORD - 1);
+    input[MAXLEN_LOOKUP_WORD - 1] = 0;
 }
 
 char* str_append(char* string1, char* string2) {
