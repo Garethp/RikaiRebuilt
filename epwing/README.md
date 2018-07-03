@@ -4,6 +4,19 @@ Compiling of eplkup is essentially done through the CMake tool on Windows, OSX a
 #### Windows
 For Windows, the library files for eplkup are stored in libraries/.
 
+#### OSX
+For OSX you need to do a system install of libiconv and libeb.
+
+To install libiconv, run `brew install libiconv`.
+To install libeb, run the following
+
+```sh
+git clone git@github.com:FooSoft/eb.git
+cd eb/
+./configure
+make install
+```
+
 #### Linux
 On Linux, the libraries are assumed to be installed on your local computer. To do this, run the following
 

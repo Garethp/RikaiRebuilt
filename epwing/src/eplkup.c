@@ -66,7 +66,7 @@ static void write_out_file(char * output);
 static void write_output(char * output);
 
 static void write_error(char * error);
-static char* get_input();
+static void get_input(char *input);
 static char* str_append(char* string1, char* string2);
 
 
@@ -303,10 +303,8 @@ static void lookup_link(void) {
     int parse_result;
 
     char error[999];
-    char output_buffer[999];
-    char *output;
 
-    strcpy(link_text, get_input());
+    get_input(link_text);
 
     /* Parse the location of the link in the subbook */
     parse_result = sscanf(link_text, "%X %X", &position.page, &position.offset);
@@ -374,7 +372,7 @@ static void lookup_word(void) {
     char* output = "";
     char output_buffer[999];
 
-    strcpy(lookup_word_utf8, get_input());
+    get_input(lookup_word_utf8);
 
     /* Convert the lookup word from UTF-8 to EUC-JP */
     status_conv = convert_encoding(lookup_word_eucjp, MAXLEN_LOOKUP_WORD, lookup_word_utf8, strlen(lookup_word_utf8),
@@ -500,6 +498,7 @@ static void lookup_word(void) {
         }
 
         write_output(output);
+        free(output);
 //        fclose(out_file);
     }
 
@@ -824,11 +823,12 @@ void write_error(char * error) {
     return;
 }
 
-char* get_input() {
+void get_input(char *input) {
+    size_t input_size = sizeof(input);
+
     if (!json_mode) {
-        char input_buffer[MAXLEN_LOOKUP_WORD + 1] = { 0 };
-        char *ret;
         FILE *in_file = fopen(in_path, "r");
+        char input_buffer[MAXLEN_LOOKUP_WORD + 1] = { 0 };
 
         if (in_file == NULL) {
             fprintf(stderr, "Error: Could not open input file: \"%s\"", in_path);
@@ -842,12 +842,13 @@ char* get_input() {
             input_buffer[strlen(input_buffer) - 1] = '\0';
         }
 
-        ret = malloc(strlen(input_buffer));
-        ret = input_buffer;
-        return ret;
+        strncpy(input, input_buffer, input_size - 1);
+        input[input_size - 1] = 0;
+        return;
     }
 
-    return json_input.GetString(json_input, "input");
+    strncpy(input, json_input.GetString(json_input, "input"), input_size - 1);
+    input[input_size - 1] = 0;
 }
 
 char* str_append(char* string1, char* string2) {
