@@ -105,6 +105,25 @@ class RikaiRebuilt {
         return pitchDb.getPitchAccent(expression, reading).then(results => results[0]);
     }
 
+    async getEpwingDefinition(expression) {
+        const message = {
+            'book_path': 'C:\\Users\\Gareth\\Downloads\\RUIGO\\',
+            'options': {
+                // 'gaiji': true,
+                'hit-num': true,
+                'html-sub': true,
+                'html-sup': true,
+                // 'no-header': true,
+            },
+            'input': expression,
+        };
+
+        return browser.runtime.sendNativeMessage('eplkup', message).then(result => {
+            console.log(JSON.stringify(result));
+            return result.output;
+        });
+    }
+
     async getFrequency(inExpression, inReading, useHighlightedWord, highlightedWord) {
         const expression = inExpression;
         const reading = inReading;
@@ -206,6 +225,10 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
     switch (type) {
         case "wordSearch":
             return rebuilt.wordSearch(content).then(response => {
+                return {response};
+            }, f => console.log(f));
+        case "getEpwingDefinition":
+            return rebuilt.getEpwingDefinition(content).then(response => {
                 return {response};
             }, f => console.log(f));
         case "getPitch":

@@ -58,6 +58,13 @@ class Rikai {
         this.popupId = 'rikaichan-window';
         this.config = defaultConfig;
         this.keysDown = [];
+
+        this.epwingMode = true;
+        this.epwingTotalHits = 0;
+        this.epwingCurrentHit = 0;
+        this.epwingPreviousHit = 0;
+        this.epwingResults = [];
+
         this.sanseidoFallback = 0;
         this.sanseidoMode = false;
         this.abortController = new AbortController();
@@ -138,6 +145,13 @@ class Rikai {
             case this.config.keymap.toggleSanseidoMode:
                 browser.storage.local.set({ sanseidoMode: !this.sanseidoMode });
                 return true;
+
+            case this.config.keymap.toggleEpwingMode:
+                return this.toggleEpwing();
+            case this.config.keymap.epwingNextEntry:
+                return this.showNextEpwingEntry();
+            case this.config.keymap.epwingPreviousEntry:
+                return this.showPreviousEpwingEntry();
         }
 
         return false;
@@ -311,7 +325,6 @@ class Rikai {
             return 0;
         }
 
-
         if (!entry.matchLen) entry.matchLen = 1;
         this.lastFound = [entry];
         this.word = text.substr(0, entry.matchLen);
@@ -339,6 +352,10 @@ class Rikai {
         if (this.sanseidoMode) {
             this.sanseidoFallback = 0;
             return this.lookupSanseido();
+        }
+
+        if (this.epwingMode) {
+            return this.lookupEpwing();
         }
 
         this.showPopup(this.getKnownWordIndicatorText() + await this.makeHTML(entry), tabData.previousTarget, tabData.pos);
@@ -438,6 +455,125 @@ class Rikai {
         return fetch(`https://www.sanseido.biz/User/Dic/Index.aspx?TWords=${searchTerm}&st=0&DailyJJ=checkbox`, { signal })
             .then(response => response.text())
             .then(response => this.parseAndDisplaySanseido(response));
+    }
+
+    async toggleEpwing() {
+        this.epwingMode = !this.epwingMode;
+        this.epwingTotalHits = 0;
+        this.epwingCurrentHit = 0;
+        this.epwingPreviousHit = 0;
+        this.epwingResults = [];
+        return false;
+    }
+
+    async lookupEpwing() {
+        const searchTerm = this.extractSearchTerm(false);
+        const {tabData} = this;
+
+        if (!searchTerm) {
+            return;
+        }
+
+        let epwingText = await this.sendRequest('getEpwingDefinition', searchTerm);
+
+        const entryFields = epwingText.split(/{ENTRY: \d+}\n/);
+        let entryList = [];
+
+        for (let i = 0; i < entryFields.length; ++i) {
+            const curEntry = entryFields[i];
+
+            if (curEntry.length > 0) {
+                let isDuplicate = false;
+
+                for (let j = 0; j < entryList.length; ++j) {
+                    if (curEntry === entryList[j]) {
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+
+                if (!isDuplicate) {
+                    entryList.push(entryFields[i]);
+                }
+
+                // If user wants to limit number of entries, check to see if we have enough
+                // if (rcxConfig.epwingshowallentries && (entryList.length >= rcxConfig.epwingmaxentries)) {
+                //     break;
+                // }
+            }
+        }
+
+        this.epwingCurrentHit = 0;
+        this.epwingPreviousHit = 0;
+        this.epwingTotalHits = entryList.length;
+        this.epwingResults = entryList;
+
+        this.showEpwingDefinition();
+    }
+
+    showNextEpwingEntry() {
+        if (!this.epwingMode || this.epwingTotalHits < 2) {
+            return false;
+        }
+
+        this.epwingCurrentHit++;
+        if (this.epwingCurrentHit > this.epwingTotalHits - 1) {
+            this.epwingCurrentHit = 0;
+        }
+
+        this.showEpwingDefinition();
+        return true;
+    }
+
+    showPreviousEpwingEntry() {
+        if (!this.epwingMode || this.epwingTotalHits < 2) {
+            return false;
+        }
+
+        this.epwingCurrentHit--;
+        if (this.epwingCurrentHit < 0) {
+            this.epwingCurrentHit = this.epwingTotalHits - 1;
+        }
+
+        this.showEpwingDefinition();
+        return false;
+    }
+
+    async showEpwingDefinition() {
+        const {epwingCurrentHit, epwingPreviousHit, epwingResults, tabData} = this;
+
+        const entry = await this.formatEpwingEntry(epwingResults[epwingCurrentHit], true, true);
+        this.showPopup(entry, tabData.previousTarget, tabData.pos);
+    }
+
+    async formatEpwingEntry(entryText, showHeader, showEntryNumber) {
+
+        //TODO: Add removing user inputted regex
+        //TODO: Add "Header" (Color, pitch and so on)
+        if (showHeader) {
+            //TODO: Add Frequency Information
+
+            let entryNumber = "";
+            if (showEntryNumber) {
+                entryNumber = `(${this.epwingCurrentHit + 1} / ${this.epwingTotalHits})`;
+            }
+
+            //TODO: Add known word indicator
+            //TODO: Add Showing Conjugation
+            //TODO: Add showing dictionary title and number
+            entryText = `${entryNumber}<br />${entryText}`;
+        }
+
+        //TODO: Add Max Lines
+
+        //TODO: Add "epwingStripNewLines" config
+        if (false) {
+            entryText = entryText.replace(/\n/g, " ");
+        } else {
+            entryText = entryText.replace(/\n/g, "<br />");
+        }
+
+        return entryText;
     }
 
     async parseAndDisplaySanseido(response) {

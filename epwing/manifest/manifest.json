@@ -1,0 +1,7 @@
+{
+  "name": "eplkup",
+  "description": "Example host for native messaging",
+  "path": "../bin/windows/eplkup.exe",
+  "type": "stdio",
+  "allowed_extensions": [ "{3b5a4a18-bf58-4434-adec-106450a33368}" ]
+}

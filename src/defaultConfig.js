@@ -5,6 +5,10 @@ const defaultConfig = {
         sendToAnki: 82,
         selectNextDictionary: 16,
         toggleSanseidoMode: 79,
+
+        toggleEpwingMode: 80,
+        epwingPreviousEntry: 219,
+        epwingNextEntry: 221,
     },
     hideDefinitions: false, //hidedef
     hideXRatedEntries: false, //hidex

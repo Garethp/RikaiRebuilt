@@ -25,7 +25,8 @@
     "<all_urls>",
     "tabs",
     "storage",
-    "contextMenus"
+    "contextMenus",
+    "nativeMessaging"
   ],
 
   "background": {
