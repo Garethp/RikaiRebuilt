@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.1.0
+ * Adding some basic EPWING functionality in
+
 #### Version 1.0.26
  * Small fixes in the Sanseido Mode Fallback
 
