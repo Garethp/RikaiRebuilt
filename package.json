@@ -2,6 +2,7 @@
   "name": "RikaiRebuilt",
   "scripts": {
     "start": "web-ext run --start-url https://en.wikipedia.org/wiki/Ky%C5%8Diku_kanji --browser-console",
+    "build": "web-ext run --ignore-files=epwing",
     "test": "mocha"
   },
   "devDependencies": {
