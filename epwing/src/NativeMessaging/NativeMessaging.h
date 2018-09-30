@@ -20,7 +20,7 @@ struct NativeMessaging
 };
 
 
-int NativeMessaging_Unpack(char packed[4]);
+int NativeMessaging_Unpack(unsigned char packed[4]);
 char *NativeMessaging_Pack(int number);
 
 char* NativeMessaging_Read(int fileNo);

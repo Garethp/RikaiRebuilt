@@ -39,6 +39,9 @@ const defaultConfig = {
     showKanjiTurtleDictionary: true, //kindex-I
     showKanjiUnicode: true, //kindex-U
 
+    //Epwing Options
+    epwingDictionaryPath: '',
+
     installedDictionaries: [
     ],
     recommendedDictionaries: [

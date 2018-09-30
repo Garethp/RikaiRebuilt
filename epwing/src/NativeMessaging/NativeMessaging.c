@@ -11,7 +11,7 @@
 
 char *NativeMessaging_Read(int fileNo) {
     // Get the message Length
-    char packedLength[4];
+    unsigned char packedLength[4];
     read(fileno(stdin), &packedLength, 4);
 
     int messageLength = NativeMessaging_Unpack(packedLength);
@@ -56,7 +56,7 @@ void NativeMessaging_WriteError(char *error) {
     NativeMessaging_WriteJSON(message);
 }
 
-int NativeMessaging_Unpack(char packed[4]) {
+int NativeMessaging_Unpack(unsigned char packed[4]) {
     return (int) (packed[3] << 24 |
                   packed[2] << 16 |
                   packed[1] << 8 |

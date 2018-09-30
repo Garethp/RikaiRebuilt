@@ -59,7 +59,7 @@ class Rikai {
         this.config = defaultConfig;
         this.keysDown = [];
 
-        this.epwingMode = true;
+        this.epwingMode = false;
         this.epwingTotalHits = 0;
         this.epwingCurrentHit = 0;
         this.epwingPreviousHit = 0;
@@ -458,6 +458,12 @@ class Rikai {
     }
 
     async toggleEpwing() {
+        if (this.config.epwingDictionaryPath === '') {
+            this.showPopup('No Epwing Dictionary Set');
+            this.epwingMode = false;
+            return true;
+        }
+
         this.epwingMode = !this.epwingMode;
         this.epwingTotalHits = 0;
         this.epwingCurrentHit = 0;

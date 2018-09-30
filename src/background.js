@@ -107,7 +107,7 @@ class RikaiRebuilt {
 
     async getEpwingDefinition(expression) {
         const message = {
-            'book_path': 'C:\\Users\\Gareth\\Downloads\\RUIGO\\',
+            'book_path': this.config.epwingDictionaryPath,
             'options': {
                 // 'gaiji': true,
                 'hit-num': true,

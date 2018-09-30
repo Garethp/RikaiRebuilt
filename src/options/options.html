@@ -51,6 +51,12 @@
             </a>
         </li>
         <li class="nav-item">
+            <a class="nav-link" id="epwing-tab" data-toggle="tab" href="#epwing" role="tab"
+               aria-controls="epwing" aria-selected="false">
+                Epwing Dictionary
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" id="anki-tab" data-toggle="tab" href="#anki" role="tab" aria-controls="anki"
                aria-selected="false">
                 Anki Import
@@ -255,6 +261,20 @@
                 <div class="col-3"><label for="kanjiUnicode">Unicode</label></div>
                 <div class="col-3"><input type="checkbox" id="kanjiUnicode" data-config-option="showKanjiUnicode" /></div>
             </div>
+        </div>
+        <div class="tab-pane fade" id="epwing" role="tabpanel" aria-labelledby="epwing-tab">
+            <form class="form-group">
+                <div class="row">
+                    <div class="col-3">
+                        <label title="The path for the Dictionary File" for="epwing-dictionary-path"
+                               class="col-form-label">Dictionary Path</label>
+                    </div>
+                    <div class="col-7">
+                        <input type="text" id="epwing-dictionary-path" class="form-control"
+                               data-config-option="epwingDictionaryPath" />
+                    </div>
+                </div>
+            </form>
         </div>
         <div class="tab-pane fade" id="anki" role="tabpanel" aria-labelledby="anki-tab">
             <div>In order to use this, please install this <b>updated</b>
