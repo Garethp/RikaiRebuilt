@@ -37,6 +37,10 @@ class RikaiRebuilt {
             if (typeof config.startWithSanseido !== 'undefined') {
                 browser.storage.local.set({sanseidoMode: config.startWithSanseido});
             }
+
+            if (typeof config.startWithEpwing !== 'undefined') {
+                browser.storage.local.set({epwingMode: config.startWithEpwing});
+            }
         });
 
         browser.storage.local.get('installedDictionaries').then(config => {

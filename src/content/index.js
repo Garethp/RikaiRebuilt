@@ -147,7 +147,9 @@ class Rikai {
                 return true;
 
             case this.config.keymap.toggleEpwingMode:
-                return this.toggleEpwing();
+                browser.storage.local.set({ epwingMode: !this.epwingMode });
+                return true;
+
             case this.config.keymap.epwingNextEntry:
                 return this.showNextEpwingEntry();
             case this.config.keymap.epwingPreviousEntry:
@@ -1184,6 +1186,11 @@ class Rikai {
     setSanseidoMode(sanseidoMode) {
         this.sanseidoMode = sanseidoMode || false;
     }
+
+    setEpwingMode(epwingMode) {
+        this.epwingMode = !epwingMode;
+        this.toggleEpwing();
+    }
 }
 
 const rikai = new Rikai(document);
@@ -1195,6 +1202,10 @@ browser.storage.local.get('enabled').then(({enabled}) => {
 
 browser.storage.local.get('sanseidoMode').then(({ sanseidoMode }) => {
     rikai.setSanseidoMode(sanseidoMode);
+});
+
+browser.storage.local.get('epwingMode').then(({ epwingMode }) => {
+    rikai.setEpwingMode(epwingMode);
 });
 
 browser.storage.onChanged.addListener((change, storageArea) => {
@@ -1209,5 +1220,9 @@ browser.storage.onChanged.addListener((change, storageArea) => {
 
     if (typeof change.sanseidoMode !== 'undefined') {
         rikai.setSanseidoMode(change.sanseidoMode.newValue);
+    }
+
+    if (typeof change.epwingMode !== 'undefined') {
+        rikai.setEpwingMode(change.epwingMode.newValue);
     }
 });

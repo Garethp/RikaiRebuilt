@@ -1,5 +1,7 @@
 const defaultConfig = {
     startWithSanseido: false,
+    startWithEpwing: false,
+
     keymap: {
         playAudio: 70,
         sendToAnki: 82,
