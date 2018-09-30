@@ -54,6 +54,22 @@ function makeAnkiFields(values, fromConfig) {
     }
 }
 
+function mapEpwingPathToDictionaries(values, fromConfig) {
+    if (fromConfig) {
+        if (values.length) {
+            return values[0].path;
+        }
+
+        return '';
+    } else {
+        if (values.length) {
+            return [{ name: '', path: values }];
+        }
+
+        return [];
+    }
+}
+
 browser.storage.local.get('installedDictionaries').then(config => {
     if (!config.installedDictionaries) {
         browser.storage.local.set({ installedDictionaries: [] });

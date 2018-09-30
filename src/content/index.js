@@ -460,7 +460,7 @@ class Rikai {
     }
 
     async toggleEpwing() {
-        if (this.config.epwingDictionaryPath === '') {
+        if (!this.config.epwingDictionaries.length) {
             this.showPopup('No Epwing Dictionary Set');
             this.epwingMode = false;
             return true;

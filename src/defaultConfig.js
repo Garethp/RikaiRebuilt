@@ -42,7 +42,7 @@ const defaultConfig = {
     showKanjiUnicode: true, //kindex-U
 
     //Epwing Options
-    epwingDictionaryPath: '',
+    epwingDictionaries: [],
 
     installedDictionaries: [
     ],

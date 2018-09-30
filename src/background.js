@@ -110,8 +110,12 @@ class RikaiRebuilt {
     }
 
     async getEpwingDefinition(expression) {
+        if (!this.config.epwingDictionaries.length) {
+            return 'No dictionaries found';
+        }
+
         const message = {
-            'book_path': this.config.epwingDictionaryPath,
+            'book_path': this.config.epwingDictionaries[0].path,
             'options': {
                 // 'gaiji': true,
                 'hit-num': true,
