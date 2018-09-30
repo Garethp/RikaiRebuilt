@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-declare -a os_path="linux"
+os_path="linux"
+name="eplkup"
 
 if [ ! -f "./bin/$os_path/eplkup" ]; then
     echo "Epwing file not found"
@@ -15,11 +16,22 @@ fi
 
 place_manifest_in_first_folder () {
     foldersToCheck=("$@")
+    browser=${foldersToCheck[-1]}
+    unset 'foldersToCheck[${#foldersToCheck[@]}-1]'
+
     for folder in "${foldersToCheck[@]}"
     do
         if [ -d "$folder" ]; then
             echo "Found $folder"
-            sed "s|{EPWING-PATH}|$PWD/bin/$os_path/eplkup|" manifest/manifest-unix.dist.json > "${folder}/manifest.json"
+
+            if [ "$browser" = "chrome" ]; then
+                sed "s|{EPWING-PATH}|$PWD/bin/$os_path/eplkup|" manifest/manifest-unix.dist.json | \
+                sed "s|allowed_extensions|allowed_origins|" \
+                > "${folder}/${name}.json"
+            else
+                sed "s|{EPWING-PATH}|$PWD/bin/$os_path/eplkup|" manifest/manifest-unix.dist.json \
+                > "${folder}/${name}.json"
+            fi
             break
         fi
     done
@@ -34,6 +46,8 @@ declare -a chromeFolders=(
     # Global
     "/Library/Google/Chrome/NativeMessagingHosts/"
     "/etc/opt/chrome/native-messaging-hosts/"
+
+    "manifest"
 )
 
 declare -a chromiumFolders=(
@@ -58,7 +72,7 @@ declare -a firefoxFolders=(
     "/usr/share/mozilla/native-messaging-hosts/"
 )
 
-place_manifest_in_first_folder "${chromeFolders[@]}"
-place_manifest_in_first_folder "${chromiumFolders[@]}"
-place_manifest_in_first_folder "${firefoxFolders[@]}"
+place_manifest_in_first_folder "${chromeFolders[@]}" "chrome"
+place_manifest_in_first_folder "${chromiumFolders[@]}" "chrome"
+place_manifest_in_first_folder "${firefoxFolders[@]}" "firefox"
 
