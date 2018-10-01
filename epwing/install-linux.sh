@@ -21,8 +21,11 @@ place_manifest_in_first_folder () {
 
     for folder in "${foldersToCheck[@]}"
     do
-        if [ -d "$folder" ]; then
-            echo "Found $folder"
+        parentDirectory=`dirname "$folder"`
+        if [ -d "$parentDirectory" ]; then
+            if [ ! -d "$folder" ]; then
+                mkdir "$folder"
+            fi
 
             if [ "$browser" = "chrome" ]; then
                 sed "s|{EPWING-PATH}|$PWD/bin/$os_path/eplkup|" manifest/manifest-unix.dist.json | \
@@ -40,20 +43,18 @@ place_manifest_in_first_folder () {
 # The folders that we're going to be placing our manifest into
 declare -a chromeFolders=(
     # Local
-    "~/Library/Application Support/Google/Chrome/NativeMessagingHosts/"
-    "~/.config/google-chrome/NativeMessagingHosts/"
+    "${HOME}/Library/Application Support/Google/Chrome/NativeMessagingHosts/"
+    "${HOME}/.config/google-chrome/NativeMessagingHosts/"
 
     # Global
     "/Library/Google/Chrome/NativeMessagingHosts/"
     "/etc/opt/chrome/native-messaging-hosts/"
-
-    "manifest"
 )
 
 declare -a chromiumFolders=(
     # Local
-    "~/Library/Application Support/Chromium/NativeMessagingHosts/"
-    "~/.config/chromium/NativeMessagingHosts/"
+    "${HOME}/Library/Application Support/Chromium/NativeMessagingHosts/"
+    "${HOME}/.config/chromium/NativeMessagingHosts/"
 
     # Global
     "/Library/Application Support/Chromium/NativeMessagingHosts/"
@@ -62,8 +63,8 @@ declare -a chromiumFolders=(
 
 declare -a firefoxFolders=(
     # Local
-    "~/Library/Application Support/Mozilla/NativeMessagingHosts"
-    "~/.mozilla/native-messaging-hosts/"
+    "${HOME}/Library/Application Support/Mozilla/NativeMessagingHosts"
+    "${HOME}/.mozilla/native-messaging-hosts/"
 
     # Global
     "/Library/Application Support/Mozilla/NativeMessagingHosts/"
