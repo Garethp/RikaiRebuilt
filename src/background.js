@@ -83,6 +83,9 @@ class RikaiRebuilt {
     }
 
     updateConfig(config) {
+        if (this.config.epwingMode !== undefined) {
+            config.epwingMode = this.config.epwingMode;
+        }
         this.config = config || defaultConfig;
         this.getData().updateConfig(config);
     }
@@ -90,6 +93,10 @@ class RikaiRebuilt {
     updateDictionaries(dictionaries) {
         this.dictionaries = dictionaries;
         this.getData().updateDictionaries(dictionaries);
+    }
+
+    setEpwingMode(epwingMode) {
+        this.config.epwingMode = epwingMode;
     }
 
     async sendToAnki(content) {
@@ -334,6 +341,8 @@ browser.storage.onChanged.addListener((changes, areaName) => {
     } else if (changes.installedDictionaries) {
         installedDictionaries = changes.installedDictionaries.newValue;
         rebuilt.updateDictionaries(installedDictionaries);
+    } else if (changes.epwingMode) {
+        rebuilt.setEpwingMode(changes.epwingMode.newValue);
     }
 });
 

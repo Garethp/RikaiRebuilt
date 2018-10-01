@@ -107,3 +107,5 @@ class Utils {
 
     }
 }
+
+if (typeof process !== 'undefined') { module.exports = Utils; }

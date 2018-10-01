@@ -3,7 +3,7 @@ class AnkiImport {
         this.ankiUrl = 'http://127.0.0.1:49601';
     }
 
-    makeCall(action, params) {
+    async makeCall(action, params) {
         return fetch(this.ankiUrl, {
             method: 'POST',
             body: JSON.stringify({ action, params })
@@ -135,7 +135,8 @@ class AnkiImport {
         let definition = "";
 
         if (config.epwingMode) {
-            //@TODO: Add code for Epwing
+            definition = entryData[3];
+            //@TODO: Add code for Epwing to remove text by user defined Regex
         }
         else // Not EPWING mode
         {

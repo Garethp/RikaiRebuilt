@@ -550,7 +550,12 @@ class Rikai {
     async showEpwingDefinition() {
         const {epwingCurrentHit, epwingPreviousHit, epwingResults, tabData} = this;
 
-        const entry = await this.formatEpwingEntry(epwingResults[epwingCurrentHit], true, true);
+        const epwingDefinitionText = epwingResults[epwingCurrentHit];
+        const entry = await this.formatEpwingEntry(epwingDefinitionText, true, true);
+
+        this.lastFound[0].data[0][0] = this.lastFound[0].data[0][0]
+            .replace(/\/.+\//g, "/" + await this.formatEpwingEntry(epwingDefinitionText) + "/");
+
         this.showPopup(entry, tabData.previousTarget, tabData.pos);
     }
 

@@ -12,7 +12,7 @@ class AudioPlayer {
 
             if (!kanjiText || !kanaText) return;
 
-            kanaText = Utils.convertKatakanaToHiragana(kanaText);
+            kanaText = Utils.convertKatakanaToHirigana(kanaText);
 
             if (!kanaText) return;
         } else if (entry.data[0]) {
