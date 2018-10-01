@@ -55,6 +55,10 @@ function makeAnkiFields(values, fromConfig) {
 }
 
 function mapEpwingPathToDictionaries(values, fromConfig) {
+    const $epwingError = $("#epwing-dictionary-path-error");
+    if ($epwingError.text() === '') {
+        $epwingError.hide();
+    }
     if (fromConfig) {
         if (values.length) {
             return values[0].path;
@@ -62,6 +66,13 @@ function mapEpwingPathToDictionaries(values, fromConfig) {
 
         return '';
     } else {
+        if (values.startsWith("~") || values.startsWith(".")) {
+            $epwingError.text("Please use an absolute path. Relative paths don't work").show();
+
+            return [];
+        }
+        $epwingError.text('').hide();
+
         if (values.length) {
             return [{ name: '', path: values }];
         }
