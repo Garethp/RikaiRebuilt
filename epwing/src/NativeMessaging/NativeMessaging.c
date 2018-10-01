@@ -40,7 +40,7 @@ void NativeMessaging_Write(char *message) {
 
     //Print the response length and then the response. Flush after printing
     printf("%c%c%c%c", packedMessageLength[0], packedMessageLength[1], packedMessageLength[2], packedMessageLength[3]);
-    printf(message);
+    printf("%s", message);
 
     fflush(stdout);
 }
@@ -69,7 +69,8 @@ char *NativeMessaging_Pack(int number) {
             (char) ((number >> 16) & 0xFF),
             (char) ((number >> 24) & 0xFF)};
 
-    return packed;
+    char *packed_pointer = packed;
+    return packed_pointer;
 }
 
 NativeMessaging newNativeMessaging() {
