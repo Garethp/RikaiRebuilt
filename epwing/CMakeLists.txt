@@ -12,7 +12,8 @@ elseif(UNIX)
 endif()
 
 # Include the eb and libiconv library
-find_library(EB_LIBRARY eb HINTS libraries/eb/lib REQUIRED)
+find_library(EB_LIBRARY NAMES libeb.a eb HINTS libraries/eb/lib REQUIRED)
+find_library(ZLIB libz.so)
 
 if (WIN32)
     find_library(LIB_ICONV libiconv libraries/libiconv/lib)
@@ -43,6 +44,12 @@ add_executable(eplkup ${SOURCE_FILES} ${SRC_FILES} src/NativeMessaging/NativeMes
 
 # Link our executable
 target_link_libraries(eplkup PUBLIC ${EB_LIBRARY})
+
+# For Unix specifically we're statically linking libeb, which requires that we statically link libz
+# However libz isn't something we're including for Windows
+if(UNIX)
+    target_link_libraries(eplkup PUBLIC ${ZLIB})
+endif()
 
 if (WIN32)
     target_link_libraries(eplkup PUBLIC ${LIB_ICONV})
