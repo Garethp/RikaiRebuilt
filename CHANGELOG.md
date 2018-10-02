@@ -1,5 +1,9 @@
 ## Changelog
 
+#### Version 1.1.2
+ * Adding more error reporting
+ * Automatically stripping the /CATALOGS
+
 #### Version 1.1.1
  * Fixing the "No Epwing Dictionary Set" popup showing all the time
 

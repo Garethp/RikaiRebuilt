@@ -134,8 +134,12 @@ class RikaiRebuilt {
         };
 
         return browser.runtime.sendNativeMessage('eplkup', message).then(result => {
+            if (result.error) {
+                return `A problem occurred: ${result.error}`;
+            }
+
             return result.output;
-        }, f => { return 'A problem has occurred. Have you set up the Epwing program?'; });
+        }, f => { return `A problem has occurred. Have you set up the Epwing program? ${f}`; });
     }
 
     async getFrequency(inExpression, inReading, useHighlightedWord, highlightedWord) {

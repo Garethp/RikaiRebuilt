@@ -71,6 +71,11 @@ function mapEpwingPathToDictionaries(values, fromConfig) {
 
             return [];
         }
+
+        if (values.endsWith('CATALOGS')) {
+            values = values.slice(0, -9);
+        }
+
         $epwingError.text('').hide();
 
         if (values.length) {
