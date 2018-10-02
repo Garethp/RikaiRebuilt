@@ -459,19 +459,22 @@ class Rikai {
             .then(response => this.parseAndDisplaySanseido(response));
     }
 
-    async toggleEpwing() {
+    async enableEpwing() {
         if (!this.config.epwingDictionaries.length) {
             this.showPopup('No Epwing Dictionary Set');
-            this.epwingMode = false;
+            browser.storage.local.set({ epwingMode: false });
             return true;
         }
 
-        this.epwingMode = !this.epwingMode;
+        this.epwingMode = true;
         this.epwingTotalHits = 0;
         this.epwingCurrentHit = 0;
         this.epwingPreviousHit = 0;
         this.epwingResults = [];
-        return false;
+    }
+
+    async disableEpwing() {
+        this.epwingMode = false;
     }
 
     async lookupEpwing() {
@@ -1193,8 +1196,11 @@ class Rikai {
     }
 
     setEpwingMode(epwingMode) {
-        this.epwingMode = !epwingMode;
-        this.toggleEpwing();
+        if (epwingMode) {
+            this.enableEpwing();
+        } else {
+            this.disableEpwing();
+        }
     }
 }
 

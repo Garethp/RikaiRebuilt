@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.1.1
+ * Fixing the "No Epwing Dictionary Set" popup showing all the time
+
 #### Version 1.1.0
  * Adding some basic EPWING functionality in
 
