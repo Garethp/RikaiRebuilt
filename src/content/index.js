@@ -357,7 +357,10 @@ class Rikai {
         }
 
         if (this.epwingMode) {
-            return this.lookupEpwing();
+            let epwingFound = this.lookupEpwing();
+            if (epwingFound === true) {
+                return true;
+            }
         }
 
         this.showPopup(this.getKnownWordIndicatorText() + await this.makeHTML(entry), tabData.previousTarget, tabData.pos);
@@ -487,6 +490,10 @@ class Rikai {
 
         let epwingText = await this.sendRequest('getEpwingDefinition', searchTerm);
 
+        if (epwingText === "No results found") {
+            return false;
+        }
+
         const entryFields = epwingText.split(/{ENTRY: \d+}\n/);
         let entryList = [];
 
@@ -520,6 +527,7 @@ class Rikai {
         this.epwingResults = entryList;
 
         this.showEpwingDefinition();
+        return true;
     }
 
     showNextEpwingEntry() {
