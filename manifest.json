@@ -32,23 +32,7 @@
   "background": {
     "persistent": true,
     "scripts": [
-      "dist/dexie.min.js",
-      "dist/idb.js",
-      "dist/browser-polyfill.min.js",
-      "dist/autobind.js",
-      "src/defaultConfig.js",
-      "src/utils.js",
-      "src/audioPlayer.js",
-      "src/ankiImport.js",
-      "src/FileReader.js",
-      "src/deinflectText.js",
-      "src/deinflect.js",
-      "src/database/RikaiDatabase.js",
-      "src/database/IndexedDictionary.js",
-      "src/database/PitchDb.js",
-      "src/database/FrequencyDb.js",
-      "src/data.js",
-      "src/background.js"
+      "background.js"
     ]
   },
 
@@ -58,13 +42,7 @@
         "<all_urls>"
       ],
       "js": [
-        "dist/autobind.js",
-        "src/defaultConfig.js",
-        "dist/browser-polyfill.min.js",
-        "src/utils.js",
-        "src/content/document.js",
-        "src/content/source.js",
-        "src/content/index.js"
+        "content.js"
       ],
       "css": [
         "styles/popup.css"

@@ -1,4 +1,6 @@
-class AudioPlayer {
+import Utils from './utils';
+
+export default class AudioPlayer {
     static getAudioUrl(entry) {
         let kanaText;
         let kanjiText;
@@ -53,7 +55,7 @@ class AudioPlayer {
             .then(result => arrayBufferToBase64(result))
             .then(content => {
                 if (content === longNoAudio && typeof shortenNoAudio === 'undefined') {
-                    return fetch('../resources/no_audio.mp3')
+                    return fetch('resources/no_audio.mp3')
                         .then(response => response.arrayBuffer())
                         .then(response => arrayBufferToBase64(response));
                 }

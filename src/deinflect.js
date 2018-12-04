@@ -1,4 +1,7 @@
-class Deinflect {
+import autobind from '../dist/autobind';
+import deinflectText from './deinflectText';
+
+export default class Deinflect {
     constructor() {
         autobind(this);
 
@@ -79,4 +82,3 @@ class Deinflect {
     }
 }
 
-if (typeof process !== 'undefined') { module.exports = Deinflect; }

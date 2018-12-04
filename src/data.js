@@ -1,6 +1,9 @@
-if (typeof process !== 'undefined') { Dictionary = require('./IndexedDictionary.js'); Deinflect = require('./deinflect.js'); }
+import IndexedDictionary from './database/IndexedDictionary';
+import Deinflect from './deinflect';
+import autobind from '../dist/autobind';
+import FileReader from './FileReader';
 
-class Data {
+export default class Data {
     // katakana -> hiragana conversion tables
 
     constructor(config) {
@@ -299,7 +302,7 @@ class Data {
         if (i < 0x3000) return null;
 
         if (!this.kanjiData) {
-            this.kanjiData = await FileReader.read('../resources/kanji.dat')
+            this.kanjiData = await FileReader.read('resources/kanji.dat')
                 .then(response => response.text())
                 .then(data => data.split('\n').filter(line => line.length !== 0))
                 .then(array => array.reduce((obj, current) => {
@@ -308,7 +311,7 @@ class Data {
                 }, {}));
         }
 
-        if (!this.radData) this.radData = await FileReader.read('../resources/radicals.dat')
+        if (!this.radData) this.radData = await FileReader.read('resources/radicals.dat')
             .then(response => response.text())
             .then(text => text.split('\n'))
             .then(array => array.filter(line => line.length !== 0));
@@ -346,4 +349,3 @@ class Data {
     }
 }
 
-if (typeof process !== 'undefined') { module.exports = Data; }

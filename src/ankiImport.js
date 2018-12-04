@@ -1,4 +1,6 @@
-class AnkiImport {
+import AudioPlayer from './audioPlayer';
+
+export default class AnkiImport {
     constructor() {
         this.ankiUrl = 'http://127.0.0.1:49601';
     }
@@ -183,5 +185,3 @@ class AnkiImport {
         };
     }
 }
-
-if (typeof process !== 'undefined') { module.exports = AnkiImport; }

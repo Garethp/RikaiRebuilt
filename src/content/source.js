@@ -21,7 +21,7 @@
  * TextSourceRange
  */
 
-class TextSourceRange {
+export class TextSourceRange {
     constructor(range, content='') {
         this.range = range;
         this.content = content;
@@ -198,7 +198,7 @@ class TextSourceRange {
  * TextSourceElement
  */
 
-class TextSourceElement {
+export class TextSourceElement {
     constructor(element, content='') {
         this.element = element;
         this.content = content;

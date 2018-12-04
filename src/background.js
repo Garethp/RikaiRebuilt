@@ -1,3 +1,12 @@
+import defaultConfig from './defaultConfig'
+import autobind from '../dist/autobind'
+import AnkiImport from './ankiImport';
+import FrequencyDb from './database/FrequencyDb'
+import PitchDb from './database/PitchDb';
+import IndexedDictionary from './database/IndexedDictionary';
+import Data from './Data';
+import AudioPlayer from './audioPlayer';
+
 let config = defaultConfig;
 let installedDictionaries = [];
 let optionsPort;
@@ -248,7 +257,7 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
         case "getEpwingDefinition":
             return rebuilt.getEpwingDefinition(content).then(response => {
                 return {response};
-            }, f => console.log(f));
+            }, f => { console.log(f) });
         case "getPitch":
             return rebuilt.getPitch(content.expression, content.reading).then(response => {
                 return {response}

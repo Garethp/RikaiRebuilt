@@ -1,4 +1,4 @@
-﻿deinflectText = `Deinflect Rules 20130521-1131 | by Jonathan Zarate | http://www.polarcloud.com
+﻿export default `Deinflect Rules 20130521-1131 | by Jonathan Zarate | http://www.polarcloud.com
 polite past negative
 polite negative
 polite volitional

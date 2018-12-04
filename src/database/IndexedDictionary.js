@@ -1,4 +1,6 @@
-class IndexedDictionary extends RikaiDatabase {
+import RikaiDatabase from './RikaiDatabase'
+
+export default class IndexedDictionary extends RikaiDatabase {
     constructor(name) {
         super(name, '++, kanji, kana, entry');
     }

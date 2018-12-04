@@ -1,4 +1,7 @@
-class RikaiDatabase {
+import Dexie from '../../dist/dexie.min'
+import FileReader from '../FileReader'
+
+export default class RikaiDatabase {
     constructor(name, fields) {
         this.name = name;
         this.fields = fields;

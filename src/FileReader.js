@@ -1,4 +1,4 @@
-class FileReader {
+export default class FileReader {
     static read(uri) {
         if (typeof browser !== 'undefined' && uri.substr(0, 4) !== "http") {
             uri = browser.extension.getURL(uri);
@@ -20,5 +20,3 @@ class FileReader {
         });
     }
 }
-
-if (typeof process !== 'undefined') { module.exports = FileReader; }

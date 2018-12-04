@@ -1,12 +1,23 @@
 {
   "name": "RikaiRebuilt",
   "scripts": {
-    "start": "web-ext run --start-url https://en.wikipedia.org/wiki/Ky%C5%8Diku_kanji --browser-console",
+    "start": "webpack -w",
+    "start:web-ext": "web-ext run --start-url https://en.wikipedia.org/wiki/Ky%C5%8Diku_kanji --browser-console",
     "build": "web-ext build --ignore-files=epwing",
     "test": "mocha"
   },
   "devDependencies": {
     "isomorphic-fetch": "^2.2.1",
-    "mocha": "^5.1.1"
+    "mocha": "^5.1.1",
+    "web-ext-webpack-plugin": "github:hiikezoe/web-ext-webpack-plugin"
+  },
+  "dependencies": {
+    "copy-webpack-plugin": "^4.6.0",
+    "source-map-loader": "^0.2.4",
+    "ts-loader": "^5.3.1",
+    "web-ext": "^2.9.2",
+    "webpack": "^4.27.0",
+    "webpack-cli": "^3.1.2",
+    "webpack-preprocessor": "^0.1.12"
   }
 }

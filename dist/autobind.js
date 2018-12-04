@@ -1,4 +1,4 @@
-autobind = (self, options) => {
+const autobind = (self, options) => {
     options = Object.assign({}, options);
 
     const filter = key => {
@@ -26,4 +26,4 @@ autobind = (self, options) => {
     return self;
 };
 
-// export default autobind;
+export default autobind;
