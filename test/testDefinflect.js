@@ -1,4 +1,3 @@
-require('../src/deinflectText');
 require('../src/autobind');
 require('../src/deinflect.js');
 

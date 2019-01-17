@@ -104,6 +104,5 @@ export default class Utils {
         }
 
         return Number(numStr);
-
     }
 }

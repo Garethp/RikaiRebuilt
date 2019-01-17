@@ -240,60 +240,9 @@ export default class Data {
         return result;
     }
 
-
-    convertKatakanaToHiragana(word) {
-        let i, u, v, r, p;
-        let trueLen = [0];
-
-        // half & full-width katakana to hiragana conversion
-        // note: katakana vu is never converted to hiragana
-
-        p = 0;
-        r = '';
-        for (i = 0; i < word.length; ++i) {
-            u = v = word.charCodeAt(i);
-
-            if (u <= 0x3000) break;
-
-            // full-width katakana to hiragana
-            if ((u >= 0x30A1) && (u <= 0x30F3)) {
-                u -= 0x60;
-            }
-            // half-width katakana to hiragana
-            else if ((u >= 0xFF66) && (u <= 0xFF9D)) {
-                u = this.ch[u - 0xFF66];
-            }
-            // voiced (used in half-width katakana) to hiragana
-            else if (u === 0xFF9E) {
-                if ((p >= 0xFF73) && (p <= 0xFF8E)) {
-                    r = r.substr(0, r.length - 1);
-                    u = this.cv[p - 0xFF73];
-                }
-            }
-            // semi-voiced (used in half-width katakana) to hiragana
-            else if (u === 0xFF9F) {
-                if ((p >= 0xFF8A) && (p <= 0xFF8E)) {
-                    r = r.substr(0, r.length - 1);
-                    u = this.cs[p - 0xFF8A];
-                }
-            }
-            // ignore J~
-            else if (u === 0xFF5E) {
-                p = 0;
-                continue;
-            }
-
-            r += String.fromCharCode(u);
-            trueLen[r.length] = i + 1;	// need to keep real length because of the half-width semi/voiced conversion
-            p = v;
-        }
-
-        return r;
-    }
-
     async kanjiSearch(character) {
         const hex = '0123456789ABCDEF';
-        let kde;
+        let kanjiDataEntry;
         let result;
         let a, b;
         let i;
@@ -316,10 +265,10 @@ export default class Data {
             .then(text => text.split('\n'))
             .then(array => array.filter(line => line.length !== 0));
 
-        kde = this.kanjiData[character];
-        if (!kde) return null;
+        kanjiDataEntry = this.kanjiData[character];
+        if (!kanjiDataEntry) return null;
 
-        a = kde.split('|');
+        a = kanjiDataEntry.split('|');
         if (a.length !== 6) return null;
 
         result = { };

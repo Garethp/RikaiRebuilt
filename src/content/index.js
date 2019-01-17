@@ -182,7 +182,7 @@ class Rikai {
         if (this.keysDown[event.keyCode]) this.keysDown[event.keyCode] = 0;
     }
 
-    onMouseDown(event) {
+    onMouseDown() {
         this.clear();
     }
 
@@ -363,8 +363,6 @@ class Rikai {
 
         // @TODO: Add audio playing
         // @TODO: Add checks for super sticky
-        // @TODO: Add sanseido mode
-        // @TODO: Add EPWING mode
 
         //Sanseido mode
         if (this.sanseidoMode) {
