@@ -27,6 +27,12 @@ class RikaiRebuilt {
 
         this.isSetUp = true;
         this.data = new Data(this.config);
+
+        browser.browserAction.setIcon({
+            path: {
+                48: 'icons/smile.png'
+            }
+        });
     }
 
     async enable() {

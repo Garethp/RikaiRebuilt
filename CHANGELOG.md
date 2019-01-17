@@ -1,5 +1,9 @@
 ## Changelog
 
+#### Version 1.1.3
+ * Included support for Typescript by including Webpack. Hopefully won't cause issues
+ * Fixed annoying bug where the icon wouldn't reset on start, making the icon look like it was enabled when it wasn't
+
 #### Version 1.1.2
  * Adding more error reporting
  * Automatically stripping the /CATALOGS
