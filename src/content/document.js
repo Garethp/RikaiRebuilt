@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {TextSourceElement, TextSourceRange} from './source';
 
 function docOffsetCalc(element) {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
@@ -59,13 +60,13 @@ function docImposterCreate(element) {
     return imposter;
 }
 
-function docImposterDestroy() {
+export function docImposterDestroy() {
     for (const element of document.getElementsByClassName('yomichan-imposter')) {
         element.parentNode.removeChild(element);
     }
 }
 
-function docRangeFromPoint(point) {
+export function docRangeFromPoint(point) {
     const element = document.elementFromPoint(point.x, point.y);
     let imposter = null;
     if (element) {

@@ -1,3 +1,12 @@
+import defaultConfig from './defaultConfig'
+import autobind from '../lib/autobind'
+import AnkiImport from './ankiImport';
+import FrequencyDb from './database/FrequencyDb'
+import PitchDb from './database/PitchDb';
+import IndexedDictionary from './database/IndexedDictionary';
+import Data from './Data';
+import AudioPlayer from './audioPlayer';
+
 let config = defaultConfig;
 let installedDictionaries = [];
 let optionsPort;
@@ -248,7 +257,7 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
         case "getEpwingDefinition":
             return rebuilt.getEpwingDefinition(content).then(response => {
                 return {response};
-            }, f => console.log(f));
+            }, f => { console.log(f) });
         case "getPitch":
             return rebuilt.getPitch(content.expression, content.reading).then(response => {
                 return {response}
@@ -400,7 +409,7 @@ browser.runtime.onInstalled.addListener(async ({id, previousVersion, reason}) =>
         if (!config) return;
 
         if (config.openChangelogOnUpdate) {
-            const optionsPageUrl = browser.extension.getURL('src/options/options.html');
+            const optionsPageUrl = browser.extension.getURL('options/options.html');
 
             if (reason === 'update') {
                 browser.tabs.create({url: `${optionsPageUrl}#changelog`});
@@ -425,6 +434,6 @@ browser.contextMenus.create({
     title: "Options",
     contexts: ["browser_action"],
     onclick: () => {
-        browser.tabs.create({url: browser.extension.getURL('src/options/options.html')});
+        browser.tabs.create({url: browser.extension.getURL('options/options.html')});
     }
 });

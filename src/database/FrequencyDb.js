@@ -1,4 +1,6 @@
-class FrequencyDb extends RikaiDatabase {
+import RikaiDatabase from './RikaiDatabase'
+
+export default class FrequencyDb extends RikaiDatabase {
     constructor() {
         super('frequency', '++, expression, frequency');
     }

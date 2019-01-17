@@ -1,5 +1,9 @@
-class Rikai {
+import {docRangeFromPoint, docImposterDestroy} from './document';
+import autobind from '../../lib/autobind';
+import defaultConfig from '../defaultConfig';
+import Utils from '../utils';
 
+class Rikai {
     constructor(document) {
         autobind(this);
 

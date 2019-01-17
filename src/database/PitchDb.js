@@ -1,4 +1,6 @@
-class PitchDb extends RikaiDatabase {
+import RikaiDatabase from './RikaiDatabase'
+
+export default class PitchDb extends RikaiDatabase {
     constructor() {
         super('pitch', '++, expression, reading, pitch');
     }
