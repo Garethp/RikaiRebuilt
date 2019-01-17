@@ -1,6 +1,6 @@
 import IndexedDictionary from './database/IndexedDictionary';
 import Deinflect from './deinflect';
-import autobind from '../dist/autobind';
+import autobind from '../lib/autobind';
 import FileReader from './FileReader';
 
 export default class Data {

@@ -1,5 +1,5 @@
 import defaultConfig from './defaultConfig'
-import autobind from '../dist/autobind'
+import autobind from '../lib/autobind'
 import AnkiImport from './ankiImport';
 import FrequencyDb from './database/FrequencyDb'
 import PitchDb from './database/PitchDb';
@@ -409,7 +409,7 @@ browser.runtime.onInstalled.addListener(async ({id, previousVersion, reason}) =>
         if (!config) return;
 
         if (config.openChangelogOnUpdate) {
-            const optionsPageUrl = browser.extension.getURL('src/options/options.html');
+            const optionsPageUrl = browser.extension.getURL('options/options.html');
 
             if (reason === 'update') {
                 browser.tabs.create({url: `${optionsPageUrl}#changelog`});
@@ -434,6 +434,6 @@ browser.contextMenus.create({
     title: "Options",
     contexts: ["browser_action"],
     onclick: () => {
-        browser.tabs.create({url: browser.extension.getURL('src/options/options.html')});
+        browser.tabs.create({url: browser.extension.getURL('options/options.html')});
     }
 });

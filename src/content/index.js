@@ -1,5 +1,5 @@
 import {docRangeFromPoint, docImposterDestroy} from './document';
-import autobind from '../../dist/autobind';
+import autobind from '../../lib/autobind';
 import defaultConfig from '../defaultConfig';
 import Utils from '../utils';
 

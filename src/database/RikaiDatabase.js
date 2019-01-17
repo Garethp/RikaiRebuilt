@@ -1,4 +1,4 @@
-import Dexie from '../../dist/dexie.min'
+import Dexie from '../../lib/dexie.min'
 import FileReader from '../FileReader'
 
 export default class RikaiDatabase {

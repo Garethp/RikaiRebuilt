@@ -1,4 +1,4 @@
-import autobind from '../dist/autobind';
+import autobind from '../lib/autobind';
 import deinflectText from './deinflectText';
 
 export default class Deinflect {
