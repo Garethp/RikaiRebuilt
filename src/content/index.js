@@ -1,4 +1,4 @@
-import {docRangeFromPoint, docImposterDestroy} from './document';
+import {docRangeFromPoint, docImposterDestroy, docSentenceExtract} from './document';
 import autobind from '../../lib/autobind';
 import defaultConfig from '../defaultConfig';
 import Utils from '../utils';
@@ -240,7 +240,6 @@ class Rikai {
 
         const textClone = textSource.clone();
         const sentenceClone = textSource.clone();
-        const previousSentenceClone = textSource.clone();
 
         textClone.setEndOffset(20);
         const text = textClone.text();
@@ -248,10 +247,7 @@ class Rikai {
         sentenceClone.setEndOffsetFromBeginningOfCurrentNode(textSource.range.startContainer.data.length + 50);
         const sentence = sentenceClone.text();
 
-        previousSentenceClone.setStartOffsetFromBeginningOfCurrentNode(50);
-        const previousSentence = previousSentenceClone.text();
-
-        this.showFromText(text, sentence, previousSentence, textSource.range.startOffset, textClone.range.startContainer, entry => {
+        this.showFromText(text, sentence, textSource.range.startOffset, textClone.range.startContainer, entry => {
             textClone.setEndOffset(this.word.length);
 
             const currentSelection = document.defaultView.getSelection();
@@ -263,8 +259,8 @@ class Rikai {
         }, tabData);
     };
 
-    getSentenceStuff(rangeOffset, sentence, previousSentence) {
-        let i = rangeOffset + previousSentence.length;
+    getSentenceStuff(rangeOffset, sentence) {
+        let i = rangeOffset;
 
         let sentenceStartPos;
         let sentenceEndPos;
@@ -282,8 +278,7 @@ class Rikai {
             i++;
         }
 
-
-        i = rangeOffset + previousSentence.length;
+        i = rangeOffset;
 
         // Find the first character of the sentence
         while (i >= 0) {
@@ -320,12 +315,9 @@ class Rikai {
         return {sentence, sentenceStartPos, startOffset};
     }
 
-    async showFromText(text, sentence, previousSentence, rangeOffset, rangeContainer, highlightFunction, tabData) {
-        const sentenceStuff = this.getSentenceStuff(rangeOffset, sentence, previousSentence);
-
-        let sentenceStartPos = sentenceStuff.sentenceStartPos;
+    async showFromText(text, sentence, rangeOffset, rangeContainer, highlightFunction, tabData) {
+        const sentenceStuff = this.getSentenceStuff(rangeOffset, sentence);
         sentence = sentenceStuff.sentence;
-        let startOffset = sentenceStuff.startOffset;
 
         this.sentence = sentence;
 
@@ -347,7 +339,7 @@ class Rikai {
         this.lastFound = [entry];
         this.word = text.substr(0, entry.matchLen);
 
-        const wordPositionInString = rangeOffset + previousSentence.length - sentenceStartPos + startOffset;
+        const wordPositionInString = rangeOffset - 1;
         this.sentenceWithBlank = sentence.substr(0, wordPositionInString) + "___"
             + sentence.substr(wordPositionInString + entry.matchLen, sentence.length);
 
@@ -887,7 +879,7 @@ class Rikai {
         let {pageX, pageY, clientX, clientY} = position || {pageX: 10, pageY: 10, clientX: 10, clientY: 10};
         const popup = this.getPopup();
 
-        popup.innerHTML = textToShow;
+        popup.innerHTML = `\n${textToShow}`;
         popup.style.display = 'block';
         popup.style.maxWidth = '600px';
 

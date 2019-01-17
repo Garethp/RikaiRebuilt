@@ -48,9 +48,10 @@ export default class Data {
 
         this.dictionaries = [];
         for (const dictionary of dictionaries) {
-            dictionary.db = new IndexedDictionary(dictionary.id);
-            dictionary.db.open();
-            this.dictionaries.push(dictionary);
+            const copy = Object.assign({}, dictionary);
+            copy.db = new IndexedDictionary(copy.id);
+            copy.db.open();
+            this.dictionaries.push(copy);
         }
 
         this.dictionaries.push({

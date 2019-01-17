@@ -1,5 +1,9 @@
 ## Changelog
 
+#### Version 1.1.6
+ * Fixing issue with having multiple dictionaries in Firefox
+ * Fixed issues with extracting sentences
+
 #### Version 1.1.5
  * Fixed a bug where dictionary types weren't being used
  * Fixed some issues with deinflection
