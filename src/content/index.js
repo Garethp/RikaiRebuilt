@@ -136,6 +136,8 @@ class Rikai {
         if (this.keysDown[event.keyCode]) return;
         if (!this.isVisible()) return;
 
+        const { pos } = this.tabData;
+
         this.keysDown[event.keyCode] = 1;
 
         switch (event.keyCode) {
@@ -144,14 +146,27 @@ class Rikai {
             case this.config.keymap.sendToAnki:
                 return this.sendToAnki();
             case this.config.keymap.selectNextDictionary:
-                this.sendRequest('selectNextDictionary');
+                this.sendRequest('selectNextDictionary').then(() => {
+                    setTimeout(() => {
+                        this.searchAt({x: pos.clientX, y: pos.clientY}, this.tabData, event);
+                    }, 1);
+                });
                 return;
             case this.config.keymap.toggleSanseidoMode:
                 browser.storage.local.set({ sanseidoMode: !this.sanseidoMode });
+                setTimeout(() => {
+                    this.searchAt({x: pos.clientX, y: pos.clientY}, this.tabData, event);
+                }, 5);
                 return true;
 
             case this.config.keymap.toggleEpwingMode:
+                const originalEpwing = this.epwingMode;
                 browser.storage.local.set({ epwingMode: !this.epwingMode });
+                setTimeout(() => {
+                    if (this.epwingMode !== originalEpwing) {
+                        this.searchAt({x: pos.clientX, y: pos.clientY}, this.tabData, event);
+                    }
+                }, 5);
                 return true;
 
             case this.config.keymap.epwingNextEntry:
@@ -204,7 +219,7 @@ class Rikai {
             return;
         }
 
-        if (event.target === tabData.previousTarget && textSource.equals(tabData.previousTextSource)) {
+        if (event && event.target === tabData.previousTarget && textSource.equals(tabData.previousTextSource)) {
             return;
         }
 
@@ -219,12 +234,9 @@ class Rikai {
             return -2;
         }
 
-        tabData.pos = {clientX: event.clientX, clientY: event.clientY, pageX: event.pageX, pageY: event.pageY};
         tabData.previousRangeOffset = textSource.range.startOffset;
 
-        tabData.previousTarget = event.target;
         tabData.previousTextSource = textSource;
-
 
         const textClone = textSource.clone();
         const sentenceClone = textSource.clone();
@@ -466,14 +478,14 @@ class Rikai {
             .then(response => this.parseAndDisplaySanseido(response));
     }
 
-    async enableEpwing() {
+    enableEpwing() {
         if (!this.config.epwingDictionaries.length) {
             this.showPopup('No Epwing Dictionary Set');
-            browser.storage.local.set({ epwingMode: false });
+
+            browser.storage.local.set({epwingMode: false});
             return true;
         }
 
-        this.epwingMode = true;
         this.epwingTotalHits = 0;
         this.epwingCurrentHit = 0;
         this.epwingPreviousHit = 0;

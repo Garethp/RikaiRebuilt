@@ -1,5 +1,5 @@
 import IndexedDictionary from './database/IndexedDictionary';
-import Deinflect from './deinflect';
+import { deinflect, deinflectL10NKeys } from './deinflect';
 import autobind from '../lib/autobind';
 import FileReader from './FileReader';
 
@@ -21,8 +21,6 @@ export default class Data {
                 close: () => {},
             }
         }];
-
-        this.deinflect = new Deinflect();
 
         this.ch = [0x3092, 0x3041, 0x3043, 0x3045, 0x3047, 0x3049, 0x3083, 0x3085, 0x3087, 0x3063, 0x30FC, 0x3042, 0x3044, 0x3046,
             0x3048, 0x304A, 0x304B, 0x304D, 0x304F, 0x3051, 0x3053, 0x3055, 0x3057, 0x3059, 0x305B, 0x305D, 0x305F, 0x3061,
@@ -90,7 +88,7 @@ export default class Data {
             if (!noKanji || !dictionary.isKanjiDictionary) {
                 let entry;
                 if (dictionary.isKanjiDictionary) entry = this.kanjiSearch(word.charAt(0));
-                else entry = this._wordSearch(word, dictionary.db, null);
+                else entry = this._wordSearch(word, dictionary, null);
 
                 if (entry) {
                     if (dictionaryIndex !== 0) entry.title = dictionary.name;
@@ -175,40 +173,40 @@ export default class Data {
 
         while (word.length > 0) {
             let showInf = (count !== 0);
-            let variants = dictionary.isNameDictionary ? [{word: word, type: 0xFF, reason: null}] : this.deinflect.go(word);
+            let variants = dictionary.isNameDictionary ? [{word: word, type: 0xFF, reason: null}] : deinflect(word);
             for (let i = 0; i < variants.length; i++) {
-                let v = variants[i];
-                let entries = await dictionary.findWord(v.word);
+                let variant = variants[i];
+                let entries = await dictionary.db.findWord(variant.word);
                 for (let j = 0; j < entries.length; ++j) {
-                    let dentry = entries[j];
-                    if (have[dentry]) continue;
+                    let entry = entries[j];
+                    if (have[entry]) continue;
 
                     let ok = true;
-                    if ((dictionary.hasType) && (i > 0)) {
-                        // i > 0 a de-inflected word
 
-                        let gloss = dentry.split(/[,()]/);
-                        let y = v.type;
+                    //The first candidate is always just the full string, so we'll skip it. Anything after the first variant
+                    //is a deinflected word
+                    if (dictionary.hasType && i > 0) {
+                        let gloss = entry.split(/[,()]/);
                         let z;
                         for (z = gloss.length - 1; z >= 0; --z) {
                             let g = gloss[z];
-                            if ((y & 1) && (g === 'v1')) break;
-                            if ((y & 4) && (g === 'adj-i')) break;
-                            if (y & 66) {
+                            if ((variant.type & 1) && (g === 'v1')) break;
+                            if ((variant.type & 4) && (g === 'adj-i')) break;
+                            if (variant.type & 66) {
                                 if ((g === 'v5k-s') || (g === 'v5u-s')) {
-                                    if (y & 64) break;
+                                    if (variant.type & 64) break;
                                 }
                                 else if (g.substr(0, 2) === 'v5') {
-                                    if (y & 2) break;
+                                    if (variant.type & 2) break;
                                 }
                             }
-                            if ((y & 8) && (g === 'vk')) break;
-                            if ((y & 16) && (g.substr(0, 3) === 'vs-')) break;
+                            if ((variant.type & 8) && (g === 'vk')) break;
+                            if ((variant.type & 16) && (g.substr(0, 3) === 'vs-')) break;
                         }
                         ok = (z !== -1);
                     }
                     if ((ok) && (dictionary.hasType) && (this.config.hideXRatedEntries)) {
-                        if (dentry.match(/\/\([^\)]*\bX\b.*?\)/)) ok = false;
+                        if (entry.match(/\/\([^\)]*\bX\b.*?\)/)) ok = false;
                     }
                     if (ok) {
                         if (count >= maxTrim) {
@@ -216,16 +214,18 @@ export default class Data {
                             break;
                         }
 
-                        have[dentry] = 1;
+                        have[entry] = 1;
                         ++count;
                         if (maxLen === 0) maxLen = trueLen[word.length];
 
                         r = null;
-                        if (v.reason) {
-                            if (showInf) r = '&lt; ' + v.reason + ' &lt; ' + word;
-                            else r = '&lt; ' + v.reason;
+
+                        if (variant.reasons.length) {
+                            let reason = deinflectL10NKeys[variant.reasons[0]];
+                            if (showInf) r = '&lt; ' + reason + ' &lt; ' + word;
+                            else r = '&lt; ' + reason;
                         }
-                        result.data.push([dentry, r]);
+                        result.data.push([entry, r]);
                     }
                 }	// for j < entries.length
                 if (count >= maxTrim) break;

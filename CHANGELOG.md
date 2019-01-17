@@ -1,5 +1,10 @@
 ## Changelog
 
+#### Version 1.1.5
+ * Fixed a bug where dictionary types weren't being used
+ * Fixed some issues with deinflection
+ * When changing dictionary, you no longer have to move your mouse for it to take effect
+
 #### Version 1.1.4
  * Previous bug about incorrect icon was not solved. This should solve it.
 
