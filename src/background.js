@@ -27,12 +27,6 @@ class RikaiRebuilt {
 
         this.isSetUp = true;
         this.data = new Data(this.config);
-
-        browser.browserAction.setIcon({
-            path: {
-                48: 'icons/smile.png'
-            }
-        });
     }
 
     async enable() {
@@ -365,6 +359,11 @@ browser.storage.onChanged.addListener((changes, areaName) => {
     }
 });
 
+browser.browserAction.setIcon({
+    path: {
+        48: 'icons/smile.png'
+    }
+});
 browser.storage.local.set({enabled: false});
 browser.storage.local.get('installedDictionaries').then(config => {
     if (config.installedDictionaries) {
