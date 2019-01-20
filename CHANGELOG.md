@@ -1,5 +1,8 @@
 ## Changelog
 
+#### Version 1.1.7
+ * Fixing name dictionary
+
 #### Version 1.1.6
  * Fixing issue with having multiple dictionaries in Firefox
  * Fixed issues with extracting sentences

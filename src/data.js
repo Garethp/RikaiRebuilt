@@ -174,7 +174,7 @@ export default class Data {
 
         while (word.length > 0) {
             let showInf = (count !== 0);
-            let variants = dictionary.isNameDictionary ? [{word: word, type: 0xFF, reason: null}] : deinflect(word);
+            let variants = dictionary.isNameDictionary ? [{word: word, type: 0xFF, reasons: []}] : deinflect(word);
             for (let i = 0; i < variants.length; i++) {
                 let variant = variants[i];
                 let entries = await dictionary.db.findWord(variant.word);
