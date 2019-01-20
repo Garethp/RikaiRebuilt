@@ -1,4 +1,45 @@
-const defaultConfig = {
+export interface Config {
+    ankiTags: string;
+    keymap: { playAudio: number; epwingPreviousEntry: number; epwingNextEntry: number; selectNextDictionary: number; toggleSanseidoMode: number; toggleEpwingMode: number; sendToAnki: number };
+    showKanjiNewNelson: boolean;
+    showFrequency: boolean;
+    showKanjiNelson: boolean;
+    showPopularWordIndicator: boolean;
+    epwingDictionaries: { name: string, path: string }[];
+    startWithSanseido: boolean;
+    importEmptyAudio: boolean;
+    ankiFields: {};
+    showKanjiHalpern: boolean;
+    maxEntries: number;
+    showKanjiHenshall: boolean;
+    theme: string;
+    hideXRatedEntries: boolean;
+    showKanjiLearnersDictionary: boolean;
+    audioVolume: number;
+    installedDictionaries: {
+        id: string,
+        name: string,
+        hasType: boolean,
+        isNameDictionary: boolean,
+        isKanjiDictionary: boolean,
+    }[];
+    showKanjiTurtleAndKana: boolean;
+    showKanjiHeisig: boolean;
+    recommendedDictionaries: ({ isKanjiDictionary: boolean; name: string; isNameDictionary: boolean; id: string; hasType: boolean; url: string })[];
+    showKanjiUnicode: boolean;
+    showKanjiPinYin: boolean;
+    showKanjiComponents: boolean;
+    startWithEpwing: boolean;
+    hideDefinitions: boolean;
+    showWordTypeIndicator: boolean;
+    openChangelogOnUpdate: boolean;
+    showKanjiTurtleDictionary: boolean;
+    nameMax: number;
+    showPitchAccent: boolean;
+    showKanjiSkipPattern: boolean
+}
+
+const defaultConfig: Config = {
     startWithSanseido: false,
     startWithEpwing: false,
 
@@ -44,8 +85,7 @@ const defaultConfig = {
     //Epwing Options
     epwingDictionaries: [],
 
-    installedDictionaries: [
-    ],
+    installedDictionaries: [],
     recommendedDictionaries: [
         {
             name: 'Japanese to English Dictionary',
