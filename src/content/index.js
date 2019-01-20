@@ -2,6 +2,7 @@ import {docRangeFromPoint, docImposterDestroy, docSentenceExtract} from './docum
 import autobind from '../../lib/autobind';
 import defaultConfig from '../defaultConfig';
 import Utils from '../utils';
+import '../../styles/popup.css';
 
 class Rikai {
     constructor(document) {
@@ -211,7 +212,6 @@ class Rikai {
     }
 
     async searchAt(point, tabData, event) {
-
         const textSource = docRangeFromPoint(point);
 
         if (!textSource || !textSource.range || typeof textSource.range.startContainer.data === 'undefined') {
@@ -372,8 +372,7 @@ class Rikai {
         this.showPopup(this.getKnownWordIndicatorText() + await this.makeHTML(entry), tabData.previousTarget, tabData.pos);
     }
 
-
-    // Extract the first search term from the hilited word.
+    // Extract the first search term from the highlighted word.
     // Returns search term string or null on error.
     // forceGetReading - true = force this routine to return the reading of the word
     extractSearchTerm (forceGetReading) {
@@ -917,57 +916,56 @@ class Rikai {
         popup.style.top = pageY + 'px';
     }
 
-    async makeHTML(entry) {
+    async makeHTML(entries) {
         let k;
         let e;
         let returnValue = [];
         let c, s, t;
         let i, j, n;
 
-        if (entry == null) return '';
+        if (entries == null) return '';
 
-        if (entry.kanji) {
+        if (entries.kanji) {
             let yomi;
             let box;
-            let bn;
             let nums;
 
-            yomi = entry.onkun.replace(/\.([^\u3001]+)/g, '<span class="k-yomi-hi">$1</span>');
-            if (entry.nanori.length) {
-                yomi += '<br/><span class="k-yomi-ti">\u540D\u4E57\u308A</span> ' + entry.nanori;
+            yomi = entries.onkun.replace(/\.([^\u3001]+)/g, '<span class="k-yomi-hi">$1</span>');
+            if (entries.nanori.length) {
+                yomi += `<br/><span class="k-yomi-ti">\u540D\u4E57\u308A</span> ${entries.nanori}`;
             }
-            if (entry.bushumei.length) {
-                yomi += '<br/><span class="k-yomi-ti">\u90E8\u9996\u540D</span> ' + entry.bushumei;
+            if (entries.bushumei.length) {
+                yomi += `<br/><span class="k-yomi-ti">\u90E8\u9996\u540D</span> ${entries.bushumei}`;
             }
 
-            bn = entry.misc['B'] - 1;
-            k = entry.misc['G'];
-            switch (k) {
+            let kanjiUse = entries.misc['G'];
+            switch (kanjiUse) {
                 case 8:
-                    k = 'general<br/>use';
+                    kanjiUse = 'general<br/>use';
                     break;
                 case 9:
-                    k = 'name<br/>use';
+                    kanjiUse = 'name<br/>use';
                     break;
                 default:
-                    k = isNaN(k) ? '-' : ('grade<br/>' + k);
+                    kanjiUse = isNaN(kanjiUse) ? '-' : ('grade<br/>' + kanjiUse);
                     break;
             }
-            box = '<table class="k-abox-tb"><tr>' +
-                '<td class="k-abox-r">radical<br/>' + entry.radical.charAt(0) + ' ' + entry.radicalNumber + '</td>' +
-                '<td class="k-abox-g">' + k + '</td>' +
-                '</tr><tr>' +
-                '<td class="k-abox-f">freq<br/>' + (entry.misc['F'] ? entry.misc['F'] : '-') + '</td>' +
-                '<td class="k-abox-s">strokes<br/>' + entry.misc['S'] + '</td>' +
-                '</tr></table>';
+            box = `<table class="k-abox-tb"><tr>
+                <td class="k-abox-r">radical<br/>${entries.radical.charAt(0)} ${entries.radicalNumber}</td>
+                <td class="k-abox-g">${kanjiUse}</td>
+                </tr><tr>
+                <td class="k-abox-f">freq<br/>${entries.misc['F'] ? entries.misc['F'] : '-'}</td>
+                <td class="k-abox-s">strokes<br/>${entries.misc['S']}</td>
+                </tr></table>`;
+
             if (this.config.showKanjiComponents) {
-                k = entry.radical.split('\t');
+                k = entries.radical.split('\t');
                 box += '<table class="k-bbox-tb">' +
                     '<tr><td class="k-bbox-1a">' + k[0] + '</td>' +
                     '<td class="k-bbox-1b">' + k[2] + '</td>' +
                     '<td class="k-bbox-1b">' + k[3] + '</td></tr>';
                 j = 1;
-                for (const radical of entry.radicals) {
+                for (const radical of entries.radicals) {
                     k = radical.split('\t');
                             c = ' class="k-bbox-' + (j ^= 1);
                             box += '<tr><td' + c + 'a">' + k[0] + '</td>' +
@@ -999,11 +997,11 @@ class Rikai {
                 const displayName = numList[i][1];
 
                 if (this.config[configName]) {
-                    s = entry.misc[i]; // The number
+                    s = entries.misc[i]; // The number
                     c = ' class="k-mix-td' + (j ^= 1) + '"';
 
                     if (configName === "showKanjiHeisig") {
-                        const revTkLink = 'http://kanji.koohii.com/study/kanji/' + entry.kanji;
+                        const revTkLink = 'http://kanji.koohii.com/study/kanji/' + entries.kanji;
                         nums += '<tr><td' + c + '>' + '<a' + c + 'href="' + revTkLink + '">Heisig</a>' + '</td><td' + c + '>' + '<a' + c + 'href="' + revTkLink + '">'
                             + (s ? s : '-') + '</a>' + '</td></tr>';
                     }
@@ -1016,8 +1014,8 @@ class Rikai {
 
             returnValue.push('<table class="k-main-tb"><tr><td valign="top">');
             returnValue.push(box);
-            returnValue.push('<span class="k-kanji">' + entry.kanji + '</span><br/>');
-            if (!this.config.hideDefinitions) returnValue.push('<div class="k-eigo">' + entry.eigo + '</div>');
+            returnValue.push('<span class="k-kanji">' + entries.kanji + '</span><br/>');
+            if (!this.config.hideDefinitions) returnValue.push('<div class="k-eigo">' + entries.eigo + '</div>');
             returnValue.push('<div class="k-yomi">' + yomi + '</div>');
             returnValue.push('</td></tr><tr><td>' + nums + '</td></tr></table>');
             return returnValue.join('');
@@ -1025,60 +1023,49 @@ class Rikai {
 
         s = t = '';
 
-        if (entry.names) {
-            c = [];
+        if (entries.names) {
+            let columns = [];
 
-            returnValue.push('<div class="w-title">Names Dictionary</div><table class="w-na-tb"><tr><td>');
-            for (i = 0; i < entry.data.length; ++i) {
-                e = entry.data[i][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/([\S\s]+)\//);
+            returnValue.push('<div class="w-title">Names Dictionary</div>');
+            for (let entry of entries.data) {
+                let column = '<div>';
+                e = entry[0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/([\S\s]+)\//);
                 if (!e) continue;
 
-                if (s !== e[3]) {
-                    c.push(t);
-                    t = '';
-                }
-
-                if (e[2]) c.push('<span class="w-kanji">' + e[1] + '</span> &#32; <span class="w-kana">' + e[2] + '</span><br/> ');
-                else c.push('<span class="w-kana">' + e[1] + '</span><br/> ');
+                if (e[2]) column += '<span class="w-kanji">' + e[1] + '</span> &#32; <span class="w-kana">' + e[2] + '</span>';
+                else column += '<span><span class="w-kana">' + e[1] + '</span></span>';
 
                 s = e[3];
-                if (this.config.hideDefinitions) t = '';
-                else t = '<span class="w-def">' + s.replace(/\//g, '; ').replace(/\n/g, '<br/>') + '</span><br/>';
-            }
-            c.push(t);
-            if (c.length > 4) {
-                n = (c.length >> 1) + 1;
-                returnValue.push(c.slice(0, n + 1).join(''));
+                if (!this.config.hideDefinitions)
+                    column += '<div class="w-def">' + s.replace(/\//g, '; ').replace(/\n/g, '<br/>') + '</div>';
 
-                t = c[n];
-                c = c.slice(n, c.length);
-                for (i = 0; i < c.length; ++i) {
-                    if (c[i].indexOf('w-def') !== -1) {
-                        if (t !== c[i]) returnValue.push(c[i]);
-                        if (i === 0) c.shift();
-                        break;
-                    }
-                }
-
-                returnValue.push('</td><td>');
-                returnValue.push(c.join(''));
+                column += '</div>';
+                columns.push(column);
             }
-            else {
-                returnValue.push(c.join(''));
+            //If we have more than four results, split the columns in two
+            if (columns.length > 4 && entries.more && columns.length % 2 === 0) {
+                columns.pop();
             }
-            if (entry.more) returnValue.push('...<br/>');
-            returnValue.push('</td></tr></table>');
 
+            if (entries.more) columns.push('<div>...</div>');
+
+            if (entries.length > 4 || true) {
+                columns.unshift(`<div class="two-columns">`);
+                columns.push(`</div>`);
+            }
+
+            returnValue.push(columns.join(''));
             return returnValue.join('');
         }
-        if (entry.title) {
-            returnValue.push('<div class="w-title">' + entry.title + '</div>');
+
+        if (entries.title) {
+            returnValue.push(`<div class="w-title">${entries.title}</div>`);
         }
 
         let pK = '';
 
-        for (i = 0; i < entry.data.length; ++i) {
-            e = entry.data[i][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/([\S\s]+)\//);
+        for (i = 0; i < entries.data.length; ++i) {
+            e = entries.data[i][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/([\S\s]+)\//);
             if (!e) continue;
 
             /*
@@ -1117,7 +1104,7 @@ class Rikai {
                 }
             }
 
-            if (entry.data[i][1]) returnValue.push(' <span class="w-conj">(' + entry.data[i][1] + ')</span>');
+            if (entries.data[i][1]) returnValue.push(' <span class="w-conj">(' + entries.data[i][1] + ')</span>');
 
             // Add frequency
             if (this.config.showFrequency) {
@@ -1151,7 +1138,7 @@ class Rikai {
             }
         }
         returnValue.push(t);
-        if (entry.more) returnValue.push('...<br/>');
+        if (entries.more) returnValue.push('...<br/>');
 
         return returnValue.join('');
     }

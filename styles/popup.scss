@@ -6,13 +6,13 @@
     background: transparent;
     color: #FFFFFF;
     border: none !important;
-    border-spacing: 0px;
-    margin: 0px;
-    padding: 0px;
+    border-spacing: 0;
+    margin: 0;
+    padding: 0;
     letter-spacing: normal;
     text-align: left;
     text-decoration: none;
-    text-indent: 0px;
+    text-indent: 0;
     text-transform: none;
     white-space: normal;
     word-spacing: normal;
@@ -72,7 +72,22 @@
 
 #rikaichan-window .w-na-tb td {
     vertical-align: top;
-    padding-right: 0.8em;
+    //padding-right: 0.8em;
+}
+
+.two-columns {
+    display: flex;
+    width: 350px !important;
+    justify-content: space-between;
+    //max-width: 400px;
+    //background-color: red !important;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    > div {
+        width: 45% !important;
+        //flex: 1;
+    }
 }
 
 /* used for kanji information */
@@ -94,7 +109,7 @@
 
 #rikaichan-window .k-yomi {
     font-size: 14px;
-    margin: 4px 0px;
+    margin: 4px 0;
 }
 
 #rikaichan-window .k-yomi-hi {
@@ -194,13 +209,13 @@
 
 #rikaichan-window .q-w {
     border-right: 1px dotted #B0B0B0 !important;
-    padding: 0px 2px;
+    padding: 0 2px;
     vertical-align: top;
     min-width: 300px;
 }
 
 #rikaichan-window .q-k {
-    padding: 0px 2px;
+    padding: 0 2px;
     vertical-align: top;
 }
 

@@ -5,18 +5,19 @@
   background: transparent;
   color: #FFFFFF;
   border: none !important;
-  border-spacing: 0px;
-  margin: 0px;
-  padding: 0px;
+  border-spacing: 0;
+  margin: 0;
+  padding: 0;
   letter-spacing: normal;
   text-align: left;
   text-decoration: none;
-  text-indent: 0px;
+  text-indent: 0;
   text-transform: none;
   white-space: normal;
   word-spacing: normal;
   font: normal 14px sans-serif;
-  visibility: visible; }
+  visibility: visible;
+}
 
 #rikaichan-window {
   position: absolute;
@@ -25,146 +26,190 @@
   padding: 4px;
   top: 5px;
   left: 5px;
-  min-width: 100px; }
+  min-width: 100px;
+}
 
 /* used for word definitions */
 #rikaichan-window .w-kanji {
   font-size: 18px;
-  margin-right: 0.7em; }
+  margin-right: 0.7em;
+}
 
 #rikaichan-window .w-kana {
-  font-size: 18px; }
+  font-size: 18px;
+}
 
 #rikaichan-window .w-conj {
-  font-size: 12px; }
+  font-size: 12px;
+}
 
 #rikaichan-window .w-freq-very-common {
-  font-size: 12px; }
+  font-size: 12px;
+}
 
 #rikaichan-window .w-freq-common {
-  font-size: 12px; }
+  font-size: 12px;
+}
 
 #rikaichan-window .w-freq-uncommon {
-  font-size: 12px; }
+  font-size: 12px;
+}
 
 #rikaichan-window .w-freq-rare {
-  font-size: 12px; }
+  font-size: 12px;
+}
 
 #rikaichan-window .w-def {
-  font-size: 13px; }
+  font-size: 13px;
+}
 
 #rikaichan-window .w-title {
   font-size: 10px;
-  padding: 2px; }
+  padding: 2px;
+}
 
 #rikaichan-window .w-na-tb td {
   vertical-align: top;
-  padding-right: 0.8em; }
+}
+
+.two-columns {
+  display: flex;
+  width: 350px !important;
+  justify-content: space-between;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.two-columns > div {
+  width: 45% !important;
+}
 
 /* used for kanji information */
 #rikaichan-window .k-main-tb {
-  width: 300px; }
+  width: 300px;
+}
 
 #rikaichan-window .k-kanji {
   font-family: serif;
-  font-size: 48px; }
+  font-size: 48px;
+}
 
 #rikaichan-window .k-eigo {
-  font-size: 12px; }
+  font-size: 12px;
+}
 
 /* kanji: readings */
 #rikaichan-window .k-yomi {
   font-size: 14px;
-  margin: 4px 0px; }
+  margin: 4px 0;
+}
 
 #rikaichan-window .k-yomi-hi {
-  border: 1px solid red; }
+  border: 1px solid red;
+}
 
 #rikaichan-window .k-yomi-ti {
-  font-size: 11px; }
+  font-size: 11px;
+}
 
 /* kanji radical, grade, freq, strokes box */
 #rikaichan-window .k-abox-tb {
   width: 120px;
   margin-bottom: 4px;
   float: right;
-  clear: right; }
+  clear: right;
+}
 
 #rikaichan-window .k-abox-r {
   font-size: 12px;
   text-align: center;
-  padding: 1px 4px; }
+  padding: 1px 4px;
+}
 
 #rikaichan-window .k-abox-g {
   font-size: 12px;
   text-align: center;
-  padding: 1px 4px; }
+  padding: 1px 4px;
+}
 
 #rikaichan-window .k-abox-f {
   font-size: 12px;
   text-align: center;
-  padding: 1px 4px; }
+  padding: 1px 4px;
+}
 
 #rikaichan-window .k-abox-s {
   font-size: 12px;
   text-align: center;
-  padding: 1px 4px; }
+  padding: 1px 4px;
+}
 
 /* kanji components box */
 #rikaichan-window .k-bbox-tb {
   width: 120px;
   margin-bottom: 4px;
   float: right;
-  clear: right; }
+  clear: right;
+}
 
 #rikaichan-window .k-bbox-0a {
   vertical-align: top;
   font-size: 11px;
-  padding: 1px 3px; }
+  padding: 1px 3px;
+}
 
 #rikaichan-window .k-bbox-0b {
   vertical-align: top;
   font-size: 11px;
-  padding: 1px 3px; }
+  padding: 1px 3px;
+}
 
 #rikaichan-window .k-bbox-1a {
   vertical-align: top;
   font-size: 11px;
-  padding: 1px 3px; }
+  padding: 1px 3px;
+}
 
 #rikaichan-window .k-bbox-1b {
   vertical-align: top;
   font-size: 11px;
-  padding: 1px 3px; }
+  padding: 1px 3px;
+}
 
 /* kanji: misc index */
 #rikaichan-window .k-mix-tb {
-  width: 100%; }
+  width: 100%;
+}
 
 #rikaichan-window .k-mix-td0 {
-  font-size: 12px; }
+  font-size: 12px;
+}
 
 #rikaichan-window .k-mix-td1 {
-  font-size: 12px; }
+  font-size: 12px;
+}
 
 /* manual query */
 #rikaichan-window .q-w {
   border-right: 1px dotted #B0B0B0 !important;
-  padding: 0px 2px;
+  padding: 0 2px;
   vertical-align: top;
-  min-width: 300px; }
+  min-width: 300px;
+}
 
 #rikaichan-window .q-k {
-  padding: 0px 2px;
-  vertical-align: top; }
+  padding: 0 2px;
+  vertical-align: top;
+}
 
 /* EPWING */
 #rikaichan-window .epwing-dic-name {
   font-size: 12px;
-  float: right; }
+  float: right;
+}
 
 #rikaichan-window sup {
-  font-size: 10px; }
+  font-size: 10px;
+}
 
 #rikaichan-window hr {
   height: 1px;
@@ -172,266 +217,371 @@
   margin-bottom: 5px;
   width: 99%;
   margin-left: auto;
-  margin-right: auto; }
+  margin-right: auto;
+}
 
 /** Blue Theme **/
 #rikaichan-window.rikai-blue {
-  background: #5C73B8; }
-  #rikaichan-window.rikai-blue, #rikaichan-window.rikai-blue * {
-    color: #FFFFFF; }
-  #rikaichan-window.rikai-blue .w-kanji {
-    color: #B7E7FF; }
-  #rikaichan-window.rikai-blue .w-kana {
-    color: #C0FFC0; }
-  #rikaichan-window.rikai-blue .w-conj {
-    color: #FFE0A0; }
-  #rikaichan-window.rikai-blue .w-freq-very-common {
-    color: #00FF00; }
-  #rikaichan-window.rikai-blue .w-freq-common {
-    color: #FFFF00; }
-  #rikaichan-window.rikai-blue .w-freq-uncommon {
-    color: #FFA500; }
-  #rikaichan-window.rikai-blue .w-freq-rare {
-    color: #e28cbb; }
-  #rikaichan-window.rikai-blue .w-title {
-    background: #4C63A8;
-    color: #FFFFFF; }
-  #rikaichan-window.rikai-blue .k-kanji {
-    color: #B7E7FF; }
-  #rikaichan-window.rikai-blue .k-yomi {
-    color: #C0FFC0; }
-  #rikaichan-window.rikai-blue .k-yomi-hi {
-    color: #A0D0FF; }
-  #rikaichan-window.rikai-blue .k-yomi-ti {
-    color: #E7FFE7; }
-  #rikaichan-window.rikai-blue .k-abox-r {
-    background: #5A70B5;
-    color: #FFFFFF; }
-  #rikaichan-window.rikai-blue .k-abox-g {
-    background: #4C63A8;
-    color: #B7E7FF; }
-  #rikaichan-window.rikai-blue .k-abox-f {
-    background: #4C63A8;
-    color: #B7E7FF; }
-  #rikaichan-window.rikai-blue .k-abox-s {
-    background: #5A70B5;
-    color: #FFFFFF; }
-  #rikaichan-window.rikai-blue .k-bbox-0a {
-    background: #5A70B5;
-    color: #FFFFFF; }
-  #rikaichan-window.rikai-blue .k-bbox-0b {
-    background: #5A70B5;
-    color: #FFFFFF; }
-  #rikaichan-window.rikai-blue .k-bbox-1a {
-    background: #4C63A8;
-    color: #B7E7FF; }
-  #rikaichan-window.rikai-blue .k-bbox-1b {
-    background: #4C63A8;
-    color: #B7E7FF; }
-  #rikaichan-window.rikai-blue .k-mix-td0 {
-    background: #5A70B5;
-    color: #B7E7FF; }
-  #rikaichan-window.rikai-blue .k-mix-td1 {
-    background: #4C63A8;
-    color: #FFFFFF; }
-  #rikaichan-window.rikai-blue .epwing-dic-name {
-    color: #FFE0A0; }
-  #rikaichan-window.rikai-blue hr {
-    background-color: #FFE0A0; }
+  background: #5C73B8;
+}
+#rikaichan-window.rikai-blue, #rikaichan-window.rikai-blue * {
+  color: #FFFFFF;
+}
+#rikaichan-window.rikai-blue .w-kanji {
+  color: #B7E7FF;
+}
+#rikaichan-window.rikai-blue .w-kana {
+  color: #C0FFC0;
+}
+#rikaichan-window.rikai-blue .w-conj {
+  color: #FFE0A0;
+}
+#rikaichan-window.rikai-blue .w-freq-very-common {
+  color: #00FF00;
+}
+#rikaichan-window.rikai-blue .w-freq-common {
+  color: #FFFF00;
+}
+#rikaichan-window.rikai-blue .w-freq-uncommon {
+  color: #FFA500;
+}
+#rikaichan-window.rikai-blue .w-freq-rare {
+  color: #e28cbb;
+}
+#rikaichan-window.rikai-blue .w-title {
+  background: #4C63A8;
+  color: #FFFFFF;
+}
+#rikaichan-window.rikai-blue .k-kanji {
+  color: #B7E7FF;
+}
+#rikaichan-window.rikai-blue .k-yomi {
+  color: #C0FFC0;
+}
+#rikaichan-window.rikai-blue .k-yomi-hi {
+  color: #A0D0FF;
+}
+#rikaichan-window.rikai-blue .k-yomi-ti {
+  color: #E7FFE7;
+}
+#rikaichan-window.rikai-blue .k-abox-r {
+  background: #5A70B5;
+  color: #FFFFFF;
+}
+#rikaichan-window.rikai-blue .k-abox-g {
+  background: #4C63A8;
+  color: #B7E7FF;
+}
+#rikaichan-window.rikai-blue .k-abox-f {
+  background: #4C63A8;
+  color: #B7E7FF;
+}
+#rikaichan-window.rikai-blue .k-abox-s {
+  background: #5A70B5;
+  color: #FFFFFF;
+}
+#rikaichan-window.rikai-blue .k-bbox-0a {
+  background: #5A70B5;
+  color: #FFFFFF;
+}
+#rikaichan-window.rikai-blue .k-bbox-0b {
+  background: #5A70B5;
+  color: #FFFFFF;
+}
+#rikaichan-window.rikai-blue .k-bbox-1a {
+  background: #4C63A8;
+  color: #B7E7FF;
+}
+#rikaichan-window.rikai-blue .k-bbox-1b {
+  background: #4C63A8;
+  color: #B7E7FF;
+}
+#rikaichan-window.rikai-blue .k-mix-td0 {
+  background: #5A70B5;
+  color: #B7E7FF;
+}
+#rikaichan-window.rikai-blue .k-mix-td1 {
+  background: #4C63A8;
+  color: #FFFFFF;
+}
+#rikaichan-window.rikai-blue .epwing-dic-name {
+  color: #FFE0A0;
+}
+#rikaichan-window.rikai-blue hr {
+  background-color: #FFE0A0;
+}
 
 /** Black Theme **/
 #rikaichan-window.rikai-black {
-  background: #000000; }
-  #rikaichan-window.rikai-black, #rikaichan-window.rikai-black * {
-    color: #FFFFFF; }
-  #rikaichan-window.rikai-black .w-kanji {
-    color: #7070E0; }
-  #rikaichan-window.rikai-black .w-kana {
-    color: #20A020; }
-  #rikaichan-window.rikai-black .w-conj {
-    color: #A0A0A0; }
-  #rikaichan-window.rikai-black .w-freq-very-common {
-    color: #00b300; }
-  #rikaichan-window.rikai-black .w-freq-common {
-    color: #b3b300; }
-  #rikaichan-window.rikai-black .w-freq-uncommon {
-    color: #b37400; }
-  #rikaichan-window.rikai-black .w-freq-rare {
-    color: #e28cbb; }
-  #rikaichan-window.rikai-black .w-title {
-    background: #303030;
-    color: #E0E0E0; }
-  #rikaichan-window.rikai-black .k-kanji {
-    color: #FFFFFF; }
-  #rikaichan-window.rikai-black .k-yomi {
-    color: #20A020; }
-  #rikaichan-window.rikai-black .k-yomi-hi {
-    color: #7070E0; }
-  #rikaichan-window.rikai-black .k-yomi-ti {
-    color: #E0E0E0; }
-  #rikaichan-window.rikai-black .k-abox-r {
-    background: #505050;
-    color: #E0E0E0; }
-  #rikaichan-window.rikai-black .k-abox-g {
-    background: #303030;
-    color: #F0F0F0; }
-  #rikaichan-window.rikai-black .k-abox-f {
-    background: #303030;
-    color: #F0F0F0; }
-  #rikaichan-window.rikai-black .k-abox-s {
-    background: #505050;
-    color: #E0E0E0; }
-  #rikaichan-window.rikai-black .k-bbox-0a {
-    background: #505050;
-    color: #E0E0E0; }
-  #rikaichan-window.rikai-black .k-bbox-0b {
-    background: #505050;
-    color: #E0E0E0; }
-  #rikaichan-window.rikai-black .k-bbox-1a {
-    background: #303030;
-    color: #F0F0F0; }
-  #rikaichan-window.rikai-black .k-bbox-1b {
-    background: #303030;
-    color: #F0F0F0; }
-  #rikaichan-window.rikai-black .k-mix-td0 {
-    background: #505050;
-    color: #F0F0F0; }
-  #rikaichan-window.rikai-black .k-mix-td1 {
-    background: #303030;
-    color: #E0E0E0; }
-  #rikaichan-window.rikai-black .epwing-dic-name {
-    color: #A0A0A0; }
-  #rikaichan-window.rikai-black hr {
-    background-color: #A0A0A0; }
+  background: #000000;
+}
+#rikaichan-window.rikai-black, #rikaichan-window.rikai-black * {
+  color: #FFFFFF;
+}
+#rikaichan-window.rikai-black .w-kanji {
+  color: #7070E0;
+}
+#rikaichan-window.rikai-black .w-kana {
+  color: #20A020;
+}
+#rikaichan-window.rikai-black .w-conj {
+  color: #A0A0A0;
+}
+#rikaichan-window.rikai-black .w-freq-very-common {
+  color: #00b300;
+}
+#rikaichan-window.rikai-black .w-freq-common {
+  color: #b3b300;
+}
+#rikaichan-window.rikai-black .w-freq-uncommon {
+  color: #b37400;
+}
+#rikaichan-window.rikai-black .w-freq-rare {
+  color: #e28cbb;
+}
+#rikaichan-window.rikai-black .w-title {
+  background: #303030;
+  color: #E0E0E0;
+}
+#rikaichan-window.rikai-black .k-kanji {
+  color: #FFFFFF;
+}
+#rikaichan-window.rikai-black .k-yomi {
+  color: #20A020;
+}
+#rikaichan-window.rikai-black .k-yomi-hi {
+  color: #7070E0;
+}
+#rikaichan-window.rikai-black .k-yomi-ti {
+  color: #E0E0E0;
+}
+#rikaichan-window.rikai-black .k-abox-r {
+  background: #505050;
+  color: #E0E0E0;
+}
+#rikaichan-window.rikai-black .k-abox-g {
+  background: #303030;
+  color: #F0F0F0;
+}
+#rikaichan-window.rikai-black .k-abox-f {
+  background: #303030;
+  color: #F0F0F0;
+}
+#rikaichan-window.rikai-black .k-abox-s {
+  background: #505050;
+  color: #E0E0E0;
+}
+#rikaichan-window.rikai-black .k-bbox-0a {
+  background: #505050;
+  color: #E0E0E0;
+}
+#rikaichan-window.rikai-black .k-bbox-0b {
+  background: #505050;
+  color: #E0E0E0;
+}
+#rikaichan-window.rikai-black .k-bbox-1a {
+  background: #303030;
+  color: #F0F0F0;
+}
+#rikaichan-window.rikai-black .k-bbox-1b {
+  background: #303030;
+  color: #F0F0F0;
+}
+#rikaichan-window.rikai-black .k-mix-td0 {
+  background: #505050;
+  color: #F0F0F0;
+}
+#rikaichan-window.rikai-black .k-mix-td1 {
+  background: #303030;
+  color: #E0E0E0;
+}
+#rikaichan-window.rikai-black .epwing-dic-name {
+  color: #A0A0A0;
+}
+#rikaichan-window.rikai-black hr {
+  background-color: #A0A0A0;
+}
 
 /** Light Blue Theme */
 #rikaichan-window.rikai-light-blue {
-  background: #E6F4FE; }
-  #rikaichan-window.rikai-light-blue, #rikaichan-window.rikai-light-blue * {
-    color: #000000; }
-  #rikaichan-window.rikai-light-blue .w-kanji {
-    color: #3082BF; }
-  #rikaichan-window.rikai-light-blue .w-kana {
-    color: #00B366; }
-  #rikaichan-window.rikai-light-blue .w-conj {
-    color: #808080; }
-  #rikaichan-window.rikai-light-blue .w-freq-very-common {
-    color: #00ce00; }
-  #rikaichan-window.rikai-light-blue .w-freq-common {
-    color: #aaaa00; }
-  #rikaichan-window.rikai-light-blue .w-freq-uncommon {
-    color: #E56717; }
-  #rikaichan-window.rikai-light-blue .w-freq-rare {
-    color: #e28cbb; }
-  #rikaichan-window.rikai-light-blue .w-title {
-    background: #BFE4FF;
-    color: #000000; }
-  #rikaichan-window.rikai-light-blue .k-kanji {
-    color: #000000; }
-  #rikaichan-window.rikai-light-blue .k-yomi {
-    color: #00B366; }
-  #rikaichan-window.rikai-light-blue .k-yomi-hi {
-    color: #00868B; }
-  #rikaichan-window.rikai-light-blue .k-yomi-ti {
-    color: #000000; }
-  #rikaichan-window.rikai-light-blue .k-abox-r {
-    background: #DFF1FF;
-    color: #003D6B; }
-  #rikaichan-window.rikai-light-blue .k-abox-g {
-    background: #FFFFFF;
-    color: #003D6B; }
-  #rikaichan-window.rikai-light-blue .k-abox-f {
-    background: #FFFFFF;
-    color: #003D6B; }
-  #rikaichan-window.rikai-light-blue .k-abox-s {
-    background: #DFF1FF;
-    color: #003D6B; }
-  #rikaichan-window.rikai-light-blue .k-bbox-0a {
-    background: #DFF1FF;
-    color: #003D6B; }
-  #rikaichan-window.rikai-light-blue .k-bbox-0b {
-    background: #DFF1FF;
-    color: #003D6B; }
-  #rikaichan-window.rikai-light-blue .k-bbox-1a {
-    background: #FFFFFF;
-    color: #003D6B; }
-  #rikaichan-window.rikai-light-blue .k-bbox-1b {
-    background: #FFFFFF;
-    color: #003D6B; }
-  #rikaichan-window.rikai-light-blue .k-mix-td0 {
-    background: #DFF1FF;
-    color: #003D6B; }
-  #rikaichan-window.rikai-light-blue .k-mix-td1 {
-    background: #FFFFFF;
-    color: #003D6B; }
-  #rikaichan-window.rikai-light-blue .epwing-dic-name {
-    color: #808080; }
-  #rikaichan-window.rikai-light-blue hr {
-    background-color: #808080; }
+  background: #E6F4FE;
+}
+#rikaichan-window.rikai-light-blue, #rikaichan-window.rikai-light-blue * {
+  color: #000000;
+}
+#rikaichan-window.rikai-light-blue .w-kanji {
+  color: #3082BF;
+}
+#rikaichan-window.rikai-light-blue .w-kana {
+  color: #00B366;
+}
+#rikaichan-window.rikai-light-blue .w-conj {
+  color: #808080;
+}
+#rikaichan-window.rikai-light-blue .w-freq-very-common {
+  color: #00ce00;
+}
+#rikaichan-window.rikai-light-blue .w-freq-common {
+  color: #aaaa00;
+}
+#rikaichan-window.rikai-light-blue .w-freq-uncommon {
+  color: #E56717;
+}
+#rikaichan-window.rikai-light-blue .w-freq-rare {
+  color: #e28cbb;
+}
+#rikaichan-window.rikai-light-blue .w-title {
+  background: #BFE4FF;
+  color: #000000;
+}
+#rikaichan-window.rikai-light-blue .k-kanji {
+  color: #000000;
+}
+#rikaichan-window.rikai-light-blue .k-yomi {
+  color: #00B366;
+}
+#rikaichan-window.rikai-light-blue .k-yomi-hi {
+  color: #00868B;
+}
+#rikaichan-window.rikai-light-blue .k-yomi-ti {
+  color: #000000;
+}
+#rikaichan-window.rikai-light-blue .k-abox-r {
+  background: #DFF1FF;
+  color: #003D6B;
+}
+#rikaichan-window.rikai-light-blue .k-abox-g {
+  background: #FFFFFF;
+  color: #003D6B;
+}
+#rikaichan-window.rikai-light-blue .k-abox-f {
+  background: #FFFFFF;
+  color: #003D6B;
+}
+#rikaichan-window.rikai-light-blue .k-abox-s {
+  background: #DFF1FF;
+  color: #003D6B;
+}
+#rikaichan-window.rikai-light-blue .k-bbox-0a {
+  background: #DFF1FF;
+  color: #003D6B;
+}
+#rikaichan-window.rikai-light-blue .k-bbox-0b {
+  background: #DFF1FF;
+  color: #003D6B;
+}
+#rikaichan-window.rikai-light-blue .k-bbox-1a {
+  background: #FFFFFF;
+  color: #003D6B;
+}
+#rikaichan-window.rikai-light-blue .k-bbox-1b {
+  background: #FFFFFF;
+  color: #003D6B;
+}
+#rikaichan-window.rikai-light-blue .k-mix-td0 {
+  background: #DFF1FF;
+  color: #003D6B;
+}
+#rikaichan-window.rikai-light-blue .k-mix-td1 {
+  background: #FFFFFF;
+  color: #003D6B;
+}
+#rikaichan-window.rikai-light-blue .epwing-dic-name {
+  color: #808080;
+}
+#rikaichan-window.rikai-light-blue hr {
+  background-color: #808080;
+}
 
 /** Yellow Theme */
 #rikaichan-window.rikai-yellow {
-  background: #FFFFBF; }
-  #rikaichan-window.rikai-yellow, #rikaichan-window.rikai-yellow * {
-    color: #000000; }
-  #rikaichan-window.rikai-yellow .w-kanji {
-    color: #7070E0; }
-  #rikaichan-window.rikai-yellow .w-kana {
-    color: #20A020; }
-  #rikaichan-window.rikai-yellow .w-conj {
-    color: #A0A0A0; }
-  #rikaichan-window.rikai-yellow .w-freq-very-common {
-    color: #00ce00; }
-  #rikaichan-window.rikai-yellow .w-freq-common {
-    color: #aaaa00; }
-  #rikaichan-window.rikai-yellow .w-freq-uncommon {
-    color: #FFA500; }
-  #rikaichan-window.rikai-yellow .w-freq-rare {
-    color: #E28CBB; }
-  #rikaichan-window.rikai-yellow .w-title {
-    background: #F0F0B0;
-    color: #000000; }
-  #rikaichan-window.rikai-yellow .k-kanji {
-    color: #000000; }
-  #rikaichan-window.rikai-yellow .k-yomi {
-    color: #20A020; }
-  #rikaichan-window.rikai-yellow .k-yomi-hi {
-    color: #CD5C5C; }
-  #rikaichan-window.rikai-yellow .k-yomi-ti {
-    color: #000000; }
-  #rikaichan-window.rikai-yellow .k-abox-r {
-    background: #FFFFE6;
-    color: #000000; }
-  #rikaichan-window.rikai-yellow .k-abox-g {
-    background: #F7F7D0;
-    color: #000000; }
-  #rikaichan-window.rikai-yellow .k-abox-f {
-    background: #F7F7D0;
-    color: #000000; }
-  #rikaichan-window.rikai-yellow .k-abox-s {
-    background: #FFFFE6;
-    color: #000000; }
-  #rikaichan-window.rikai-yellow .k-bbox-0a {
-    background: #FFFFE6;
-    color: #000000; }
-  #rikaichan-window.rikai-yellow .k-bbox-0b {
-    background: #FFFFE6;
-    color: #000000; }
-  #rikaichan-window.rikai-yellow .k-bbox-1a {
-    background: #F7F7D0;
-    color: #000000; }
-  #rikaichan-window.rikai-yellow .k-bbox-1b {
-    background: #F7F7D0;
-    color: #000000; }
-  #rikaichan-window.rikai-yellow .k-mix-td0 {
-    background: #FFFFE6;
-    color: #000000; }
-  #rikaichan-window.rikai-yellow .k-mix-td1 {
-    background: #F7F7D0;
-    color: #000000; }
-  #rikaichan-window.rikai-yellow .epwing-dic-name {
-    color: #A0A0A0; }
-  #rikaichan-window.rikai-yellow hr {
-    background-color: #A0A0A0; }
+  background: #FFFFBF;
+}
+#rikaichan-window.rikai-yellow, #rikaichan-window.rikai-yellow * {
+  color: #000000;
+}
+#rikaichan-window.rikai-yellow .w-kanji {
+  color: #7070E0;
+}
+#rikaichan-window.rikai-yellow .w-kana {
+  color: #20A020;
+}
+#rikaichan-window.rikai-yellow .w-conj {
+  color: #A0A0A0;
+}
+#rikaichan-window.rikai-yellow .w-freq-very-common {
+  color: #00ce00;
+}
+#rikaichan-window.rikai-yellow .w-freq-common {
+  color: #aaaa00;
+}
+#rikaichan-window.rikai-yellow .w-freq-uncommon {
+  color: #FFA500;
+}
+#rikaichan-window.rikai-yellow .w-freq-rare {
+  color: #E28CBB;
+}
+#rikaichan-window.rikai-yellow .w-title {
+  background: #F0F0B0;
+  color: #000000;
+}
+#rikaichan-window.rikai-yellow .k-kanji {
+  color: #000000;
+}
+#rikaichan-window.rikai-yellow .k-yomi {
+  color: #20A020;
+}
+#rikaichan-window.rikai-yellow .k-yomi-hi {
+  color: #CD5C5C;
+}
+#rikaichan-window.rikai-yellow .k-yomi-ti {
+  color: #000000;
+}
+#rikaichan-window.rikai-yellow .k-abox-r {
+  background: #FFFFE6;
+  color: #000000;
+}
+#rikaichan-window.rikai-yellow .k-abox-g {
+  background: #F7F7D0;
+  color: #000000;
+}
+#rikaichan-window.rikai-yellow .k-abox-f {
+  background: #F7F7D0;
+  color: #000000;
+}
+#rikaichan-window.rikai-yellow .k-abox-s {
+  background: #FFFFE6;
+  color: #000000;
+}
+#rikaichan-window.rikai-yellow .k-bbox-0a {
+  background: #FFFFE6;
+  color: #000000;
+}
+#rikaichan-window.rikai-yellow .k-bbox-0b {
+  background: #FFFFE6;
+  color: #000000;
+}
+#rikaichan-window.rikai-yellow .k-bbox-1a {
+  background: #F7F7D0;
+  color: #000000;
+}
+#rikaichan-window.rikai-yellow .k-bbox-1b {
+  background: #F7F7D0;
+  color: #000000;
+}
+#rikaichan-window.rikai-yellow .k-mix-td0 {
+  background: #FFFFE6;
+  color: #000000;
+}
+#rikaichan-window.rikai-yellow .k-mix-td1 {
+  background: #F7F7D0;
+  color: #000000;
+}
+#rikaichan-window.rikai-yellow .epwing-dic-name {
+  color: #A0A0A0;
+}
+#rikaichan-window.rikai-yellow hr {
+  background-color: #A0A0A0;
+}
 
 /*# sourceMappingURL=popup.css.map */
