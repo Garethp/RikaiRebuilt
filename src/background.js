@@ -4,7 +4,7 @@ import AnkiImport from './ankiImport';
 import FrequencyDb from './database/FrequencyDb'
 import PitchDb from './database/PitchDb';
 import IndexedDictionary from './database/IndexedDictionary';
-import Data from './Data';
+import Data from './data';
 import AudioPlayer from './audioPlayer';
 
 let config = defaultConfig;
