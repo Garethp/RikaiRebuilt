@@ -8,14 +8,14 @@ export default class Utils {
             0x3062, 0x3065, 0x3067, 0x3069, 0xFF85, 0xFF86, 0xFF87, 0xFF88, 0xFF89, 0x3070, 0x3073, 0x3076, 0x3079, 0x307C];
         const cs = [0x3071, 0x3074, 0x3077, 0x307A, 0x307D];
 
-        let i, u, v, r, p;
+        let i, u, v, kana, p;
         let trueLen = [0];
 
         // half & full-width katakana to hiragana conversion
         // note: katakana vu is never converted to hiragana
 
         p = 0;
-        r = '';
+        kana = '';
         for (i = 0; i < word.length; ++i) {
             u = v = word.charCodeAt(i);
 
@@ -32,14 +32,14 @@ export default class Utils {
             // voiced (used in half-width katakana) to hiragana
             else if (u === 0xFF9E) {
                 if ((p >= 0xFF73) && (p <= 0xFF8E)) {
-                    r = r.substr(0, r.length - 1);
+                    kana = kana.substr(0, kana.length - 1);
                     u = cv[p - 0xFF73];
                 }
             }
             // semi-voiced (used in half-width katakana) to hiragana
             else if (u === 0xFF9F) {
                 if ((p >= 0xFF8A) && (p <= 0xFF8E)) {
-                    r = r.substr(0, r.length - 1);
+                    kana = kana.substr(0, kana.length - 1);
                     u = cs[p - 0xFF8A];
                 }
             }
@@ -49,12 +49,12 @@ export default class Utils {
                 continue;
             }
 
-            r += String.fromCharCode(u);
-            trueLen[r.length] = i + 1;	// need to keep real length because of the half-width semi/voiced conversion
+            kana += String.fromCharCode(u);
+            trueLen[kana.length] = i + 1;	// need to keep real length because of the half-width semi/voiced conversion
             p = v;
         }
 
-        return r;
+        return { kana, trueLen };
     }
 
     static containsKanji (text) {
@@ -68,7 +68,6 @@ export default class Utils {
 
         return false;
     }
-
 
     static convertIntegerToCircledNumStr (num) {
         let circledNumStr = "(" + num + ")";

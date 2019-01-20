@@ -2,10 +2,9 @@ import IndexedDictionary from './database/IndexedDictionary';
 import { deinflect, deinflectL10NKeys } from './deinflect';
 import autobind from '../lib/autobind';
 import FileReader from './FileReader';
+import Utils from './utils';
 
 export default class Data {
-    // katakana -> hiragana conversion tables
-
     constructor(config) {
         autobind(this);
         this.config = config;
@@ -109,64 +108,20 @@ export default class Data {
     }
 
     async _wordSearch(word, dictionary, max) {
-        // half & full-width katakana to hiragana conversion
-        // note: katakana vu is never converted to hiragana
-
-        let trueLen = [0];
-        let p = 0;
-        let r = '';
-        for (let i = 0; i < word.length; ++i) {
-            let u = word.charCodeAt(i);
-            let v = u;
-
-            if (u <= 0x3000) break;
-
-            // full-width katakana to hiragana
-            if ((u >= 0x30A1) && (u <= 0x30F3)) {
-                u -= 0x60;
-            }
-            // half-width katakana to hiragana
-            else if ((u >= 0xFF66) && (u <= 0xFF9D)) {
-                u = this.ch[u - 0xFF66];
-            }
-            // voiced (used in half-width katakana) to hiragana
-            else if (u === 0xFF9E) {
-                if ((p >= 0xFF73) && (p <= 0xFF8E)) {
-                    r = r.substr(0, r.length - 1);
-                    u = this.cv[p - 0xFF73];
-                }
-            }
-            // semi-voiced (used in half-width katakana) to hiragana
-            else if (u === 0xFF9F) {
-                if ((p >= 0xFF8A) && (p <= 0xFF8E)) {
-                    r = r.substr(0, r.length - 1);
-                    u = this.cs[p - 0xFF8A];
-                }
-            }
-            // ignore J~
-            else if (u === 0xFF5E) {
-                p = 0;
-                continue;
-            }
-
-            r += String.fromCharCode(u);
-            trueLen[r.length] = i + 1;	// need to keep real length because of the half-width semi/voiced conversion
-            p = v;
-        }
-        word = r;
+        let { kana, trueLen } = Utils.convertKatakanaToHirigana(word);
+        word = kana;
 
         let result = {data: []};
-        let maxTrim;
+        let maxEntries;
 
         if (dictionary.isNameDictionary) {
-            maxTrim = this.config.nameMax;
+            maxEntries = this.config.nameMax;
             result.names = 1;
-        }
-        else {
-            maxTrim = this.config.maxEntries;
+        } else {
+            maxEntries = this.config.maxEntries;
         }
 
-        if (max != null) maxTrim = max;
+        if (max != null) maxEntries = max;
 
         let have = [];
         let count = 0;
@@ -178,8 +133,7 @@ export default class Data {
             for (let i = 0; i < variants.length; i++) {
                 let variant = variants[i];
                 let entries = await dictionary.db.findWord(variant.word);
-                for (let j = 0; j < entries.length; ++j) {
-                    let entry = entries[j];
+                for (const entry of entries) {
                     if (have[entry]) continue;
 
                     let ok = true;
@@ -206,11 +160,13 @@ export default class Data {
                         }
                         ok = (z !== -1);
                     }
-                    if ((ok) && (dictionary.hasType) && (this.config.hideXRatedEntries)) {
+                    if (ok && dictionary.hasType && this.config.hideXRatedEntries) {
+                        console.log(entry);
                         if (entry.match(/\/\([^\)]*\bX\b.*?\)/)) ok = false;
                     }
+
                     if (ok) {
-                        if (count >= maxTrim) {
+                        if (count >= maxEntries) {
                             result.more = 1;
                             break;
                         }
@@ -219,19 +175,19 @@ export default class Data {
                         ++count;
                         if (maxLen === 0) maxLen = trueLen[word.length];
 
-                        r = null;
+                        kana = null;
 
                         if (variant.reasons.length) {
                             let reason = deinflectL10NKeys[variant.reasons[0]];
-                            if (showInf) r = '&lt; ' + reason + ' &lt; ' + word;
-                            else r = '&lt; ' + reason;
+                            if (showInf) kana = '&lt; ' + reason + ' &lt; ' + word;
+                            else kana = '&lt; ' + reason;
                         }
-                        result.data.push([entry, r]);
+                        result.data.push([entry, kana]);
                     }
                 }	// for j < entries.length
-                if (count >= maxTrim) break;
+                if (count >= maxEntries) break;
             }	// for i < variants.length
-            if (count >= maxTrim) break;
+            if (count >= maxEntries) break;
             word = word.substr(0, word.length - 1);
         }	// while word.length > 0
 
