@@ -1,24 +1,19 @@
 import IndexedDictionary from './database/IndexedDictionary';
-import { deinflect, deinflectL10NKeys } from './deinflect';
+import {deinflect, deinflectL10NKeys} from './deinflect';
 import autobind from '../lib/autobind';
 import FileReader from './FileReader';
 import Utils from './Utils';
 import {KanjiResult, SearchResults} from "./interfaces/SearchResults";
 import {Config} from "./defaultConfig";
+import {DictionaryWithDb, isForKanji, isForNames, isForWords} from "./interfaces/DictionaryDefinition";
+import NameDictionary from "./database/NameDictionary";
 
 export default class DictionaryLookup {
     private config: Config;
-    private dictionaries: {
-        isKanjiDictionary: boolean;
-        name: string;
-        isNameDictionary: boolean;
-        id: string;
-        hasType: boolean;
-        db: { close: () => void; open: () => void, getReadings: (reading?) => any; }
-    }[];
+    private dictionaries: DictionaryWithDb[];
     private selectedDictionary: number = 0;
     private radData: any;
-    private kanjiData: any;
+    private kanjiData: { [key: string]: string };
 
     constructor(config: Config) {
         autobind(this);
@@ -30,9 +25,9 @@ export default class DictionaryLookup {
             isNameDictionary: false,
             isKanjiDictionary: true,
             db: {
-                open: () => {},
-                close: () => {},
-                getReadings: () => {},
+                open: async () => {},
+                close: async () => {},
+                getReadings: async () => [],
             }
         }];
     }
@@ -53,7 +48,9 @@ export default class DictionaryLookup {
         this.dictionaries = [];
         for (const dictionary of dictionaries) {
             const copy = Object.assign({}, dictionary);
-            copy.db = new IndexedDictionary(copy.id);
+
+            if (dictionary.isNameDictionary === true) copy.db = new NameDictionary(copy.id);
+            else copy.db = new IndexedDictionary(copy.id);
             copy.db.open();
             this.dictionaries.push(copy);
         }
@@ -65,9 +62,9 @@ export default class DictionaryLookup {
             isNameDictionary: false,
             isKanjiDictionary: true,
             db: {
-                open: () => {},
-                close: () => {},
-                getReadings: () => {},
+                open: async () => {},
+                close: async () => {},
+                getReadings: async (reading?: string) => [],
             }
         });
 
@@ -84,7 +81,7 @@ export default class DictionaryLookup {
         return readingsList.length;
     }
 
-    async wordSearch(word: string, noKanji: boolean = false): Promise<SearchResults> {
+    async search(word: string, noKanji: boolean = false): Promise<SearchResults> {
         if (this.dictionaries.length === 0) return null;
 
         let dictionaryIndex = this.selectedDictionary;
@@ -93,8 +90,9 @@ export default class DictionaryLookup {
 
             if (!noKanji || !dictionary.isKanjiDictionary) {
                 let entry;
-                if (dictionary.isKanjiDictionary) entry = this.kanjiSearch(word.charAt(0));
-                else entry = this._wordSearch(word, dictionary, null);
+                if (isForKanji(dictionary)) entry = this.kanjiSearch(word.charAt(0));
+                else if (isForNames(dictionary)) entry = await dictionary.db.findNames(word, this.config.nameMax);
+                else entry = this.wordSearch(word, dictionary, null);
 
                 if (entry) {
                     if (dictionaryIndex !== 0) entry.title = dictionary.name;
@@ -113,7 +111,9 @@ export default class DictionaryLookup {
         return null;
     }
 
-    async _wordSearch(word: string, dictionary, max?: number) {
+    async wordSearch(word: string, dictionary: DictionaryWithDb, max?: number) {
+        if (!isForWords(dictionary)) return;
+
         let { kana, trueLen } = Utils.convertKatakanaToHirigana(word);
         word = kana;
 
@@ -204,12 +204,9 @@ export default class DictionaryLookup {
 
     async kanjiSearch(character): Promise<KanjiResult> {
         const hex = '0123456789ABCDEF';
-        let kanjiDataEntry;
         let result;
-        let a, b;
-        let i;
 
-        i = character.charCodeAt(0);
+        let i = character.charCodeAt(0);
         if (i < 0x3000) return null;
 
         if (!this.kanjiData) {
@@ -227,19 +224,24 @@ export default class DictionaryLookup {
             .then(text => text.split('\n'))
             .then(array => array.filter(line => line.length !== 0));
 
-        kanjiDataEntry = this.kanjiData[character];
+        const kanjiDataEntry = this.kanjiData[character];
         if (!kanjiDataEntry) return null;
 
-        a = kanjiDataEntry.split('|');
-        if (a.length !== 6) return null;
+        const kanjiData = kanjiDataEntry.split('|');
+        if (kanjiData.length !== 6) return null;
 
-        result = { };
-        result.kanji = a[0];
+        let [ kanji, miscString, onkun, nanori, bushumei, eigo ] = kanjiData;
+        [ onkun, nanori, bushumei ] = [onkun, nanori, bushumei].map(
+            (input: string) => input.replace(/\s+/g, '\u3001 ')
+        );
+
+        result = { kanji, onkun, nanori, bushumei, eigo };
+        result.kanji = kanji;
 
         result.misc = {};
         result.misc['U'] = hex[(i >>> 12) & 15] + hex[(i >>> 8) & 15] + hex[(i >>> 4) & 15] + hex[i & 15];
 
-        b = a[1].split(' ');
+        let b = miscString.split(' ');
         for (i = 0; i < b.length; ++i) {
             if (b[i].match(/^([A-Z]+)(.*)/)) {
                 if (!result.misc[RegExp.$1]) result.misc[RegExp.$1] = RegExp.$2;
@@ -250,11 +252,6 @@ export default class DictionaryLookup {
         result.radicalNumber = result.misc['B'];
         result.radical = this.radData[result.radicalNumber - 1];
         result.radicals = this.radData.filter((line, index) => index !== result.radicalNumber - 1 && line.indexOf(character) !== -1);
-
-        result.onkun = a[2].replace(/\s+/g, '\u3001 ');
-        result.nanori = a[3].replace(/\s+/g, '\u3001 ');
-        result.bushumei = a[4].replace(/\s+/g, '\u3001 ');
-        result.eigo = a[5];
 
         return result;
     }

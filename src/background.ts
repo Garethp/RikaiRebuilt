@@ -88,7 +88,7 @@ export class RikaiController {
     }
 
     async wordSearch(text) {
-        return this.getDictionaryLookup().wordSearch(text);
+        return this.getDictionaryLookup().search(text);
     }
 
     async getReadingCount(reading) {
