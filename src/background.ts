@@ -229,10 +229,8 @@ pitchDb.open();
 
 const controller = new RikaiController();
 
-function playAudio(lastFound) {
-    if (!lastFound || lastFound.length === 0) return;
-
-    const entry = lastFound[0];
+function playAudio(entry) {
+    if (!entry) return;
 
     AudioPlayer.play(entry, config);
 }

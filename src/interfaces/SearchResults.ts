@@ -19,6 +19,7 @@ export interface KanjiResult {
     radicals: string[],
     radicalNumber: number,
     eigo: string,
+    matchLen?: number,
 }
 
 export function isKanjiResult(entry: SearchResults): entry is KanjiResult {

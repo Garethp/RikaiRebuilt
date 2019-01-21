@@ -5,8 +5,7 @@ import defaultConfig, {Config} from '../defaultConfig';
 import Utils from '../Utils';
 import '../../styles/popup.css';
 import {TextSourceRange} from "./source";
-import Timeout = NodeJS.Timeout;
-import {DictionaryResult, isDictionaryResult, isKanjiResult, SearchResults} from "../interfaces/SearchResults";
+import {isDictionaryResult, isKanjiResult, SearchResults} from "../interfaces/SearchResults";
 
 type position = {
     clientX: number,
@@ -26,7 +25,7 @@ type tabData = {
 class Rikai {
     private document: Document;
     private tabData: tabData = {};
-    private lastFound: SearchResults[] = [];
+    private lastFound: SearchResults;
     private enabled: boolean = false;
     private popupId: string = 'rikaichan-window';
     private config: Config;
@@ -221,7 +220,7 @@ class Rikai {
         sentenceClone.setEndOffsetFromBeginningOfCurrentNode(textSource.range.startContainer.textContent.length + 50);
         const sentence = sentenceClone.text();
 
-        this.showFromText(text, sentence, textSource.range.startOffset,entry => {
+        this.showFromText(text, sentence, textSource.range.startOffset,() => {
             textClone.setEndOffset(this.word.length);
 
             const currentSelection = document.defaultView.getSelection();
@@ -300,17 +299,14 @@ class Rikai {
             return;
         }
 
-        let entry = await this.sendRequest('wordSearch', text);
-        if (entry === -1) {
-            return;
-        }
-        if (entry === null) {
+        let entry = <SearchResults | null> await this.sendRequest('wordSearch', text);
+        if (!entry) {
             this.clear();
             return;
         }
 
         if (!entry.matchLen) entry.matchLen = 1;
-        this.lastFound = [entry];
+        this.lastFound = entry;
         this.word = text.substr(0, entry.matchLen);
 
         const wordPositionInString = rangeOffset - 1;
@@ -347,12 +343,12 @@ class Rikai {
     // Returns search term string or null on error.
     // forceGetReading - true = force this routine to return the reading of the word
     extractSearchTerm (forceGetReading: boolean = false): string {
-        if (!this.lastFound || this.lastFound.length === 0) {
+        if (!this.lastFound) {
             return null;
         }
 
         // Get the currently hilited entry
-        let highlightedEntry = this.lastFound[0];
+        let highlightedEntry = this.lastFound;
 
         let searchTerm = "";
 
@@ -534,12 +530,14 @@ class Rikai {
     }
 
     async showEpwingDefinition() {
-        const {epwingCurrentHit, epwingPreviousHit, epwingResults, tabData} = this;
+        if (!isDictionaryResult(this.lastFound)) return;
+
+        const {epwingCurrentHit, epwingResults, tabData} = this;
 
         const epwingDefinitionText = epwingResults[epwingCurrentHit];
         const entry = await this.formatEpwingEntry(epwingDefinitionText, true, true);
 
-        this.lastFound[0].data[0][0] = this.lastFound[0].data[0][0]
+        this.lastFound.data[0][0] = this.lastFound.data[0][0]
             .replace(/\/.+\//g, "/" + await this.formatEpwingEntry(epwingDefinitionText) + "/");
 
         this.showPopup(entry, tabData.previousTarget, tabData.pos);
@@ -576,6 +574,8 @@ class Rikai {
     }
 
     async parseAndDisplaySanseido(response) {
+        if (!isDictionaryResult(this.lastFound)) return;
+
         // Create DOM tree from entry page text
         // var domPars = rcxMain.htmlParser(entryPageText);
         const {tabData} = this;
@@ -663,24 +663,24 @@ class Rikai {
                 var jdicCode = "";
 
                 // Get the part-of-speech and other JDIC codes
-                this.lastFound[0].data[0][0].match(/\/(\(.+?\) ).+\//);
+                this.lastFound.data[0][0].match(/\/(\(.+?\) ).+\//);
 
                 if (RegExp.$1) {
                     jdicCode = RegExp.$1;
                 }
 
                 // Replace the definition with the one we parsed from sanseido
-                this.lastFound[0].data[0][0] = this.lastFound[0].data[0][0]
+                this.lastFound.data[0][0] = this.lastFound.data[0][0]
                     .replace(/\/.+\//g, "/" + jdicCode + defText + "/");
 
                 // Remove all words except for the one we just looked up
-                this.lastFound[0].data = [this.lastFound[0].data[0]];
+                this.lastFound.data = [this.lastFound[0].data[0]];
 
                 // Prevent the "..." from being displayed at the end of the popup text
-                this.lastFound[0].more = false;
+                this.lastFound.more = false;
 
                 // Show the definition
-                this.showPopup(await this.makeHTML(this.lastFound[0]),
+                this.showPopup(await this.makeHTML(this.lastFound),
                     tabData.previousTarget, tabData.pos);
 
                 // Entry found, stop looking
@@ -705,7 +705,7 @@ class Rikai {
             }
             else {
                 // Fallback to the default non-sanseido dictionary that comes with rikaichan (JMDICT)
-                this.showPopup(await this.makeHTML(this.lastFound[0]), tabData.previousTarget, tabData.pos);
+                this.showPopup(await this.makeHTML(this.lastFound), tabData.previousTarget, tabData.pos);
             }
         }
     }
@@ -1036,7 +1036,7 @@ class Rikai {
         const word = this.word;
         const sentence = this.sentence;
         const sentenceWithBlank = this.sentenceWithBlank;
-        const entry = this.lastFound[0];
+        const entry = this.lastFound;
         const pageTitle = window.document.title;
         const sourceUrl = window.location.href;
 
@@ -1052,7 +1052,7 @@ class Rikai {
     playAudio(): boolean {
         const {lastFound} = this;
 
-        if (!lastFound || lastFound.length === 0) return false;
+        if (!lastFound) return false;
 
         this.sendRequest('playAudio', lastFound);
         return true;

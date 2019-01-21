@@ -93,6 +93,9 @@ export function docRangeFromPoint(point) {
     const range = document.caretRangeFromPoint(point.x, point.y);
 
     if(imposter !== null) imposter.style.zIndex = -2147483646;
+    if (!range) {
+        return;
+    }
 
     const rect = range.getClientRects()[0];
     if (!rect || point.y > rect.bottom + 2) {
@@ -104,6 +107,7 @@ export function docRangeFromPoint(point) {
     }
 }
 
+// noinspection JSUnusedLocalSymbols
 function docSentenceExtract(source, extent) {
     const quotesFwd = {'「': '」', '『': '』', "'": "'", '"': '"'};
     const quotesBwd = {'」': '「', '』': '『', "'": "'", '"': '"'};
