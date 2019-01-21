@@ -1,5 +1,9 @@
 ## Changelog
 
+#### Version 1.2.0
+ * Migration from JavaScript to TypeScript
+ * Cleaning up the code quality of basically every part of the application
+
 #### Version 1.1.7
  * Fixing name dictionary
 

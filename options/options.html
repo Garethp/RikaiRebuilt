@@ -12,6 +12,7 @@
             background: none;
         }
     </style>
+    <title>RikaiRebuilt Options</title>
 </head>
 
 <body>
@@ -148,20 +149,20 @@
                 <div class="row">
                     <div class="col-4"><label class="my-1 mr-2" for="keymap-sendToAnki">Real-Time Anki
                         Import</label></div>
-                    <div class="col-3"><input type="input" class="form-control keymap-input"
+                    <div class="col-3"><input type="text" class="form-control keymap-input"
                                               id="keymap-sendToAnki"/></div>
                 </div>
 
                 <div class="row">
                     <div class="col-4"><label class="my-1 mr-2" for="keymap-playAudio">Play JDIC Audio</label></div>
-                    <div class="col-3"><input type="input" class="form-control keymap-input" id="keymap-playAudio"/>
+                    <div class="col-3"><input type="text" class="form-control keymap-input" id="keymap-playAudio"/>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-4"><label class="my-1 mr-2" for="keymap-selectNextDictionary">Select Next
                         Dictionary</label></div>
-                    <div class="col-3"><input type="input" class="form-control keymap-input"
+                    <div class="col-3"><input type="text" class="form-control keymap-input"
                                               id="keymap-selectNextDictionary"/></div>
                 </div>
             </form>
@@ -371,6 +372,12 @@
             </ul>
         </div>
         <div class="tab-pane fade" id="changelog" role="tabpanel" aria-labelledby="changelog-tab">
+            <h4>Version 1.2.0</h4>
+            <ul>
+                <li>Migration from JavaScript to TypeScript</li>
+                <li>Cleaning up the code quality of basically every part of this application</li>
+            </ul>
+
             <h4>Version 1.1.7</h4>
             <ul>
                 <li>Fixing lookups in the name dictionary</li>
