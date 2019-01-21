@@ -5,7 +5,7 @@ import FileReader from './FileReader';
 import Utils from './Utils';
 import {KanjiResult, SearchResults} from "./interfaces/SearchResults";
 import {Config} from "./defaultConfig";
-import {DictionaryWithDb, isForKanji, isForNames, isForWords} from "./interfaces/DictionaryDefinition";
+import {DictionaryWithDb, DictionaryWithIndexedDb, isForKanji, isForNames} from "./interfaces/DictionaryDefinition";
 import NameDictionary from "./database/NameDictionary";
 
 export default class DictionaryLookup {
@@ -111,23 +111,12 @@ export default class DictionaryLookup {
         return null;
     }
 
-    async wordSearch(word: string, dictionary: DictionaryWithDb, max?: number) {
-        if (!isForWords(dictionary)) return;
-
+    async wordSearch(word: string, dictionary: DictionaryWithIndexedDb, max?: number) {
         let { kana, trueLen } = Utils.convertKatakanaToHirigana(word);
         word = kana;
 
         let result: SearchResults = {data: [], names: false, kanji: false, title: null, more: false, matchLen: 0};
-        let maxEntries;
-
-        if (dictionary.isNameDictionary) {
-            maxEntries = this.config.nameMax;
-            result.names = true;
-        } else {
-            maxEntries = this.config.maxEntries;
-        }
-
-        if (max != null) maxEntries = max;
+        const maxEntries = max || this.config.maxEntries;
 
         let have = [];
         let count = 0;
@@ -135,7 +124,7 @@ export default class DictionaryLookup {
 
         while (word.length > 0) {
             let showInf = (count !== 0);
-            let variants = dictionary.isNameDictionary ? [{word: word, type: 0xFF, reasons: []}] : deinflect(word);
+            let variants = deinflect(word);
             for (let i = 0; i < variants.length; i++) {
                 let variant = variants[i];
                 let entries = await dictionary.db.findWord(variant.word);
@@ -170,25 +159,31 @@ export default class DictionaryLookup {
                         if (entry.match(/\/\([^\)]*\bX\b.*?\)/)) ok = false;
                     }
 
-                    if (ok) {
-                        if (count >= maxEntries) {
-                            result.more = true;
-                            break;
-                        }
+                    if (!ok) continue;
 
-                        have[entry] = 1;
-                        ++count;
-                        if (maxLen === 0) maxLen = trueLen[word.length];
-
-                        let conjugationReason = null;
-
-                        if (variant.reasons.length) {
-                            let reason = deinflectL10NKeys[variant.reasons[0][0]];
-                            if (showInf) conjugationReason = '&lt; ' + reason + ' &lt; ' + word;
-                            else conjugationReason = '&lt; ' + reason;
-                        }
-                        result.data.push([entry, conjugationReason]);
+                    if (count >= maxEntries) {
+                        result.more = true;
+                        break;
                     }
+
+                    have[entry] = 1;
+                    count++;
+
+                    maxLen = maxLen || trueLen[word.length];
+
+                    let conjugationReason = null;
+
+                    if (variant.reasons.length) {
+                        console.log(variant.reasons);
+                        const reasons = variant.reasons.map(reasonList =>
+                            reasonList.map(reason => deinflectL10NKeys[reason]).join(' < ')
+                        );
+                        conjugationReason = `< ${reasons.join(' or ')}`;
+                        if (showInf) {
+                            conjugationReason += ` < ${word}`;
+                        }
+                    }
+                    result.data.push([entry, conjugationReason]);
                 }	// for j < entries.length
                 if (count >= maxEntries) break;
             }	// for i < variants.length

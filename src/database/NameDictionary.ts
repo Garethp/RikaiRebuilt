@@ -38,7 +38,7 @@ export default class NameDictionary extends RikaiDatabase {
                 have[entry] = 1;
                 count++;
 
-                if (maxLen === 0) maxLen = trueLen[name.length];
+                maxLen = maxLen || trueLen[name.length];
                 result.data.push([entry, null]);
             }
 
