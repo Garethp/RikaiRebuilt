@@ -1,3 +1,5 @@
+import {DictionaryDefinition} from "./interfaces/DictionaryDefinition";
+
 export interface Config {
     ankiTags: string;
     keymap: { playAudio: number; epwingPreviousEntry: number; epwingNextEntry: number; selectNextDictionary: number; toggleSanseidoMode: number; toggleEpwingMode: number; sendToAnki: number };
@@ -17,16 +19,10 @@ export interface Config {
     hideXRatedEntries: boolean;
     showKanjiLearnersDictionary: boolean;
     audioVolume: number;
-    installedDictionaries: {
-        id: string,
-        name: string,
-        hasType: boolean,
-        isNameDictionary: boolean,
-        isKanjiDictionary: boolean,
-    }[];
+    installedDictionaries: DictionaryDefinition[];
     showKanjiTurtleAndKana: boolean;
     showKanjiHeisig: boolean;
-    recommendedDictionaries: ({ isKanjiDictionary: boolean; name: string; isNameDictionary: boolean; id: string; hasType: boolean; url: string })[];
+    recommendedDictionaries: DictionaryDefinition[];
     showKanjiUnicode: boolean;
     showKanjiPinYin: boolean;
     showKanjiComponents: boolean;

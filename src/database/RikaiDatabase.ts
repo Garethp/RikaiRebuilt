@@ -1,7 +1,13 @@
 import Dexie from '../../lib/dexie.min'
 import FileReader from '../FileReader'
 
+export type importProgressCallback = (processed, total) => void;
 export default class RikaiDatabase {
+    private name: string;
+    private fields: string[];
+    private version: number;
+    protected db: Dexie;
+
     constructor(name, fields) {
         this.name = name;
         this.fields = fields;
@@ -27,7 +33,7 @@ export default class RikaiDatabase {
         this.db.delete();
     }
 
-    async importFromFile(file, progressCallback) {
+    async importFromFile(file: string, progressCallback?: importProgressCallback) {
         return FileReader.readJson(file)
             .then(entries => {
                 if (!Array.isArray(entries)) entries = entries.entries;
@@ -35,9 +41,9 @@ export default class RikaiDatabase {
             });
     }
 
-    async import(entries, progressCallback) {
+    async import(entries, progressCallback?: importProgressCallback) {
         function chunkArray(myArray, chunk_size) {
-            let index = 0;
+            let index;
             const arrayLength = myArray.length;
             const tempArray = [];
 

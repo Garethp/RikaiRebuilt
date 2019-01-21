@@ -705,7 +705,7 @@ class Rikai {
                     .replace(/\/.+\//g, "/" + jdicCode + defText + "/");
 
                 // Remove all words except for the one we just looked up
-                this.lastFound[0].DictionaryLookup = [this.lastFound[0].data[0]];
+                this.lastFound[0].data = [this.lastFound[0].data[0]];
 
                 // Prevent the "..." from being displayed at the end of the popup text
                 this.lastFound[0].more = false;

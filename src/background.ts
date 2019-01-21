@@ -1,4 +1,4 @@
-import defaultConfig from './defaultConfig'
+import defaultConfig, {Config} from './defaultConfig'
 import autobind from '../lib/autobind'
 import AnkiImport from './AnkiImport';
 import FrequencyDb from './database/FrequencyDb'
@@ -6,20 +6,24 @@ import PitchDb from './database/PitchDb';
 import IndexedDictionary from './database/IndexedDictionary';
 import DictionaryLookup from './DictionaryLookup';
 import AudioPlayer from './AudioPlayer';
+import {DictionaryDefinition} from "./interfaces/DictionaryDefinition";
+import Utils from "./Utils";
+import {installFrequencyDb, installPitchDb} from "./initializers";
 
 let config = defaultConfig;
-let installedDictionaries = [];
+let installedDictionaries: DictionaryDefinition[] = [];
 let optionsPort;
 
-class RikaiRebuilt {
+export class RikaiController {
+    private enabled: boolean = false;
+    private isSetUp: boolean = false;
+    private DictionaryLookup: DictionaryLookup;
+    private config: Config;
+
     constructor() {
         autobind(this);
 
-        this.enabled = false;
-        this.isSetUp = false;
-        this.DictionaryLookup = null;
         this.config = defaultConfig;
-        this.dictionaries = [];
     }
 
     setup() {
@@ -37,9 +41,9 @@ class RikaiRebuilt {
         }
 
         browser.storage.local.set({enabled: true});
-        browser.storage.sync.get('config').then(config => {
-            if (!config.config) return;
-            config = config.config;
+        browser.storage.sync.get('config').then((storage: Storage & { config: Config }) => {
+            if (!storage.config) return;
+            const config: Config = storage.config;
 
             this.updateConfig(config);
 
@@ -77,18 +81,18 @@ class RikaiRebuilt {
         this.enabled = false;
     }
 
-    getData() {
+    getDictionaryLookup() {
         this.setup();
 
         return this.DictionaryLookup;
     }
 
     async wordSearch(text) {
-        return this.getData().wordSearch(text);
+        return this.getDictionaryLookup().wordSearch(text);
     }
 
     async getReadingCount(reading) {
-        return this.getData().getReadingCount(reading);
+        return this.getDictionaryLookup().getReadingCount(reading);
     }
 
     updateConfig(config) {
@@ -96,12 +100,11 @@ class RikaiRebuilt {
             config.epwingMode = this.config.epwingMode;
         }
         this.config = config || defaultConfig;
-        this.getData().updateConfig(config);
+        this.getDictionaryLookup().updateConfig(config);
     }
 
     updateDictionaries(dictionaries) {
-        this.dictionaries = dictionaries;
-        this.getData().updateDictionaries(dictionaries);
+        this.getDictionaryLookup().updateDictionaries(dictionaries);
     }
 
     setEpwingMode(epwingMode) {
@@ -142,7 +145,7 @@ class RikaiRebuilt {
             'input': expression,
         };
 
-        return browser.runtime.sendNativeMessage('eplkup', message).then(result => {
+        return browser.runtime.sendNativeMessage('eplkup', message).then((result: { output: any, error?: string }) => {
             if (result.error) {
                 return `A problem occurred: ${result.error}`;
             }
@@ -175,7 +178,7 @@ class RikaiRebuilt {
                 // use the reading frequency
                 if (useHighlightedWord
                     && !readingSameAsExpression
-                    && !this.containsKanji(highlightedWord)
+                    && !Utils.containsKanji(highlightedWord)
                     && (readingFreqNum.length > 0)
                     && (await this.getReadingCount(reading) === 1)) {
                     freqNum = readingFreqNum;
@@ -216,18 +219,6 @@ class RikaiRebuilt {
 
         return freqStr;
     }
-
-    containsKanji(text) {
-        for (let i = 0; i < text.length; i++) {
-            const c = text[i];
-
-            if ((c >= '\u4E00') && (c <= '\u9FBF')) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }
 
 const ankiImport = new AnkiImport();
@@ -236,7 +227,7 @@ const pitchDb = new PitchDb();
 frequencyDb.open();
 pitchDb.open();
 
-const rebuilt = new RikaiRebuilt();
+const controller = new RikaiController();
 
 function playAudio(lastFound) {
     if (!lastFound || lastFound.length === 0) return;
@@ -246,42 +237,39 @@ function playAudio(lastFound) {
     AudioPlayer.play(entry, config);
 }
 
-browser.runtime.onMessage.addListener(async (message, sender) => {
+browser.runtime.onMessage.addListener(async (message) => {
     const {type, content} = message;
 
     switch (type) {
         case "wordSearch":
-            return rebuilt.wordSearch(content).then(response => {
+            return controller.wordSearch(content).then(response => {
                 return {response};
             }, f => console.log(f));
         case "getEpwingDefinition":
-            return rebuilt.getEpwingDefinition(content).then(response => {
+            return controller.getEpwingDefinition(content).then(response => {
                 return {response};
             }, f => { console.log(f) });
         case "getPitch":
-            return rebuilt.getPitch(content.expression, content.reading).then(response => {
+            return controller.getPitch(content.expression, content.reading).then(response => {
                 return {response}
             });
         case "getFrequency":
-            return rebuilt.getFrequency(content.inExpression, content.inReading, content.useHighlightedWord, content.highlightedWord)
+            return controller.getFrequency(content.inExpression, content.inReading, content.useHighlightedWord, content.highlightedWord)
                 .then(response => {
                     return {response}
                 });
         case "getReadingCount":
-            return rebuilt.getReadingCount(content).then(response => {
+            return controller.getReadingCount(content).then(response => {
                 return {response};
             });
-        case "unload":
-            rebuilt.unloadTab(sender.tab.id);
-            return {response: ''};
         case "playAudio":
             playAudio(content);
             return {response: ''};
         case "sendToAnki":
-            rebuilt.sendToAnki(content);
+            controller.sendToAnki(content);
             return 0;
         case 'selectNextDictionary':
-            rebuilt.getData().selectNextDictionary();
+            controller.getDictionaryLookup().selectNextDictionary();
             return {response: null};
     }
 });
@@ -304,7 +292,6 @@ browser.runtime.onConnect.addListener(port => {
                 const {name, id, url} = content;
                 const testDb = new IndexedDictionary(id);
                 let hasType, isNameDictionary, isKanjiDictionary;
-                let lastPercent = 0;
 
                 testDb.open().then(async () => {
                     let startTime;
@@ -335,6 +322,7 @@ browser.runtime.onConnect.addListener(port => {
                             console.log(`Download took ${(endTime - startTime) / 1000} seconds`);
 
                             installedDictionaries.push({id, name, hasType, isNameDictionary, isKanjiDictionary});
+                            // @ts-ignore
                             browser.storage.local.set({installedDictionaries})
                         })
                 });
@@ -342,7 +330,7 @@ browser.runtime.onConnect.addListener(port => {
     });
 });
 
-browser.browserAction.onClicked.addListener(rebuilt.enable);
+browser.browserAction.onClicked.addListener(controller.enable);
 
 browser.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== 'sync' && areaName !== 'local') return;
@@ -350,12 +338,12 @@ browser.storage.onChanged.addListener((changes, areaName) => {
     if (changes.config) {
         config = changes.config.newValue;
 
-        rebuilt.updateConfig(config);
+        controller.updateConfig(config);
     } else if (changes.installedDictionaries) {
         installedDictionaries = changes.installedDictionaries.newValue;
-        rebuilt.updateDictionaries(installedDictionaries);
+        controller.updateDictionaries(installedDictionaries);
     } else if (changes.epwingMode) {
-        rebuilt.setEpwingMode(changes.epwingMode.newValue);
+        controller.setEpwingMode(changes.epwingMode.newValue);
     }
 });
 
@@ -365,7 +353,7 @@ browser.browserAction.setIcon({
     }
 });
 browser.storage.local.set({enabled: false});
-browser.storage.local.get('installedDictionaries').then(config => {
+browser.storage.local.get('installedDictionaries').then((config: Storage & { installedDictionaries?: DictionaryDefinition[] }) => {
     if (config.installedDictionaries) {
         installedDictionaries = config.installedDictionaries;
     }
@@ -373,44 +361,12 @@ browser.storage.local.get('installedDictionaries').then(config => {
 
 browser.runtime.onInstalled.addListener(async ({id, previousVersion, reason}) => {
     //Frequency Information
-    frequencyDb.open().then(_ => {
-        frequencyDb.findFrequencyForExpression('の').then(frequency => {
-            if (frequency.length === 0) {
-                frequencyDb.importFromFile('https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/frequency.json');
-            }
-        });
-    });
+    installFrequencyDb(frequencyDb);
 
     //Import pitch DB on first install
-    pitchDb.open().then(_ => {
-        pitchDb.getPitchAccent('・').then(pitch => {
-            if (pitch.length === 0) {
-                pitchDb.importFromFile('https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/pitch.json');
-            }
-        });
-    });
+    installPitchDb(pitchDb);
 
-    //Add the extra information to dictionaries on update
-    if (reason === 'update') {
-        browser.storage.local.get('installedDictionaries').then(response => {
-            if (!response.installedDictionaries) return;
-            const installedDictionaries = response.installedDictionaries.map(dictionary => {
-                if (typeof dictionary.hasType === 'undefined') {
-                    const defaultData = defaultConfig.recommendedDictionaries.find(dic => dic.id === dictionary.id);
-
-                    dictionary.hasType = defaultData.hasType;
-                    dictionary.isNameDictionary = defaultData.isNameDictionary;
-                    dictionary.isKanjiDictionary = defaultData.isKanjiDictionary;
-                }
-
-                return dictionary;
-            });
-
-            browser.storage.local.set({installedDictionaries});
-        });
-    }
-
-    browser.storage.sync.get('config').then(({config}) => {
+    browser.storage.sync.get('config').then(({config}: Storage & {config: Config}) => {
         if (!config) return;
 
         if (config.openChangelogOnUpdate) {
@@ -429,12 +385,15 @@ browser.runtime.onInstalled.addListener(async ({id, previousVersion, reason}) =>
             }
         }
         if (newConfigs) {
+            // @ts-ignore
             browser.storage.sync.set({ config });
         }
     });
 });
 
+// @ts-ignore
 browser.contextMenus.removeAll();
+// @ts-ignore
 browser.contextMenus.create({
     title: "Options",
     contexts: ["browser_action"],

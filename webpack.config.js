@@ -17,7 +17,7 @@ module.exports = {
     },
     entry: {
         'content': path.resolve(__dirname, './src/content/index.js'),
-        'background': path.resolve(__dirname, './src/background.js'),
+        'background': path.resolve(__dirname, './src/background.ts'),
         'options': path.resolve(__dirname, './src/options/options.js'),
     },
     plugins: [

@@ -5,15 +5,15 @@ export default class IndexedDictionary extends RikaiDatabase {
         super(name, '++, kanji, kana, entry');
     }
 
-    async findWord(word) {
-        word = await this.db.dictionary.where('kanji').equals(word).or('kana').equals(word).toArray();
+    async findWord(searchWord: string) {
+        const word = await this.db.dictionary.where('kanji').equals(searchWord).or('kana').equals(searchWord).toArray();
         return word.map(entry => {
             if (entry.entry[entry.entry.length - 1] === '/') return entry.entry;
             return ((entry.kanji ? (`${entry.kanji} [${entry.kana}]`) : entry.kana) + ` /${entry.entry}/`);
         });
     }
 
-    async getReadings(reading) {
+    async getReadings(reading: string) {
         const results = await this.db.dictionary.where('kana').equals(reading).toArray();
         return results.map(entry => {
             if (entry.entry[entry.entry.length - 1] === '/') return entry.entry;

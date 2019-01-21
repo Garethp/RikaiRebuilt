@@ -2,6 +2,7 @@ import AudioPlayer from './AudioPlayer';
 import {isDictionaryResult, SearchResults} from "./interfaces/SearchResults";
 import {Config} from "./defaultConfig";
 import {AnkiFields} from "./interfaces/AnkiFields";
+import {RikaiController} from "./background";
 
 export default class AnkiImport {
     private ankiUrl: string = 'http://127.0.0.1:49601';
@@ -105,10 +106,10 @@ export default class AnkiImport {
         sentenceWithBlank: string,
         pageTitle: string,
         sourceUrl: string,
-        saveKana: string,
+        saveKana: boolean,
         saveFormat,
         config: Config,
-        rebuilt
+        rebuilt: RikaiController,
     ): Promise<AnkiFields | null> {
         if (!isDictionaryResult(entry)) return;
 

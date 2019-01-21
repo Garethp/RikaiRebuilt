@@ -5,8 +5,8 @@ export default class PitchDb extends RikaiDatabase {
         super('pitch', '++, expression, reading, pitch');
     }
 
-    async getPitchAccent(expression, reading) {
-        let whereClause = {expression};
+    async getPitchAccent(expression: string, reading?: string) {
+        let whereClause: { expression: string, reading?: string } = {expression};
         if (typeof reading !== 'undefined') {
             whereClause.reading = reading;
         }
