@@ -2,11 +2,12 @@ import IndexedDictionary from './database/IndexedDictionary';
 import { deinflect, deinflectL10NKeys } from './deinflect';
 import autobind from '../lib/autobind';
 import FileReader from './FileReader';
-import Utils from './utils';
-import {SearchResults} from "./interfaces/SearchResults";
+import Utils from './Utils';
+import {KanjiResult, SearchResults} from "./interfaces/SearchResults";
+import {Config} from "./defaultConfig";
 
-export default class Data {
-    private config: any;
+export default class DictionaryLookup {
+    private config: Config;
     private dictionaries: {
         isKanjiDictionary: boolean;
         name: string;
@@ -19,7 +20,7 @@ export default class Data {
     private radData: any;
     private kanjiData: any;
 
-    constructor(config) {
+    constructor(config: Config) {
         autobind(this);
         this.config = config;
         this.dictionaries = [{
@@ -73,17 +74,17 @@ export default class Data {
         this.selectedDictionary = 0;
     }
 
-    updateConfig(config) {
+    updateConfig(config: Config) {
         this.config = config;
     }
 
-    async getReadingCount(reading) {
+    async getReadingCount(reading: string): Promise<number> {
         const dictionary = this.dictionaries[this.selectedDictionary].db;
         const readingsList = await dictionary.getReadings(reading);
         return readingsList.length;
     }
 
-    async wordSearch(word, noKanji) {
+    async wordSearch(word: string, noKanji: boolean = false): Promise<SearchResults> {
         if (this.dictionaries.length === 0) return null;
 
         let dictionaryIndex = this.selectedDictionary;
@@ -116,7 +117,7 @@ export default class Data {
         let { kana, trueLen } = Utils.convertKatakanaToHirigana(word);
         word = kana;
 
-        let result: SearchResults = {data: [], names: false, more: false, matchLen: 0};
+        let result: SearchResults = {data: [], names: false, kanji: false, title: null, more: false, matchLen: 0};
         let maxEntries;
 
         if (dictionary.isNameDictionary) {
@@ -201,7 +202,7 @@ export default class Data {
         return result;
     }
 
-    async kanjiSearch(character) {
+    async kanjiSearch(character): Promise<KanjiResult> {
         const hex = '0123456789ABCDEF';
         let kanjiDataEntry;
         let result;

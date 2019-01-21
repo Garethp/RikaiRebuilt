@@ -1,5 +1,5 @@
 export default class Utils {
-    static convertKatakanaToHirigana(word) {
+    static convertKatakanaToHirigana(word): { kana: string, trueLen: { [key: number]: number } } {
         const ch = [0x3092, 0x3041, 0x3043, 0x3045, 0x3047, 0x3049, 0x3083, 0x3085, 0x3087, 0x3063, 0x30FC, 0x3042, 0x3044, 0x3046,
             0x3048, 0x304A, 0x304B, 0x304D, 0x304F, 0x3051, 0x3053, 0x3055, 0x3057, 0x3059, 0x305B, 0x305D, 0x305F, 0x3061,
             0x3064, 0x3066, 0x3068, 0x306A, 0x306B, 0x306C, 0x306D, 0x306E, 0x306F, 0x3072, 0x3075, 0x3078, 0x307B, 0x307E,
@@ -57,11 +57,11 @@ export default class Utils {
         return { kana, trueLen };
     }
 
-    static containsKanji (text) {
+    static containsKanji (text: string): boolean {
         for (let i = 0; i < text.length; i++) {
-            let c = text[i];
+            let character = text[i];
 
-            if ((c >= '\u4E00') && (c <= '\u9FBF')) {
+            if ((character >= '\u4E00') && (character <= '\u9FBF')) {
                 return true;
             }
         }
@@ -69,39 +69,39 @@ export default class Utils {
         return false;
     }
 
-    static convertIntegerToCircledNumStr (num) {
-        let circledNumStr = "(" + num + ")";
+    static convertIntegerToCircledNumStr (number: number): string {
+        let circledNumStr = "(" + number + ")";
 
-        if (num === 0) {
+        if (number === 0) {
             circledNumStr = "⓪";
         }
-        else if ((num >= 1) && (num <= 20)) {
-            circledNumStr = String.fromCharCode(("①".charCodeAt(0) - 1) + num);
+        else if ((number >= 1) && (number <= 20)) {
+            circledNumStr = String.fromCharCode(("①".charCodeAt(0) - 1) + number);
         }
-        else if ((num >= 21) && (num <= 35)) {
-            circledNumStr = String.fromCharCode(("㉑".charCodeAt(0) - 1) + num);
+        else if ((number >= 21) && (number <= 35)) {
+            circledNumStr = String.fromCharCode(("㉑".charCodeAt(0) - 1) + number);
         }
-        else if ((num >= 36) && (num <= 50)) {
-            circledNumStr = String.fromCharCode(("㊱".charCodeAt(0) - 1) + num);
+        else if ((number >= 36) && (number <= 50)) {
+            circledNumStr = String.fromCharCode(("㊱".charCodeAt(0) - 1) + number);
         }
 
         return circledNumStr;
     }
 
-    static convertJapNumToInteger (japNum) {
-        let numStr = "";
+    static convertJapNumToInteger (japaneseNumber: string): number {
+        let numberString = "";
 
-        let c;
-        let convertedNum;
-        for (let i = 0; i < japNum.length; i++) {
-            c = japNum[i];
+        let character;
+        let convertedNumber;
+        for (let i = 0; i < japaneseNumber.length; i++) {
+            character = japaneseNumber[i];
 
-            if ((c >= "０") && (c <= "９")) {
-                convertedNum = (c.charCodeAt(0) - "０".charCodeAt(0));
-                numStr += convertedNum;
+            if ((character >= "０") && (character <= "９")) {
+                convertedNumber = (character.charCodeAt(0) - "０".charCodeAt(0));
+                numberString += convertedNumber;
             }
         }
 
-        return Number(numStr);
+        return Number(numberString);
     }
 }

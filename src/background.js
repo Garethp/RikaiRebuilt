@@ -1,11 +1,11 @@
 import defaultConfig from './defaultConfig'
 import autobind from '../lib/autobind'
-import AnkiImport from './ankiImport';
+import AnkiImport from './AnkiImport';
 import FrequencyDb from './database/FrequencyDb'
 import PitchDb from './database/PitchDb';
 import IndexedDictionary from './database/IndexedDictionary';
-import Data from './data';
-import AudioPlayer from './audioPlayer';
+import DictionaryLookup from './DictionaryLookup';
+import AudioPlayer from './AudioPlayer';
 
 let config = defaultConfig;
 let installedDictionaries = [];
@@ -17,7 +17,7 @@ class RikaiRebuilt {
 
         this.enabled = false;
         this.isSetUp = false;
-        this.data = null;
+        this.DictionaryLookup = null;
         this.config = defaultConfig;
         this.dictionaries = [];
     }
@@ -26,7 +26,7 @@ class RikaiRebuilt {
         if (this.isSetUp) return;
 
         this.isSetUp = true;
-        this.data = new Data(this.config);
+        this.DictionaryLookup = new DictionaryLookup(this.config);
     }
 
     async enable() {
@@ -80,7 +80,7 @@ class RikaiRebuilt {
     getData() {
         this.setup();
 
-        return this.data;
+        return this.DictionaryLookup;
     }
 
     async wordSearch(text) {
@@ -110,7 +110,7 @@ class RikaiRebuilt {
 
     async sendToAnki(content) {
         const {entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl} = content;
-        const entryFormat = await ankiImport.makeTextOptions(entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl, false, false, this.config, this);
+        const entryFormat = await AnkiImport.makeTextOptions(entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl, false, false, this.config, this);
         ankiImport.addNote(entryFormat, entry, this.config);
         playAudio([entry]);
     }

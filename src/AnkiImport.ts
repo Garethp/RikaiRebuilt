@@ -1,28 +1,29 @@
-import AudioPlayer from './audioPlayer';
+import AudioPlayer from './AudioPlayer';
+import {isDictionaryResult, SearchResults} from "./interfaces/SearchResults";
+import {Config} from "./defaultConfig";
+import {AnkiFields} from "./interfaces/AnkiFields";
 
 export default class AnkiImport {
-    constructor() {
-        this.ankiUrl = 'http://127.0.0.1:49601';
-    }
+    private ankiUrl: string = 'http://127.0.0.1:49601';
 
     async makeCall(action, params) {
         return fetch(this.ankiUrl, {
             method: 'POST',
-            body: JSON.stringify({ action, params })
+            body: JSON.stringify({action, params})
         });
     }
 
-    async addNote(entryFormat, entry, config) {
+    async addNote(entryFormat: AnkiFields, entry: SearchResults, config: Config) {
         const promises = [];
         let audio = false;
         const isNoAudio = await AudioPlayer.isNoAudio(entry);
 
         const fields = {};
-        for(const key in config.ankiFields) {
+        for (const key in config.ankiFields) {
             let values = config.ankiFields[key].split(' ');
             let newValues = [];
 
-            for(const valueKey in values) {
+            for (const valueKey in values) {
                 let newValue = null;
                 switch (values[valueKey]) {
                     case 'audio':
@@ -73,18 +74,18 @@ export default class AnkiImport {
                 }
             }
 
-            newValues = newValues.filter(value => value !== null).join(' ');
-            if (newValues !== '') {
-                fields[key] = newValues;
+            newValues = newValues.filter(value => value !== null);
+            if (newValues.length) {
+                fields[key] = newValues.join(' ');
             }
         }
 
         const tags = config.ankiTags;
-        promises.push(this.makeCall('addNote', { fields, tags }));
+        promises.push(this.makeCall('addNote', {fields, tags}));
 
         // If Audio
         if (audio && !isNoAudio) {
-            promises.push(this.makeCall('downloadAudio', { filename: entryFormat.audioFile, url: entryFormat.audioUrl }));
+            promises.push(this.makeCall('downloadAudio', {filename: entryFormat.audioFile, url: entryFormat.audioUrl}));
         }
 
         return Promise.all(promises);
@@ -97,14 +98,24 @@ export default class AnkiImport {
     // sentenceWBlank = Like sentence except the highlighted word is replaced with blanks
     // saveKana       = Replace kanji with kana (that is, $d=$r)
     // saveFormat     = Token-based save format
-    async makeTextOptions(entry, word, sentence, sentenceWithBlank, pageTitle, sourceUrl, saveKana, saveFormat, config, rebuilt) {
+    static async makeTextOptions(
+        entry: SearchResults,
+        word: string,
+        sentence: string,
+        sentenceWithBlank: string,
+        pageTitle: string,
+        sourceUrl: string,
+        saveKana: string,
+        saveFormat,
+        config: Config,
+        rebuilt
+    ): Promise<AnkiFields | null> {
+        if (!isDictionaryResult(entry)) return;
+
         let entryData;
-        let b;
-        let i, j, k;
-        let t;
 
         if ((entry == null) || (entry.data == null)) {
-            return '';
+            return null;
         }
 
         // Example of what entry.data[0][0] looks like (linebreak added by me):
@@ -118,13 +129,11 @@ export default class AnkiImport {
         //   entryData[3] = definition
 
         entryData = entry.data[0][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//);
-
-        let dictionaryForm = entryData[1];
-        let reading = entryData[2];
+        let [_, dictionaryForm, reading, definition] = entryData;
 
         // Does the user want to use the reading in place of kanji for the $d token?
-        if (entryData[2] && saveKana) {
-            dictionaryForm = entryData[2];
+        if (reading && saveKana) {
+            dictionaryForm = reading;
         }
 
         // Ensure that reading is never blank
@@ -134,14 +143,7 @@ export default class AnkiImport {
 
         const audioFile = reading + ' - ' + entryData[1] + '.mp3';
 
-        let definition = "";
-
-        if (config.epwingMode) {
-            definition = entryData[3];
-            //@TODO: Add code for Epwing to remove text by user defined Regex
-        }
-        else // Not EPWING mode
-        {
+        if (!config.epwingMode) {
             definition = entryData[3].replace(/\//g, "; ");
 
             // Remove word type indicators? [example: (v1,n)]
@@ -166,7 +168,7 @@ export default class AnkiImport {
         // const pitch = rcxMain.getPitchAccent(dictionaryForm, reading);
         const pitch = await rebuilt.getPitch(dictionaryForm, reading);
 
-        const {saveNotes} = config;
+        const saveNotes = null;
         const audioUrl = AudioPlayer.getAudioUrl(entry);
         return {
             audioFile,

@@ -6,9 +6,10 @@ export interface Config {
     showKanjiNelson: boolean;
     showPopularWordIndicator: boolean;
     epwingDictionaries: { name: string, path: string }[];
+    epwingMode?: boolean;
     startWithSanseido: boolean;
     importEmptyAudio: boolean;
-    ankiFields: {};
+    ankiFields: { [key: string]: string };
     showKanjiHalpern: boolean;
     maxEntries: number;
     showKanjiHenshall: boolean;
@@ -36,7 +37,7 @@ export interface Config {
     showKanjiTurtleDictionary: boolean;
     nameMax: number;
     showPitchAccent: boolean;
-    showKanjiSkipPattern: boolean
+    showKanjiSkipPattern: boolean;
 }
 
 const defaultConfig: Config = {

@@ -6,7 +6,7 @@ const Data = require('../src/data.js');
 
 const assert = require('assert');
 
-describe('Data class', () => {
+describe('DictionaryLookup class', () => {
     const data = new Data();
 
     describe('convertKatakanaToHirigana', () => {

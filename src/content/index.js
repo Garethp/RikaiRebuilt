@@ -1,7 +1,8 @@
 import {docRangeFromPoint, docImposterDestroy, docSentenceExtract} from './document';
+import { transformNameEntriesToHtml } from "./entryTransformers";
 import autobind from '../../lib/autobind';
 import defaultConfig from '../defaultConfig';
-import Utils from '../utils';
+import Utils from '../Utils';
 import '../../styles/popup.css';
 
 class Rikai {
@@ -369,7 +370,7 @@ class Rikai {
             }
         }
 
-        this.showPopup(this.getKnownWordIndicatorText() + await this.makeHTML(entry), tabData.previousTarget, tabData.pos);
+        this.showPopup(await this.makeHTML(entry), tabData.previousTarget, tabData.pos);
     }
 
     // Extract the first search term from the highlighted word.
@@ -704,13 +705,13 @@ class Rikai {
                     .replace(/\/.+\//g, "/" + jdicCode + defText + "/");
 
                 // Remove all words except for the one we just looked up
-                this.lastFound[0].data = [this.lastFound[0].data[0]];
+                this.lastFound[0].DictionaryLookup = [this.lastFound[0].data[0]];
 
                 // Prevent the "..." from being displayed at the end of the popup text
                 this.lastFound[0].more = false;
 
                 // Show the definition
-                this.showPopup(this.getKnownWordIndicatorText() + await this.makeHTML(this.lastFound[0]),
+                this.showPopup(await this.makeHTML(this.lastFound[0]),
                     tabData.previousTarget, tabData.pos);
 
                 // Entry found, stop looking
@@ -738,74 +739,6 @@ class Rikai {
                 this.showPopup(await this.makeHTML(this.lastFound[0]), tabData.previousTarget, tabData.pos);
             }
         }
-    }
-
-    getKnownWordIndicatorText() {
-        return '';
-
-        // let outText = "";
-        // let expression = "";
-        // let reading = "";
-        //
-        // // Get the last highlighted word
-        // if (this.lastFound[0].data) {
-        //     // Extract needed data from the highlighted entry
-        //     //   entryData[0] = kanji/kana + kana + definition
-        //     //   entryData[1] = kanji (or kana if no kanji)
-        //     //   entryData[2] = kana (null if no kanji)
-        //     //   entryData[3] = definition
-        //
-        //     const entryData = this.lastFound[0].data[0][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//);
-        //     expression = entryData[1];
-        //
-        //     if (entryData[2]) {
-        //         reading = entryData[2];
-        //     }
-        // }
-        // else {
-        //     return "";
-        // }
-        //
-        // // Reload the known words associative array if needed
-        // if (!this.knownWordsDic || (this.prevKnownWordsFilePath !== rcxConfig.vocabknownwordslistfile)) {
-        //     rcxMain.knownWordsDic = {};
-        //     rcxMain.readWordList(rcxConfig.vocabknownwordslistfile, rcxMain.knownWordsDic, rcxConfig.vocabknownwordslistcolumn);
-        //     this.prevKnownWordsFilePath = rcxConfig.vocabknownwordslistfile;
-        // }
-        //
-        // // Reload the to-do words associative array if needed
-        // if (!this.todoWordsDic || (this.prevTodoWordsFilePath !== rcxConfig.vocabtodowordslistfile)) {
-        //     rcxMain.todoWordsDic = {};
-        //     rcxMain.readWordList(rcxConfig.vocabtodowordslistfile, rcxMain.todoWordsDic, rcxConfig.vocabtodowordslistcolumn);
-        //     this.prevTodoWordsFilePath = rcxConfig.vocabtodowordslistfile;
-        // }
-        //
-        // //
-        // // First try the expression
-        // //
-        //
-        // if (this.knownWordsDic[expression]) {
-        //     outText = "* ";
-        // }
-        // else if (this.todoWordsDic[expression]) {
-        //     outText = "*t ";
-        // }
-        //
-        // //
-        // // If expression not found in either the known words or to-do lists, try the reading
-        // //
-        //
-        // if (outText.length === 0) {
-        //     if (this.knownWordsDic[reading]) {
-        //         outText = "*_r ";
-        //     }
-        //     else if (this.todoWordsDic[reading]) {
-        //         outText = "*t_r ";
-        //     }
-        // }
-        //
-        // return outText;
-
     }
 
     static trim(text) {
@@ -918,10 +851,10 @@ class Rikai {
 
     async makeHTML(entries) {
         let k;
-        let e;
+        let entry;
         let returnValue = [];
-        let c, s, t;
-        let i, j, n;
+        let c, s;
+        let i, j;
 
         if (entries == null) return '';
 
@@ -1021,83 +954,48 @@ class Rikai {
             return returnValue.join('');
         }
 
-        s = t = '';
+        let translationText = '';
 
         if (entries.names) {
-            let columns = [];
-
-            returnValue.push('<div class="w-title">Names Dictionary</div>');
-            for (let entry of entries.data) {
-                let column = '<div>';
-                e = entry[0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/([\S\s]+)\//);
-                if (!e) continue;
-
-                if (e[2]) column += '<span class="w-kanji">' + e[1] + '</span> &#32; <span class="w-kana">' + e[2] + '</span>';
-                else column += '<span><span class="w-kana">' + e[1] + '</span></span>';
-
-                s = e[3];
-                if (!this.config.hideDefinitions)
-                    column += '<div class="w-def">' + s.replace(/\//g, '; ').replace(/\n/g, '<br/>') + '</div>';
-
-                column += '</div>';
-                columns.push(column);
-            }
-            //If we have more than four results, split the columns in two
-            if (columns.length > 4 && entries.more && columns.length % 2 === 0) {
-                columns.pop();
-            }
-
-            if (entries.more) columns.push('<div>...</div>');
-
-            if (entries.length > 4 || true) {
-                columns.unshift(`<div class="two-columns">`);
-                columns.push(`</div>`);
-            }
-
-            returnValue.push(columns.join(''));
-            return returnValue.join('');
+            return transformNameEntriesToHtml(entries, this.config);
+            // return this.transformNamesToHtml(entries);
         }
 
         if (entries.title) {
             returnValue.push(`<div class="w-title">${entries.title}</div>`);
         }
 
-        let pK = '';
-
         for (i = 0; i < entries.data.length; ++i) {
-            e = entries.data[i][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/([\S\s]+)\//);
-            if (!e) continue;
+            let previousKanji = '';
+            let kanaText = '';
+            let previousDefinition = '';
 
-            /*
-      e[0] = kanji/kana + kana + definition
-      e[1] = kanji (or kana if no kanji)
-      e[2] = kana (null if no kanji)
-      e[3] = definition
-            */
+            entry = entries.data[i][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/([\S\s]+)\//);
+            let [ _, kanji, kana, definition ] = entry;
+            if (!entry) continue;
 
-            if (s !== e[3]) {
-                returnValue.push(t);
-                pK = k = '';
+            if (previousDefinition !== definition) {
+                returnValue.push(translationText);
+                previousKanji = kanaText = '';
             }
             else {
-                k = t.length ? '<br/>' : '';
+                kanaText = translationText.length ? '<br/>' : '';
             }
 
-            if (e[2]) {
-                if (pK === e[1]) k = '\u3001 <span class="w-kana">' + e[2] + '</span>';
-                else k += '<span class="w-kanji">' + e[1] + '</span> &#32; <span class="w-kana">' + e[2] + '</span>';
-                pK = e[1];
+            if (kana) {
+                if (previousKanji === kanji) kanaText = '\u3001 <span class="w-kana">' + kana + '</span>';
+                else kanaText += '<span class="w-kanji">' + kanji + '</span> &#32; <span class="w-kana">' + kana + '</span>';
+                previousKanji = kanji;
+            } else {
+                kanaText += '<span class="w-kana">' + kanji + '</span>';
+                previousKanji = '';
             }
-            else {
-                k += '<span class="w-kana">' + e[1] + '</span>';
-                pK = '';
-            }
-            returnValue.push(k);
+            returnValue.push(kanaText);
 
             //TODO: Add config usage here
             // Add pitch accent right after the reading
             if (this.config.showPitchAccent) {
-                const pitchAccent = await this.sendRequest('getPitch', { expression: e[1], reading: e[2] });
+                const pitchAccent = await this.sendRequest('getPitch', { expression: kanji, reading: kana });
 
                 if (pitchAccent && (pitchAccent.length > 0)) {
                     returnValue.push('<span class="w-conj"> ' + pitchAccent + '</span>');
@@ -1108,8 +1006,8 @@ class Rikai {
 
             // Add frequency
             if (this.config.showFrequency) {
-                const freqExpression = e[1];
-                let freqReading = e[2];
+                const freqExpression = kanji;
+                let freqReading = kana;
 
                 if (freqReading === null) {
                     freqReading = freqExpression;
@@ -1117,27 +1015,26 @@ class Rikai {
 
                 const freq = await this.getFrequency(freqExpression, freqReading, i === 0);
 
-                if (freq && (freq.length > 0)) {
+                if (freq && freq.length > 0) {
                     const frequencyClass = Rikai.getFrequencyStyle(freq);
                     returnValue.push('<span class="' + frequencyClass + '"> ' + freq + '</span>');
                 }
             }
 
             //TODO: Add config usage here
-            s = e[3];
+            previousDefinition = definition;
             if (this.config.hideDefinitions) {
-                t = '<br/>';
-            }
-            else {
-                t = s.replace(/\//g, '; ');
+                translationText = '<br/>';
+            } else {
+                translationText = previousDefinition.replace(/\//g, '; ');
                 //TODO: Add config here
-                if (!this.config.showWordTypeIndicator) t = t.replace(/^\([^)]+\)\s*/, '');
-                if (!this.config.showPopularWordIndicator) t = t.replace('; (P)', '');
-                t = t.replace(/\n/g, '<br/>');
-                t = '<br/><span class="w-def">' + t + '</span><br/>';
+                if (!this.config.showWordTypeIndicator) translationText = translationText.replace(/^\([^)]+\)\s*/, '');
+                if (!this.config.showPopularWordIndicator) translationText = translationText.replace('; (P)', '');
+                translationText = translationText.replace(/\n/g, '<br/>');
+                translationText = '<br/><span class="w-def">' + translationText + '</span><br/>';
             }
         }
-        returnValue.push(t);
+        returnValue.push(translationText);
         if (entries.more) returnValue.push('...<br/>');
 
         return returnValue.join('');
