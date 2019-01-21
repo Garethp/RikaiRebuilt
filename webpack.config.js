@@ -16,7 +16,7 @@ module.exports = {
         extensions: ['.ts', '.js'],
     },
     entry: {
-        'content': path.resolve(__dirname, './src/content/index.js'),
+        'content': path.resolve(__dirname, './src/content/index.ts'),
         'background': path.resolve(__dirname, './src/background.ts'),
         'options': path.resolve(__dirname, './src/options/options.js'),
     },

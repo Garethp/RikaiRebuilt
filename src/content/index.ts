@@ -1,96 +1,69 @@
-import {docRangeFromPoint, docImposterDestroy, docSentenceExtract} from './document';
+import {docRangeFromPoint, docImposterDestroy} from './document';
 import { transformNameEntriesToHtml } from "./entryTransformers";
 import autobind from '../../lib/autobind';
-import defaultConfig from '../defaultConfig';
+import defaultConfig, {Config} from '../defaultConfig';
 import Utils from '../Utils';
 import '../../styles/popup.css';
+import {TextSourceRange} from "./source";
+import Timeout = NodeJS.Timeout;
+import {DictionaryResult, isDictionaryResult, isKanjiResult, SearchResults} from "../interfaces/SearchResults";
+
+type position = {
+    clientX: number,
+    clientY: number,
+    pageX: number,
+    pageY: number,
+}
+
+type tabData = {
+    selText?: string;
+    previousRangeOffset?: number;
+    pos?: position,
+    previousTarget?: HTMLElement,
+    previousTextSource?: TextSourceRange,
+};
 
 class Rikai {
-    constructor(document) {
+    private document: Document;
+    private tabData: tabData = {};
+    private lastFound: SearchResults[] = [];
+    private enabled: boolean = false;
+    private popupId: string = 'rikaichan-window';
+    private config: Config;
+    private keysDown: any[] = [];
+
+    private epwingMode: boolean = false;
+    private epwingTotalHits: number = 0;
+    private epwingCurrentHit: number = 0;
+    private epwingPreviousHit: number = 0;
+    private epwingResults: any[] = [];
+
+    private sanseidoFallback: number = 0;
+    private sanseidoMode: boolean = false;
+    private abortController: AbortController = new AbortController();
+
+    private word: string;
+    private sentence: string;
+    private sentenceWithBlank: string;
+
+    constructor(document: Document) {
         autobind(this);
 
         this.document = document;
-        this.tabData = {};
-        this.lastFound = [];
-        this.enabled = false;
-        this.inlineNames = {
-            // text node
-            '#text': true,
-
-            // font style
-            'FONT': true,
-            'TT': true,
-            'I': true,
-            'B': true,
-            'BIG': true,
-            'SMALL': true,
-            //deprecated
-            'STRIKE': true,
-            'S': true,
-            'U': true,
-
-            // phrase
-            'EM': true,
-            'STRONG': true,
-            'DFN': true,
-            'CODE': true,
-            'SAMP': true,
-            'KBD': true,
-            'VAR': true,
-            'CITE': true,
-            'ABBR': true,
-            'ACRONYM': true,
-
-            // special, not included IMG, OBJECT, BR, SCRIPT, MAP, BDO
-            'A': true,
-            'Q': true,
-            'SUB': true,
-            'SUP': true,
-            'SPAN': true,
-            'WBR': true,
-
-            // ruby
-            'RUBY': true,
-            'RBC': true,
-            'RTC': true,
-            'RB': true,
-            'RT': true,
-            'RP': true,
-
-            // User configurable elements
-            'DIV': false,
-        };
-
-        this.popupId = 'rikaichan-window';
         this.config = defaultConfig;
-        this.keysDown = [];
-
-        this.epwingMode = false;
-        this.epwingTotalHits = 0;
-        this.epwingCurrentHit = 0;
-        this.epwingPreviousHit = 0;
-        this.epwingResults = [];
-
-        this.sanseidoFallback = 0;
-        this.sanseidoMode = false;
-        this.abortController = new AbortController();
     }
 
-    enable() {
+    enable(): void {
         if (this.enabled) return;
 
-        this.tabData = {
-            prevSelView: null
-        };
-
-        browser.storage.sync.get('config').then(config => {
+        browser.storage.sync.get('config').then((config: Storage & {config: Config}) => {
             this.config = config.config || defaultConfig;
             this.document.documentElement.removeChild(this.getPopup());
         });
 
         this.document.addEventListener('mousemove', this.onMouseMove);
         this.document.addEventListener('mousedown', this.onMouseDown);
-        this.document.addEventListener('keydown', event => {
+        this.document.addEventListener('keydown', (event: KeyboardEvent) => {
             const shouldStop = this.onKeyDown(event);
             if (shouldStop === true) {
                 event.stopPropagation();
@@ -112,10 +85,10 @@ class Rikai {
         this.enabled = true;
     }
 
-    disable() {
+    disable(): void {
         this.document.removeEventListener('mousemove', this.onMouseMove);
         this.document.removeEventListener('mousedown', this.onMouseDown);
-        this.document.removeEventListener('keydown', event => {
+        this.document.removeEventListener('keydown', (event: KeyboardEvent) => {
             const shouldStop = this.onKeyDown(event);
             if (shouldStop === true) {
                 event.stopPropagation();
@@ -132,7 +105,7 @@ class Rikai {
         this.enabled = false;
     }
 
-    onKeyDown(event) {
+    onKeyDown(event: KeyboardEvent): boolean {
         if ((event.altKey) || (event.metaKey) || (event.ctrlKey)) return;
         if ((event.shiftKey) && (event.keyCode !== 16)) return;
         if (this.keysDown[event.keyCode]) return;
@@ -150,14 +123,14 @@ class Rikai {
             case this.config.keymap.selectNextDictionary:
                 this.sendRequest('selectNextDictionary').then(() => {
                     setTimeout(() => {
-                        this.searchAt({x: pos.clientX, y: pos.clientY}, this.tabData, event);
+                        this.searchAt({x: pos.clientX, y: pos.clientY}, this.tabData);
                     }, 1);
                 });
                 return;
             case this.config.keymap.toggleSanseidoMode:
                 browser.storage.local.set({ sanseidoMode: !this.sanseidoMode });
                 setTimeout(() => {
-                    this.searchAt({x: pos.clientX, y: pos.clientY}, this.tabData, event);
+                    this.searchAt({x: pos.clientX, y: pos.clientY}, this.tabData);
                 }, 5);
                 return true;
 
@@ -166,7 +139,7 @@ class Rikai {
                 browser.storage.local.set({ epwingMode: !this.epwingMode });
                 setTimeout(() => {
                     if (this.epwingMode !== originalEpwing) {
-                        this.searchAt({x: pos.clientX, y: pos.clientY}, this.tabData, event);
+                        this.searchAt({x: pos.clientX, y: pos.clientY}, this.tabData);
                     }
                 }, 5);
                 return true;
@@ -180,15 +153,15 @@ class Rikai {
         return false;
     }
 
-    onKeyUp(event) {
+    onKeyUp(event: KeyboardEvent) {
         if (this.keysDown[event.keyCode]) this.keysDown[event.keyCode] = 0;
     }
 
-    onMouseDown() {
+    onMouseDown(): void {
         this.clear();
     }
 
-    async onMouseMove(event) {
+    async onMouseMove(event: MouseEvent) {
         const tabData = this.tabData;
 
         if (event.buttons !== 0) return;
@@ -204,7 +177,7 @@ class Rikai {
             return;
         }
 
-        tabData.previousTarget = event.target;
+        tabData.previousTarget = <HTMLElement> event.target;
         tabData.pos = {clientX: event.clientX, clientY: event.clientY, pageX: event.pageX, pageY: event.pageY};
 
         return setTimeout(() => {
@@ -212,10 +185,10 @@ class Rikai {
         }, 1);
     }
 
-    async searchAt(point, tabData, event) {
+    async searchAt(point: { x: number, y: number }, tabData: tabData, event?: MouseEvent) {
         const textSource = docRangeFromPoint(point);
 
-        if (!textSource || !textSource.range || typeof textSource.range.startContainer.data === 'undefined') {
+        if (!textSource || !textSource.range || typeof textSource.range.startContainer.textContent === 'undefined') {
             this.clear();
             return;
         }
@@ -224,7 +197,7 @@ class Rikai {
             return;
         }
 
-        let charCode = textSource.range.startContainer.data.charCodeAt(textSource.range.startOffset);
+        let charCode = textSource.range.startContainer.textContent.charCodeAt(textSource.range.startOffset);
         if ((isNaN(charCode)) ||
             ((charCode !== 0x25CB) &&
                 ((charCode < 0x3001) || (charCode > 0x30FF)) &&
@@ -245,10 +218,10 @@ class Rikai {
         textClone.setEndOffset(20);
         const text = textClone.text();
 
-        sentenceClone.setEndOffsetFromBeginningOfCurrentNode(textSource.range.startContainer.data.length + 50);
+        sentenceClone.setEndOffsetFromBeginningOfCurrentNode(textSource.range.startContainer.textContent.length + 50);
         const sentence = sentenceClone.text();
 
-        this.showFromText(text, sentence, textSource.range.startOffset, textClone.range.startContainer, entry => {
+        this.showFromText(text, sentence, textSource.range.startOffset,entry => {
             textClone.setEndOffset(this.word.length);
 
             const currentSelection = document.defaultView.getSelection();
@@ -260,7 +233,7 @@ class Rikai {
         }, tabData);
     };
 
-    getSentenceStuff(rangeOffset, sentence) {
+    getSentenceStuff(rangeOffset: number, sentence: string): {sentence: string, sentenceStartPos: number, startOffset: number} {
         let i = rangeOffset;
 
         let sentenceStartPos;
@@ -316,7 +289,7 @@ class Rikai {
         return {sentence, sentenceStartPos, startOffset};
     }
 
-    async showFromText(text, sentence, rangeOffset, rangeContainer, highlightFunction, tabData) {
+    async showFromText(text: string, sentence: string, rangeOffset: number, highlightFunction, tabData: tabData): Promise<void> {
         const sentenceStuff = this.getSentenceStuff(rangeOffset, sentence);
         sentence = sentenceStuff.sentence;
 
@@ -324,16 +297,16 @@ class Rikai {
 
         if (text.length === 0) {
             this.clear();
-            return 0;
+            return;
         }
 
         let entry = await this.sendRequest('wordSearch', text);
         if (entry === -1) {
-            return 0;
+            return;
         }
         if (entry === null) {
             this.clear();
-            return 0;
+            return;
         }
 
         if (!entry.matchLen) entry.matchLen = 1;
@@ -343,9 +316,6 @@ class Rikai {
         const wordPositionInString = rangeOffset - 1;
         this.sentenceWithBlank = sentence.substr(0, wordPositionInString) + "___"
             + sentence.substr(wordPositionInString + entry.matchLen, sentence.length);
-
-        tabData.uofsNext = entry.matchLen;
-        tabData.uofs = rangeOffset - tabData.previousRangeOffset;
 
         // @TODO: Add config check for "shouldHighlight"
         // const shouldHighlight = (!('form' in tabData.previousTarget));
@@ -364,9 +334,9 @@ class Rikai {
         }
 
         if (this.epwingMode) {
-            let epwingFound = this.lookupEpwing();
+            let epwingFound = await this.lookupEpwing();
             if (epwingFound === true) {
-                return true;
+                return;
             }
         }
 
@@ -376,25 +346,25 @@ class Rikai {
     // Extract the first search term from the highlighted word.
     // Returns search term string or null on error.
     // forceGetReading - true = force this routine to return the reading of the word
-    extractSearchTerm (forceGetReading) {
-        // Get the currently hilited entry
-        let highlightedEntry = this.lastFound;
-
-        if ((!highlightedEntry) || (highlightedEntry.length === 0)) {
+    extractSearchTerm (forceGetReading: boolean = false): string {
+        if (!this.lastFound || this.lastFound.length === 0) {
             return null;
         }
+
+        // Get the currently hilited entry
+        let highlightedEntry = this.lastFound[0];
 
         let searchTerm = "";
 
         // Get the search term to use
-        if (highlightedEntry[0] && highlightedEntry[0].kanji && highlightedEntry[0].onkun) {
+        if (isKanjiResult(highlightedEntry)) {
             // A single kanji was selected
 
-            searchTerm = highlightedEntry[0].kanji;
-        }  else if (highlightedEntry[0] && highlightedEntry[0].data[0]) {
+            searchTerm = highlightedEntry.kanji;
+        }  else if (highlightedEntry && highlightedEntry.data[0]) {
             // An entire word was selected
 
-            const entryData = highlightedEntry[0].data[0][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//);
+            const entryData = highlightedEntry.data[0][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//);
 
             // Example of what data[0][0] looks like (linebreak added by me):
             //   乃 [の] /(prt,uk) indicates possessive/verb and adjective nominalizer (nominaliser)/substituting
@@ -468,12 +438,12 @@ class Rikai {
             .then(response => this.parseAndDisplaySanseido(response));
     }
 
-    enableEpwing() {
+    enableEpwing(): void {
         if (!this.config.epwingDictionaries.length) {
             this.showPopup('No Epwing Dictionary Set');
 
             browser.storage.local.set({epwingMode: false});
-            return true;
+            return;
         }
 
         this.epwingTotalHits = 0;
@@ -482,19 +452,18 @@ class Rikai {
         this.epwingResults = [];
     }
 
-    async disableEpwing() {
+    async disableEpwing(): Promise<void> {
         this.epwingMode = false;
     }
 
-    async lookupEpwing() {
+    async lookupEpwing(): Promise<boolean> {
         const searchTerm = this.extractSearchTerm(false);
-        const {tabData} = this;
 
         if (!searchTerm) {
-            return;
+            return false;
         }
 
-        let epwingText = await this.sendRequest('getEpwingDefinition', searchTerm);
+        let epwingText: string = await this.sendRequest('getEpwingDefinition', searchTerm);
 
         if (epwingText === "No results found") {
             return false;
@@ -536,7 +505,7 @@ class Rikai {
         return true;
     }
 
-    showNextEpwingEntry() {
+    showNextEpwingEntry(): boolean {
         if (!this.epwingMode || this.epwingTotalHits < 2) {
             return false;
         }
@@ -550,7 +519,7 @@ class Rikai {
         return true;
     }
 
-    showPreviousEpwingEntry() {
+    showPreviousEpwingEntry(): boolean {
         if (!this.epwingMode || this.epwingTotalHits < 2) {
             return false;
         }
@@ -576,7 +545,7 @@ class Rikai {
         this.showPopup(entry, tabData.previousTarget, tabData.pos);
     }
 
-    async formatEpwingEntry(entryText, showHeader, showEntryNumber) {
+    async formatEpwingEntry(entryText, showHeader?: boolean, showEntryNumber?: boolean): Promise<string> {
 
         //TODO: Add removing user inputted regex
         //TODO: Add "Header" (Color, pitch and so on)
@@ -741,11 +710,11 @@ class Rikai {
         }
     }
 
-    static trim(text) {
+    static trim(text: string): string {
         return text.replace(/^\s\s*/, "").replace(/\s\s*$/, "");
     }
 
-    clear() {
+    clear(): void {
         this.abortController.abort();
         this.abortController = new AbortController();
         setTimeout(() => {
@@ -755,11 +724,11 @@ class Rikai {
         this.clearHighlight();
     }
 
-    clearPopup() {
+    clearPopup(): void {
         this.getPopup().style.display = 'none';
     }
 
-    clearHighlight() {
+    clearHighlight(): void {
         const tabData = this.tabData;
 
         const selection = document.defaultView.getSelection();
@@ -775,7 +744,7 @@ class Rikai {
         }
     }
 
-    async sendRequest(type, content = '') {
+    async sendRequest(type: string, content: any = ''): Promise<any> {
         return browser.runtime.sendMessage({type, content}).then(response => {
             if (typeof response === 'undefined') {
                 this.showPopup('If you have the options page for RikaiRebuilt, please close that. Word search' +
@@ -787,7 +756,7 @@ class Rikai {
         });
     };
 
-    createPopup() {
+    createPopup(): void {
         if (this.hasPopup()) return;
 
         const popup = this.document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
@@ -797,17 +766,17 @@ class Rikai {
         document.documentElement.appendChild(popup);
     }
 
-    getPopup() {
+    getPopup(): HTMLElement {
         if (!this.hasPopup()) this.createPopup();
 
         return this.document.getElementById(this.popupId);
     }
 
-    hasPopup() {
+    hasPopup(): HTMLElement {
         return this.document.getElementById(this.popupId);
     }
 
-    showPopup(textToShow, previousTarget, position) {
+    showPopup(textToShow: string, previousTarget?: HTMLElement, position?: position): void {
         let {pageX, pageY, clientX, clientY} = position || {pageX: 10, pageY: 10, clientX: 10, clientY: 10};
         const popup = this.getPopup();
 
@@ -849,7 +818,7 @@ class Rikai {
         popup.style.top = pageY + 'px';
     }
 
-    async makeHTML(entries) {
+    async makeHTML(entries: SearchResults) {
         let k;
         let entry;
         let returnValue = [];
@@ -858,7 +827,7 @@ class Rikai {
 
         if (entries == null) return '';
 
-        if (entries.kanji) {
+        if (isKanjiResult(entries)) {
             let yomi;
             let box;
             let nums;
@@ -1058,12 +1027,12 @@ class Rikai {
         return freqStyle;
     }
 
-    async getFrequency(inExpression, inReading, useHighlightedWord) {
+    async getFrequency(inExpression: string, inReading: string, useHighlightedWord: boolean) {
         const highlightedWord = this.word;
         return this.sendRequest('getFrequency', {inExpression, inReading, useHighlightedWord, highlightedWord});
     }
 
-    sendToAnki() {
+    sendToAnki(): boolean {
         const word = this.word;
         const sentence = this.sentence;
         const sentenceWithBlank = this.sentenceWithBlank;
@@ -1075,12 +1044,12 @@ class Rikai {
         return true;
     }
 
-    isVisible() {
+    isVisible(): boolean {
         const popup = this.getPopup();
         return popup && popup.style.display !== 'none';
     }
 
-    playAudio() {
+    playAudio(): boolean {
         const {lastFound} = this;
 
         if (!lastFound || lastFound.length === 0) return false;
@@ -1089,11 +1058,11 @@ class Rikai {
         return true;
     }
 
-    setSanseidoMode(sanseidoMode) {
+    setSanseidoMode(sanseidoMode: boolean): void {
         this.sanseidoMode = sanseidoMode || false;
     }
 
-    setEpwingMode(epwingMode) {
+    setEpwingMode(epwingMode: boolean): void {
         if (epwingMode) {
             this.enableEpwing();
         } else {
@@ -1109,11 +1078,11 @@ browser.storage.local.get('enabled').then(({enabled}) => {
     }
 });
 
-browser.storage.local.get('sanseidoMode').then(({ sanseidoMode }) => {
+browser.storage.local.get('sanseidoMode').then(({ sanseidoMode }: Storage & { sanseidoMode: boolean }) => {
     rikai.setSanseidoMode(sanseidoMode);
 });
 
-browser.storage.local.get('epwingMode').then(({ epwingMode }) => {
+browser.storage.local.get('epwingMode').then(({ epwingMode }: Storage & { epwingMode: boolean }) => {
     rikai.setEpwingMode(epwingMode);
 });
 

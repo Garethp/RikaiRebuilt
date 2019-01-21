@@ -3,20 +3,21 @@ export type SearchResults = DictionaryResult | KanjiResult;
 export interface DictionaryResult {
     data: [string, string?][],
     names: boolean,
-    kanji: boolean,
+    kanji: false,
     title?: string,
     more: boolean,
     matchLen: number,
 }
 
 export interface KanjiResult {
-    kanji: true,
+    kanji: string,
     onkun: string,
     nanori: string,
     bushumei: string,
     misc: { [key: string]: any },
     radical: string,
     radicals: string[],
+    radicalNumber: number,
     eigo: string,
 }
 
