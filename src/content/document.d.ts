@@ -16,14 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {TextSourceElement, TextSourceRange} from './source';
+import {TextSourceRange} from './source';
 
-declare function docOffsetCalc(element: HTMLElement): { top: number, left: number };
-
-declare function docImposterCreate(element: HTMLElement): HTMLElement;
+declare function docImposterCreate(element: HTMLElement, isTextArea: boolean): [HTMLElement, HTMLElement];
 
 declare function docImposterDestroy(): void;
 
-declare function docRangeFromPoint(point: { x: number, y: number }): TextSourceRange;
+declare function docRangeFromPoint(point: { x: number, y: number }, deepDomScan?: boolean): TextSourceRange;
 
 declare function docSentenceExtract(source, extent): { text: string, offset: number};

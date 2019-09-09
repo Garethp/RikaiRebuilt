@@ -1,5 +1,8 @@
 ## Changelog
 
+### Version 1.2.2
+ * Updating the text detection to work better with vertical text and discord
+
 #### Version 1.2.0
  * Migration from JavaScript to TypeScript
  * Cleaning up the code quality of basically every part of the application
