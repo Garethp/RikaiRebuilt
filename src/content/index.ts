@@ -1,5 +1,5 @@
-import {docRangeFromPoint, docImposterDestroy} from './document';
-import { transformNameEntriesToHtml } from "./entryTransformers";
+import {docImposterDestroy, docRangeFromPoint} from './document';
+import {transformNameEntriesToHtml} from "./entryTransformers";
 import autobind from '../../lib/autobind';
 import defaultConfig, {Config} from '../defaultConfig';
 import Utils from '../Utils';
@@ -674,7 +674,7 @@ class Rikai {
                     .replace(/\/.+\//g, "/" + jdicCode + defText + "/");
 
                 // Remove all words except for the one we just looked up
-                this.lastFound.data = [this.lastFound[0].data[0]];
+                this.lastFound.data = [this.lastFound.data[0]];
 
                 // Prevent the "..." from being displayed at the end of the popup text
                 this.lastFound.more = false;
@@ -694,7 +694,7 @@ class Rikai {
         if (!entryFound) {
             this.sanseidoFallback++;
 
-            if (this.sanseidoFallback < 3) {
+            if (this.sanseidoFallback < 2) {
                 // Set a timer to lookup again using the kana form of the word instead
                 window.setTimeout
                 (
