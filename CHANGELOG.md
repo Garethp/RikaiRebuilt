@@ -1,5 +1,8 @@
 ## Changelog
 
+### Version 1.3.0
+ * Added VN Hook Functionality. The VN Hook page now monitors your clipboard and automatically pastes it for you
+
 ### Version 1.2.2
  * Updating the text detection to work better with vertical text and discord
 

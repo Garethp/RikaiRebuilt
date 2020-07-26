@@ -1,0 +1,40 @@
+ul.anki-field-options li{
+    max-width: 200px;
+}
+
+body {
+    min-width: 600px;
+    padding: 20px;
+}
+
+pre {
+    padding:10px;
+}
+
+.row {
+    padding-bottom: 10px;
+}
+
+#myTabContent {
+    margin-bottom: 30px;
+
+    top: -1px;
+}
+
+.form-check-input {
+    margin-left: 0px;
+    margin-top: 1rem;
+}
+
+#paste-target {
+    position: absolute;
+    left: -100000px;
+}
+
+#vn-content {
+    margin-left: 20px;
+}
+
+#vn-content > div {
+    margin-bottom: 15px;
+}

@@ -1,5 +1,5 @@
 const path = require('path');
-const WebExtWebpackPlugin = require('web-ext-webpack-plugin');
+const WebExtWebpackPlugin = require('@ianwalter/web-ext-webpack-plugin');
 
 module.exports = {
     // No need for uglification etc.
@@ -19,6 +19,7 @@ module.exports = {
         'content': path.resolve(__dirname, './src/content/index.ts'),
         'background': path.resolve(__dirname, './src/background.ts'),
         'options': path.resolve(__dirname, './src/options/options.js'),
+        'vn-hook': path.resolve(__dirname, './src/vn-hook/index.ts')
     },
     plugins: [
         new WebExtWebpackPlugin({

@@ -34,6 +34,9 @@ export interface Config {
     nameMax: number;
     showPitchAccent: boolean;
     showKanjiSkipPattern: boolean;
+
+    vnHookClipboardFrequency: number;
+    vnHookAppendToTop: boolean;
 }
 
 const defaultConfig: Config = {
@@ -147,6 +150,9 @@ const defaultConfig: Config = {
             // url: '../../thai.json'
         },
     ],
+
+    vnHookClipboardFrequency: 200,
+    vnHookAppendToTop: false,
 };
 
 export default defaultConfig;

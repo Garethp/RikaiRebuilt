@@ -399,3 +399,12 @@ browser.contextMenus.create({
         browser.tabs.create({url: browser.extension.getURL('options/options.html')});
     }
 });
+
+// @ts-ignore
+browser.contextMenus.create({
+    title: "Visual Novel Hook",
+    contexts: ["browser_action"],
+    onclick: () => {
+        browser.tabs.create({url: browser.extension.getURL('vn-hook/index.html')});
+    }
+});

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" type="text/css" href="../lib/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="options.css"/>
+    <style>
+        html body {
+            background: none;
+        }
+    </style>
+    <title>RikaiRebuilt Visual Novel Hook</title>
+</head>
+
+<body>
+<div class="container">
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab"
+               aria-controls="general" aria-selected="true">
+                General
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" id="options-tab" data-toggle="tab" href="#options" role="tab"
+               aria-controls="general" aria-selected="false">
+                Options
+            </a>
+        </li>
+    </ul>
+
+    <div class="tab-content card card-body" id="myTabContent">
+        <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+            <div class="form-group row">
+                <div id="vn-content"></div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="options" role="tabpanel" aria-labelledby="options-tab">
+            <div class="form-group row">
+                <div class="col-3">
+                    <label class="col-form-label" for="clipboard-frequency"
+                           title="How often the VN Hook should check the clipboard (in milliseconds)">Clipboard
+                        Frequency</label>
+                </div>
+
+                <div class="col-9">
+                    <input class="form-check-input" type="number" min=50 max=1000 id="clipboard-frequency"
+                           data-config-option="vnHookClipboardFrequency"/>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <div class="col-3">
+                    <label class="col-form-label" for="appendToTop"
+                           title="If checked, new clipboard content will be added to the top of the page. If left unchecked, it'll be added to the bottom">Append to Top</label>
+                </div>
+
+                <div class="col-9">
+                    <input class="form-check-input" type="checkbox" id="appendToTop"
+                           data-config-option="vnHookAppendToTop"/>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="../lib/jquery.js"></script>
+<script src="../lib/bootstrap.min.js"></script>
+<script src="../lib/bootstrap.bundle.min.js"></script>
+<script src="../lib/browser-polyfill.min.js"></script>
+<script src="../build/vn-hook.js"></script>
+<script src="../build/content.js"></script>
+
+</body>
+
+</html>

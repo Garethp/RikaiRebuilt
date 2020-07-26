@@ -90,7 +90,6 @@ const configMapFunctions = {
     makeInt: (value) => parseInt(value),
 };
 
-
 browser.storage.local.get('installedDictionaries').then(config => {
     if (!config.installedDictionaries) {
         browser.storage.local.set({ installedDictionaries: [] });
