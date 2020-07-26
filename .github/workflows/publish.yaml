@@ -1,0 +1,36 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+
+    - run: npm install
+    - run: npm build -- --filename="latest.zip"
+      
+    - uses: trmcnvn/chrome-addon@v1
+      with:
+        extension: bhcfpccmjdpjejaahbblpnikkejnkfcj
+        zip: web-ext-artifacts/latest.zip
+        client-id: ${{ secrets.CHROME_CLIENT_ID }}
+        client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+        refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+
+    - uses: trmcnvn/firefox-addon@v1
+      with:
+        uuid: '{69a07901-61f5-43d3-acdd-09eddd772ace}'
+        xpi: web-ext-artifacts/latest.zip
+        manifest: manifest.json
+        api-key: ${{ secrets.FIREFOX_API_KEY }}
+        api-secret: ${{ secrets.FIREFOX_API_SECRET }}
