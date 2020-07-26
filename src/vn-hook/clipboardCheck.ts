@@ -9,12 +9,28 @@ browser.storage.sync.get('config').then(({config: extensionConfig}: { config?: C
     updateTimer(config.vnHookClipboardFrequency);
 });
 
-browser.storage.onChanged.addListener(({config: { newValue: extensionConfig }}: { config: { newValue: Config } }, areaName) => {
+browser.storage.onChanged.addListener(({config: {newValue: extensionConfig}}: { config: { newValue: Config } }, areaName) => {
     if (areaName === 'local' || !extensionConfig) return;
 
     config = extensionConfig || defaultConfig;
     updateTimer(config.vnHookClipboardFrequency);
 });
+
+const shouldScroll = (): boolean => {
+    if (!config.vnAutoScroll || config.vnHookAppendToTop) return false;
+
+    const rikaiWindow = document.getElementById('rikaichan-window')
+
+    if (rikaiWindow && rikaiWindow.style.display !== "none") return false;
+
+    const LEEWAY = 170; // Amount of "leeway" pixels before latching onto the bottom.
+
+    // Some obscene browser shit because making sense is for dweebs
+    const offset = window.innerHeight + window.scrollY;
+    const distanceFromBottom = document.body.offsetHeight - offset;
+
+    return distanceFromBottom < LEEWAY;
+}
 
 const checkClipboard = () => {
     // @ts-ignore
@@ -45,6 +61,8 @@ const updateTimer = (frequency: number) => {
 };
 
 const addItem = (text: string) => {
+    const checkShouldScroll = shouldScroll();
+
     previousContent = text.trim();
     const vnContent = document.getElementById('vn-content');
 
@@ -55,6 +73,10 @@ const addItem = (text: string) => {
         vnContent.prepend(newItem);
     } else {
         vnContent.appendChild(newItem);
+    }
+
+    if (checkShouldScroll) {
+        window.scrollTo(0, document.body.scrollHeight);
     }
 }
 

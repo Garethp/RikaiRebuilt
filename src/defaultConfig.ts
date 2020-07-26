@@ -37,6 +37,7 @@ export interface Config {
 
     vnHookClipboardFrequency: number;
     vnHookAppendToTop: boolean;
+    vnAutoScroll: boolean;
 }
 
 const defaultConfig: Config = {
@@ -153,6 +154,7 @@ const defaultConfig: Config = {
 
     vnHookClipboardFrequency: 200,
     vnHookAppendToTop: false,
+    vnAutoScroll: true,
 };
 
 export default defaultConfig;
