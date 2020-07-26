@@ -38,3 +38,8 @@ pre {
 #vn-content > div {
     margin-bottom: 15px;
 }
+
+#clear-page {
+    padding: .5rem 1rem;
+    display: block;
+}

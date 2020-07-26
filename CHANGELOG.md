@@ -1,5 +1,8 @@
 ## Changelog
 
+### Version 1.3.2
+ * Adding a Clear Page button in the VN Hook Page
+
 ### Version 1.3.1
  * Fixing broken Sanseido Mode
 

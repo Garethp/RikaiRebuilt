@@ -82,5 +82,9 @@ const addItem = (text: string) => {
 
 export default () => {
     updateTimer(defaultConfig.vnHookClipboardFrequency);
+
+    $("#clear-page").on('click', () => {
+        document.getElementById('vn-content').innerHTML = '';
+    })
 }
 
