@@ -1,5 +1,8 @@
 ## Changelog
 
+### Version 1.3.4
+ * Fixes missing audio files form LanguagePod (#6)
+
 ### Version 1.3.3
  * Tell Anki to download Audio when playing Audio (#14)
 
