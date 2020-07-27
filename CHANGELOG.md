@@ -1,5 +1,8 @@
 ## Changelog
 
+### Version 1.3.3
+ * Tell Anki to download Audio when playing Audio (#14)
+
 ### Version 1.3.2
  * Adding a Clear Page button in the VN Hook Page
 
