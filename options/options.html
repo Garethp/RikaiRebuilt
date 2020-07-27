@@ -134,7 +134,7 @@
                         <label class="my1-1 mr-2" for="keymap-toggleEpwingMode">Toggle Epwing Mode</label>
                     </div>
                     <div class="col-3">
-                        <input type="text" class="form-control keymap-input" id="keymap-toggleEpwingMode" />
+                        <input type="text" class="form-control keymap-input" id="keymap-toggleEpwingMode"/>
                     </div>
                 </div>
                 <div class="row">
@@ -164,6 +164,20 @@
                         Dictionary</label></div>
                     <div class="col-3"><input type="text" class="form-control keymap-input"
                                               id="keymap-selectNextDictionary"/></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4"><label class="my-1 mr-2" for="keymap-nextDefinition">Select Next
+                        Definition</label></div>
+                    <div class="col-3"><input type="text" class="form-control keymap-input"
+                                              id="keymap-nextDefinition"/></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4"><label class="my-1 mr-2" for="keymap-previousDefinition">Select Previous
+                        Definition</label></div>
+                    <div class="col-3"><input type="text" class="form-control keymap-input"
+                                              id="keymap-previousDefinition"/></div>
                 </div>
             </form>
         </div>
@@ -236,49 +250,61 @@
         <div class="tab-pane fade" id="kanji-dictionary" role="tabpanel" aria-labelledby="kanji-dictionary-tab">
             <div class="row">
                 <div class="col-3"><label for="kanjiComponents">Kanji Components</label></div>
-                <div class="col-3"><input type="checkbox" id="kanjiComponents" data-config-option="showKanjiComponents" /></div>
+                <div class="col-3"><input type="checkbox" id="kanjiComponents"
+                                          data-config-option="showKanjiComponents"/></div>
 
                 <div class="col-3"><label for="kanjiHalpern">Halpern</label></div>
-                <div class="col-3"><input type="checkbox" id="kanjiHalpern" data-config-option="showKanjiHalpern"/></div>
+                <div class="col-3"><input type="checkbox" id="kanjiHalpern" data-config-option="showKanjiHalpern"/>
+                </div>
 
                 <div class="col-3"><label for="kanjiHeisig">Heisig</label></div>
                 <div class="col-3"><input type="checkbox" id="kanjiHeisig" data-config-option="showKanjiHeisig"/></div>
 
                 <div class="col-3"><label for="kanjiHenshall">Henshall</label></div>
-                <div class="col-3"><input type="checkbox" id="kanjiHenshall" data-config-option="showKanjiHenshall"/></div>
+                <div class="col-3"><input type="checkbox" id="kanjiHenshall" data-config-option="showKanjiHenshall"/>
+                </div>
 
                 <div class="col-3"><label for="kanjiLearnersDictionary">Kanji Learners Dictionary</label></div>
-                <div class="col-3"><input type="checkbox" id="kanjiLearnersDictionary" data-config-option="showKanjiLearnersDictionary" /></div>
+                <div class="col-3"><input type="checkbox" id="kanjiLearnersDictionary"
+                                          data-config-option="showKanjiLearnersDictionary"/></div>
 
                 <div class="col-3"><label for="kanjiNelson">Nelson</label></div>
-                <div class="col-3"><input type="checkbox" id="kanjiNelson" data-config-option="showKanjiNelson" /></div>
+                <div class="col-3"><input type="checkbox" id="kanjiNelson" data-config-option="showKanjiNelson"/></div>
 
                 <div class="col-3"><label for="kanjiNewNelson">New Nelson</label></div>
-                <div class="col-3"><input type="checkbox" id="kanjiNewNelson" data-config-option="showKanjiNewNelson" /></div>
+                <div class="col-3"><input type="checkbox" id="kanjiNewNelson" data-config-option="showKanjiNewNelson"/>
+                </div>
 
                 <div class="col-3"><label for="kanjiPinYin">PinYin</label></div>
-                <div class="col-3"><input type="checkbox" id="kanjiPinYin" data-config-option="showKanjiPinYin" /></div>
+                <div class="col-3"><input type="checkbox" id="kanjiPinYin" data-config-option="showKanjiPinYin"/></div>
 
                 <div class="col-3"><label for="kanjiSkipPattern">Skip Pattern</label></div>
-                <div class="col-3"><input type="checkbox" id="kanjiSkipPattern" data-config-option="showKanjiSkipPattern" /></div>
+                <div class="col-3"><input type="checkbox" id="kanjiSkipPattern"
+                                          data-config-option="showKanjiSkipPattern"/></div>
 
                 <div class="col-3"><label for="kanjiTurtleAndKana">Turtle Kanji & Kana</label></div>
-                <div class="col-3"><input type="checkbox" id="kanjiTurtleAndKana" data-config-option="showKanjiTurtleAndKana"/></div>
+                <div class="col-3"><input type="checkbox" id="kanjiTurtleAndKana"
+                                          data-config-option="showKanjiTurtleAndKana"/></div>
 
                 <div class="col-3"><label for="kanjiTurtleDictionary">Turtle Dictionary</label></div>
-                <div class="col-3"><input type="checkbox" id="kanjiTurtleDictionary" data-config-option="showKanjiTurtleDictionary" /></div>
+                <div class="col-3"><input type="checkbox" id="kanjiTurtleDictionary"
+                                          data-config-option="showKanjiTurtleDictionary"/></div>
 
                 <div class="col-3"><label for="kanjiUnicode">Unicode</label></div>
-                <div class="col-3"><input type="checkbox" id="kanjiUnicode" data-config-option="showKanjiUnicode" /></div>
+                <div class="col-3"><input type="checkbox" id="kanjiUnicode" data-config-option="showKanjiUnicode"/>
+                </div>
             </div>
         </div>
         <div class="tab-pane fade" id="epwing" role="tabpanel" aria-labelledby="epwing-tab">
             <h4><b>Installing Epwing</b></h4>
-            To install epwing, please download and extract <a href="https://github.com/Garethp/epwing-lookup/raw/master/epwing.zip">zip file</a>, then run the
-            install script for your operating system. It doesn't copy any executables to any directories, so you need to keep the folder where it is.
-            If you accidentally move or delete the folder, just get the zip again, extract to the desired location and re-run the install script.
+            To install epwing, please download and extract <a
+                href="https://github.com/Garethp/epwing-lookup/raw/master/epwing.zip">zip file</a>, then run the
+            install script for your operating system. It doesn't copy any executables to any directories, so you need to
+            keep the folder where it is.
+            If you accidentally move or delete the folder, just get the zip again, extract to the desired location and
+            re-run the install script.
 
-            <hr />
+            <hr/>
             <form class="form-group">
                 <div class="row">
                     <div class="col-3">
@@ -299,13 +325,13 @@
                             <label class="my1-1 mr-2" for="keymap-epwingPreviousEntry">Previous Entry</label>
                         </div>
                         <div class="col-3">
-                            <input type="text" class="form-control keymap-input" id="keymap-epwingPreviousEntry" />
+                            <input type="text" class="form-control keymap-input" id="keymap-epwingPreviousEntry"/>
                         </div>
                         <div class="col-3">
                             <label class="my1-1 mr-2" for="keymap-epwingNextEntry">Next Entry</label>
                         </div>
                         <div class="col-3">
-                            <input type="text" class="form-control keymap-input" id="keymap-epwingNextEntry" />
+                            <input type="text" class="form-control keymap-input" id="keymap-epwingNextEntry"/>
                         </div>
                     </div>
                 </div>
@@ -374,6 +400,7 @@
         <div class="tab-pane fade" id="changelog" role="tabpanel" aria-labelledby="changelog-tab">
             <h4>Version 1.3.4</h4>
             <ul>
+                <li>Adds the ability to select which dictionary definition you want to import or hear the audio of</li>
                 <li>Fixes missing audio from Language Pod</li>
             </ul>
 
@@ -394,7 +421,9 @@
 
             <h4>Version 1.3.0</h4>
             <ul>
-                <li>Added a VN Hook page. While the page is open, it'll monitor your clipboard for you and automatically add items copied to the page</li>
+                <li>Added a VN Hook page. While the page is open, it'll monitor your clipboard for you and automatically
+                    add items copied to the page
+                </li>
             </ul>
 
             <h4>Version 1.2.2</h4>
@@ -433,7 +462,9 @@
             <h4>Version 1.1.3</h4>
             <ul>
                 <li>Included support for Typescript by including Webpack. Hopefully won't cause issues</li>
-                <li>Fixed annoying bug where the icon wouldn't reset on start, making the icon look like it was enabled when it wasn't</li>
+                <li>Fixed annoying bug where the icon wouldn't reset on start, making the icon look like it was enabled
+                    when it wasn't
+                </li>
             </ul>
 
             <h4>Version 1.1.2</h4>
@@ -443,7 +474,8 @@
 
             <h4>Version 1.1.1</h4>
             <ul>
-                <li>Fixing Epwing popup showing constantly, because of course I'd forget to fix that before releasing</li>
+                <li>Fixing Epwing popup showing constantly, because of course I'd forget to fix that before releasing
+                </li>
             </ul>
 
             <h4>Version 1.1.0</h4>

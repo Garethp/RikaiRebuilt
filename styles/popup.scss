@@ -24,10 +24,13 @@
     position: absolute;
     z-index: 7777;
     border: 1px solid #D0D0D0 !important;
-    padding: 4px;
     top: 5px;
     left: 5px;
     min-width: 100px;
+
+    > div {
+        padding: 4px;
+    }
 }
 
 /* used for word definitions */
@@ -245,8 +248,14 @@
 
 /** Blue Theme **/
 #rikaichan-window.rikai-blue {
+    > div.selected {
+        background-color: #3E528E;
+
+    }
+
     background: #5C73B8;
-    &, * { color: #FFFFFF; }
+
+    &, * { color: #ffffff; }
 
     .w-kanji { color: #B7E7FF; }
     .w-kana { color: #C0FFC0; }

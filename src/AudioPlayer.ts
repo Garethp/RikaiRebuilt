@@ -2,9 +2,10 @@ import Utils from "./Utils";
 import {isKanjiResult, SearchResults} from "./interfaces/SearchResults";
 
 export default class AudioPlayer {
-  static getAudioUrl(entry: SearchResults): string {
+  static getAudioUrl(entry: SearchResults & { selected?: number }): string {
     let kanaText;
     let kanjiText;
+    const selected = entry.selected || 0;
 
     //We have a single kanji selected
     if (isKanjiResult(entry)) {
@@ -18,8 +19,8 @@ export default class AudioPlayer {
       kanaText = Utils.convertKatakanaToHirigana(kanaText).kana;
 
       if (!kanaText) return;
-    } else if (entry.data[0]) {
-      let entryData = entry.data[0][0].match(
+    } else if (entry.data[selected]) {
+      let entryData = entry.data[selected][0].match(
         /^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//
       );
 

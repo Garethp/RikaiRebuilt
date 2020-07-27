@@ -104,14 +104,16 @@ export default class AnkiImport {
     return Promise.all(promises);
   }
 
-  async downloadAudio(entry: SearchResults) {
+  async downloadAudio(entry: SearchResults & { selected?: number }) {
     if (!isDictionaryResult(entry)) return;
     if (!entry?.data) return;
     if (await AudioPlayer.isNoAudio(entry)) return;
 
+    const selected = entry.selected || 0;
+
     const audioUrl = AudioPlayer.getAudioUrl(entry);
 
-    let [, dictionaryForm, reading] = entry.data[0][0].match(
+    let [, dictionaryForm, reading] = entry.data[selected][0].match(
       /^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//
     );
 
@@ -124,6 +126,7 @@ export default class AnkiImport {
   }
 
   // entry          = Contains the work lookup info (kana, kanji, def)
+  // selected       = The index of the entry to look up
   // word           = Highlighted Word
   // sentence       = The sentence containing the highlighted word
   // sentenceWBlank = Like sentence except the highlighted word is replaced with blanks
@@ -131,6 +134,7 @@ export default class AnkiImport {
   // saveFormat     = Token-based save format
   static async makeTextOptions(
     entry: SearchResults,
+    selected: number,
     word: string,
     sentence: string,
     sentenceWithBlank: string,
@@ -159,7 +163,9 @@ export default class AnkiImport {
     //   entryData[2] = kana (null if no kanji)
     //   entryData[3] = definition
 
-    entryData = entry.data[0][0].match(/^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//);
+    entryData = entry.data[selected][0].match(
+      /^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//
+    );
     let [_, dictionaryForm, reading, definition] = entryData;
 
     // Does the user want to use the reading in place of kanji for the $d token?

@@ -117,6 +117,7 @@ export class RikaiController {
   async sendToAnki(content) {
     const {
       entry,
+      selected,
       word,
       sentence,
       sentenceWithBlank,
@@ -125,6 +126,7 @@ export class RikaiController {
     } = content;
     const entryFormat = await AnkiImport.makeTextOptions(
       entry,
+      selected || 0,
       word,
       sentence,
       sentenceWithBlank,
