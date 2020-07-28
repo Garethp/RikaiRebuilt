@@ -1209,7 +1209,7 @@ class Rikai {
           let title;
           let pitch = "";
           const conjugationString = conjugation
-            ? `<span class="w-conj">(${entries.data[i][1]})</span>`
+            ? `<span class="w-conj">${conjugation}</span>`
             : "";
           const definitionString = definitions
             .map(definitionTransformer)

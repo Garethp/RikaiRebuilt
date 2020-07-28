@@ -1,5 +1,8 @@
 ## Changelog
 
+### Version 1.3.5
+ * Fixing bug where words that have conjugations aren't showing
+
 ### Version 1.3.4
  * Adds the ability to select which dictionary definition you want to import or hear the audio of (#13)
  * Fixes missing audio files form LanguagePod (#6)
