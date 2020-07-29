@@ -481,8 +481,16 @@ browser.contextMenus.create({
   title: "Visual Novel Hook",
   contexts: ["browser_action"],
   onclick: () => {
-    browser.tabs.create({
-      url: browser.extension.getURL("vn-hook/index.html"),
-    });
+    browser.permissions
+      .request({
+        permissions: ["clipboardRead"],
+      })
+      .then((allowed: boolean) => {
+        if (!allowed) return;
+
+        browser.tabs.create({
+          url: browser.extension.getURL("vn-hook/index.html"),
+        });
+      });
   },
 });

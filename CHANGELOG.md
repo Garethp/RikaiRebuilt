@@ -1,5 +1,8 @@
 ## Changelog
 
+### Version 1.3.6
+ * Make the clipboard permission optional, and only ask when opening the VN Hook page
+
 ### Version 1.3.5
  * Fixing bug where words that have conjugations aren't showing
 
