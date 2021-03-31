@@ -1,5 +1,8 @@
 ## Changelog
 
+### Version 1.3.7
+ * Adding in Anki Bulk Audio Import (looks at the current page for all instances of [sound:kana - kanji.mp3])
+
 ### Version 1.3.6
  * Make the clipboard permission optional, and only ask when opening the VN Hook page
 

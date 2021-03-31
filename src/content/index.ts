@@ -1287,6 +1287,21 @@ class Rikai {
     });
   }
 
+  sendAllSoundToAnki(): boolean {
+    const bodyContent = document.body.innerText;
+    const dataRegex = /\[sound:(.*?) - (.*?).mp3]/;
+    const matches = bodyContent.match(/\[sound:(.*? - .*?).mp3]/g).map(soundToMatch => {
+      const [_, reading, kanji] = dataRegex.exec(soundToMatch);
+
+      return {
+        reading, kanji
+      }
+    });
+
+    this.sendRequest("bulkAudioImport", matches);
+    return true;
+  }
+
   sendToAnki(): boolean {
     const word = this.word;
     const sentence = this.sentence;
@@ -1374,3 +1389,12 @@ browser.storage.onChanged.addListener((change, storageArea) => {
     rikai.setEpwingMode(change.epwingMode.newValue);
   }
 });
+
+browser.runtime.onMessage.addListener(
+    (request, sender, sendResponse) => {
+      if (request.type === "bulkAudioImport") {
+        rikai.sendAllSoundToAnki();
+        sendResponse({response: null});
+      }
+    }
+);

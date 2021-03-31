@@ -276,9 +276,9 @@ function playAudio(entry) {
 browser.runtime.onMessage.addListener(async (message) => {
   const { type, content } = message;
 
-  switch (type) {
+  switch (message.type) {
     case "wordSearch":
-      return controller.wordSearch(content).then(
+      return controller.wordSearch(message.content).then(
         (response) => {
           return { response };
         },
@@ -295,17 +295,17 @@ browser.runtime.onMessage.addListener(async (message) => {
       );
     case "getPitch":
       return controller
-        .getPitch(content.expression, content.reading)
+        .getPitch(message.content.expression, message.content.reading)
         .then((response) => {
           return { response };
         });
     case "getFrequency":
       return controller
         .getFrequency(
-          content.inExpression,
-          content.inReading,
-          content.useHighlightedWord,
-          content.highlightedWord
+            message.content.inExpression,
+            message.content.inReading,
+            message.content.useHighlightedWord,
+            message.content.highlightedWord
         )
         .then((response) => {
           return { response };
@@ -323,6 +323,9 @@ browser.runtime.onMessage.addListener(async (message) => {
       return 0;
     case "selectNextDictionary":
       controller.getDictionaryLookup().selectNextDictionary();
+      return { response: null };
+    case "bulkAudioImport":
+      await ankiImport.bulkDownloadAudio(content);
       return { response: null };
   }
 });
@@ -492,5 +495,16 @@ browser.contextMenus.create({
           url: browser.extension.getURL("vn-hook/index.html"),
         });
       });
+  },
+});
+
+// @ts-ignore
+browser.contextMenus.create({
+  title: "Bulk Import Audio To Anki",
+  contexts: ["browser_action"],
+  onclick: () => {
+    browser.tabs.query({active: true, currentWindow: true}).then((tabs) => {
+      browser.tabs.sendMessage(tabs[0].id, {type: "bulkAudioImport"});
+    });
   },
 });

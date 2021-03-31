@@ -1,5 +1,5 @@
 import AudioPlayer from "./AudioPlayer";
-import {isDictionaryResult, SearchResults} from "./interfaces/SearchResults";
+import {DictionaryResult, isDictionaryResult, SearchResults} from "./interfaces/SearchResults";
 import {Config} from "./defaultConfig";
 import {AnkiFields} from "./interfaces/AnkiFields";
 import {RikaiController} from "./background";
@@ -123,6 +123,32 @@ export default class AnkiImport {
       filename: audioFile,
       url: audioUrl,
     });
+  }
+
+  async bulkDownloadAudio (files: { reading: string; kanji: string }[]) {
+    const downloadPromises = files.map((file):DictionaryResult => ({
+      data: [[`${file.kanji} [${file.reading}] /something/`]],
+      matchLen: 0,
+      more: false,
+      names: false,
+      kanji :false
+    })).filter(async (entry) => {
+      const isEmpty = await AudioPlayer.isNoAudio(entry);
+      if (isEmpty) return;
+
+      const audioUrl = AudioPlayer.getAudioUrl(entry);
+      let [, dictionaryForm, reading] = entry.data[0][0].match(
+          /^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//
+      );
+
+      const audioFile = `${reading} - ${dictionaryForm}.mp3`;
+      return this.makeCall("downloadAudio", {
+        filename: audioFile,
+        url: audioUrl,
+      }).then(() => console.log('Downloaded audio'));
+    });
+
+    return Promise.all(downloadPromises).then(() => console.log('Downloaded all audio'));
   }
 
   // entry          = Contains the work lookup info (kana, kanji, def)
