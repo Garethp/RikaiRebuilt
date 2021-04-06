@@ -125,30 +125,32 @@ export default class AnkiImport {
     });
   }
 
-  async bulkDownloadAudio (files: { reading: string; kanji: string }[]) {
+  async bulkDownloadAudio (files: { reading: string; kanji: string }[], onImport: () => void) {
     const downloadPromises = files.map((file):DictionaryResult => ({
       data: [[`${file.kanji} [${file.reading}] /something/`]],
       matchLen: 0,
       more: false,
       names: false,
       kanji :false
-    })).filter(async (entry) => {
-      const isEmpty = await AudioPlayer.isNoAudio(entry);
-      if (isEmpty) return;
+    })).map((entry) => {
+      return AudioPlayer.isNoAudio(entry).then((isEmpty) => {
+        if (isEmpty) return;
 
-      const audioUrl = AudioPlayer.getAudioUrl(entry);
-      let [, dictionaryForm, reading] = entry.data[0][0].match(
-          /^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//
-      );
+        const audioUrl = AudioPlayer.getAudioUrl(entry);
+        let [, dictionaryForm, reading] = entry.data[0][0].match(
+            /^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//
+        );
 
-      const audioFile = `${reading} - ${dictionaryForm}.mp3`;
-      return this.makeCall("downloadAudio", {
-        filename: audioFile,
-        url: audioUrl,
-      }).then(() => console.log('Downloaded audio'));
+        const audioFile = `${reading} - ${dictionaryForm}.mp3`;
+        return this.makeCall("downloadAudio", {
+          filename: audioFile,
+          url: audioUrl,
+        })
+            .finally(() => onImport());
+      })
     });
 
-    return Promise.all(downloadPromises).then(() => console.log('Downloaded all audio'));
+    return Promise.all(downloadPromises);
   }
 
   // entry          = Contains the work lookup info (kana, kanji, def)

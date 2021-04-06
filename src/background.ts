@@ -325,8 +325,68 @@ browser.runtime.onMessage.addListener(async (message) => {
       controller.getDictionaryLookup().selectNextDictionary();
       return { response: null };
     case "bulkAudioImport":
-      await ankiImport.bulkDownloadAudio(content);
-      return { response: null };
+        let progress = 0;
+
+        const id = `anki-bulk-audio-${(new Date()).getTime()}`
+        // @ts-ignore
+        const supportsProgress = !!browser.notifications.update;
+
+        if (supportsProgress) {
+          await browser.notifications.create(id, {
+            // @ts-ignore
+            type: "progress",
+            title: "Import audio",
+            message: `Importing ${content.length} audio files`,
+            iconUrl: 'icons/smile_star.png',
+            progress: 0
+          });
+        } else {
+          await browser.notifications.create(id, {
+            type: "basic",
+            title: "Import audio",
+            message: `Importing ${content.length} audio files`,
+            iconUrl: 'icons/smile_star.png'
+          })
+        }
+
+        const updateFunction = !supportsProgress ? () => {
+          progress = progress + 1;
+
+          // @ts-ignore
+          browser.contextMenus.update('anki-bulk-import', {
+            title: `Bulk Import Audio To Anki (${ Math.round((progress / content.length) * 100)}%)`
+          })
+        } : async () => {
+          progress = progress + 1;
+          // @ts-ignore
+          browser.notifications.update(id, {
+            progress: Math.round((progress / content.length) * 100)
+          })
+        }
+
+        await ankiImport.bulkDownloadAudio(content, updateFunction);
+
+        if (!supportsProgress) {
+          // @ts-ignore
+          browser.contextMenus.update('anki-bulk-import', {
+            title: `Bulk Import Audio To Anki`
+          })
+          await browser.notifications.clear(id)
+          await browser.notifications.create(`${id}-done` , {
+            type: "basic",
+            title: "Import audio",
+            message: `Audio Import Complete`,
+            iconUrl: 'icons/smile_star.png'
+          })
+        } else {
+          // @ts-ignore
+          await browser.notifications.update(id, {
+            type: "basic",
+            message: "Import complete"
+          })
+        }
+
+      return {response: null};
   }
 });
 
@@ -500,6 +560,7 @@ browser.contextMenus.create({
 
 // @ts-ignore
 browser.contextMenus.create({
+  id: 'anki-bulk-import',
   title: "Bulk Import Audio To Anki",
   contexts: ["browser_action"],
   onclick: () => {

@@ -42,10 +42,7 @@ export default class AudioPlayer {
       kanjiText
     );
 
-    const url = `http://assets.languagepod101.com/dictionary/japanese/audiomp3.php?kana=${fixedKana}&kanji=${fixedKanji}`;
-
-    console.log(url);
-    return url;
+    return `http://assets.languagepod101.com/dictionary/japanese/audiomp3.php?kana=${fixedKana}&kanji=${fixedKanji}`;
   }
 
   /**

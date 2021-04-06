@@ -1,5 +1,8 @@
 ## Changelog
 
+### Version 1.3.8
+ * Adding notifications for Bulk Audio Import
+
 ### Version 1.3.7
  * Adding in Anki Bulk Audio Import (looks at the current page for all instances of [sound:kana - kanji.mp3])
 
