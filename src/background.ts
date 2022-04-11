@@ -543,19 +543,22 @@ browser.contextMenus.create({
 browser.contextMenus.create({
   title: "Visual Novel Hook",
   contexts: ["browser_action"],
-  onclick: () => {
-    browser.permissions
-      .request({
-        permissions: ["clipboardRead"],
-      })
-      .then((allowed: boolean) => {
-        if (!allowed) return;
+  onclick: async () => {
+    // Chrome doesn't require us to check, and in fact doesn't **allow** us to check for clipboardRead permission
+    // because it's technically not required so we're not allowed to include it, but we still have to have a way of
+    // checking it for Firefox. However we need to check if we're in firefox land or chrome land in a non-async way
+    // that's why we check if getBrowserInfo exists, rather than actually calling it
 
-        browser.tabs.create({
-          url: browser.extension.getURL("vn-hook/index.html"),
-        });
-      });
-  },
+    const allowed = browser.runtime.getBrowserInfo
+        ? await browser.permissions.request({ permissions: ["clipboardRead"] })
+        : true;
+
+    if (!allowed) return;
+
+    browser.tabs.create({
+        url: browser.extension.getURL("vn-hook/index.html"),
+    });
+  }
 });
 
 // @ts-ignore

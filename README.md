@@ -36,3 +36,9 @@ Take a look at the Feature List below
  * Edge and Opera Support
  * Possible EPWING support
  * Add Jisho Stroke Orders
+
+## Building for different browsers
+
+A small note: When building for Chrome you need to remove the clipboard read optional
+permission from the manifest. They don't require it (Firefox does though) and because
+they don't require it they consider it a violation to even include it in the manifest
