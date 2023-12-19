@@ -1,4 +1,4 @@
-import {DictionaryDefinition} from "./interfaces/DictionaryDefinition";
+import { DictionaryDefinition } from "./interfaces/DictionaryDefinition";
 
 export interface Config {
   ankiTags: string;
@@ -26,6 +26,7 @@ export interface Config {
   maxEntries: number;
   showKanjiHenshall: boolean;
   theme: string;
+  optionsTheme: string;
   hideXRatedEntries: boolean;
   showKanjiLearnersDictionary: boolean;
   audioVolume: number;
@@ -80,6 +81,7 @@ const defaultConfig: Config = {
   showFrequency: false,
   showPitchAccent: false, //showpitchaccent
   theme: "blue",
+  optionsTheme: "Default",
   audioVolume: 100,
 
   //Definitions for what we can show in the Kanji Dictionary display
@@ -107,8 +109,7 @@ const defaultConfig: Config = {
       hasType: true,
       isNameDictionary: false,
       isKanjiDictionary: false,
-      url:
-        "https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/english.json",
+      url: "https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/english.json",
     },
     {
       name: "Japanese Names",
@@ -116,8 +117,7 @@ const defaultConfig: Config = {
       hasType: false,
       isNameDictionary: true,
       isKanjiDictionary: false,
-      url:
-        "https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/names.json",
+      url: "https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/names.json",
       // url: '../../names.json'
     },
     {
@@ -126,8 +126,7 @@ const defaultConfig: Config = {
       hasType: true,
       isNameDictionary: false,
       isKanjiDictionary: false,
-      url:
-        "https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/dutch.json",
+      url: "https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/dutch.json",
       // url: '../../dutch.json'
     },
     {
@@ -136,8 +135,7 @@ const defaultConfig: Config = {
       hasType: true,
       isNameDictionary: false,
       isKanjiDictionary: false,
-      url:
-        "https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/french.json",
+      url: "https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/french.json",
       // url: '../../french.json'
     },
     {
@@ -146,8 +144,7 @@ const defaultConfig: Config = {
       hasType: true,
       isNameDictionary: false,
       isKanjiDictionary: false,
-      url:
-        "https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/german.json",
+      url: "https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/german.json",
       // url: '../../german.json'
     },
     {
@@ -156,8 +153,7 @@ const defaultConfig: Config = {
       hasType: true,
       isNameDictionary: false,
       isKanjiDictionary: false,
-      url:
-        "https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/russian.json",
+      url: "https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/russian.json",
       // url: '../../russian.json'
     },
     {
@@ -166,8 +162,7 @@ const defaultConfig: Config = {
       hasType: true,
       isNameDictionary: false,
       isKanjiDictionary: false,
-      url:
-        "https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/thai.json",
+      url: "https://raw.githubusercontent.com/Garethp/RikaiRebuilt-dictionaries/master/thai.json",
       // url: '../../thai.json'
     },
   ],
