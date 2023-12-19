@@ -1,29 +1,31 @@
 {
   "name": "RikaiRebuilt",
   "scripts": {
+    "build": "webpack && node build.mjs",
     "start": "webpack -w",
-    "start:web-ext": "web-ext run --start-url https://en.wikipedia.org/wiki/Ky%C5%8Diku_kanji --browser-console",
-    "build": "webpack && web-ext build --ignore-files=epwing package.json package-lock.json tsconfig.json webpack.config.js src/ test",
     "test": "mocha"
   },
   "devDependencies": {
     "@ianwalter/web-ext-webpack-plugin": "^0.1.0",
-    "@types/jquery": "^3.5.0",
-    "isomorphic-fetch": "^2.2.1",
-    "mocha": "^5.1.1",
-    "prettier": "^2.0.5",
-    "typescript": "^3.2.2",
-    "web-ext-types": "^3.2.1"
+    "@types/jquery": "3.5.29",
+    "@types/webextension-polyfill": "^0.10.7",
+    "copyfiles": "^2.4.1",
+    "isomorphic-fetch": "3.0.0",
+    "mocha": "5.2.0",
+    "prettier": "2.8.8",
+    "typescript": "5.3.3",
+    "web-ext-types": "3.2.1",
+    "webextension-polyfill": "^0.10.0"
   },
   "dependencies": {
-    "css-loader": "^2.1.0",
-    "null-loader": "^0.1.1",
-    "source-map-loader": "^0.2.4",
-    "style-loader": "^0.23.1",
-    "ts-loader": "^5.3.1",
-    "web-ext": "^6.0.0",
-    "webpack": "^4.27.0",
-    "webpack-cli": "^3.1.2",
+    "css-loader": "^6.8.1",
+    "null-loader": "^4.0.1",
+    "source-map-loader": "^4.0.1",
+    "style-loader": "^3.3.3",
+    "ts-loader": "^9.5.1",
+    "web-ext": "^7.9.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
     "webpack-preprocessor": "^0.1.12"
   }
 }

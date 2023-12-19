@@ -1,5 +1,6 @@
 import Utils from "./Utils";
-import {isKanjiResult, SearchResults} from "./interfaces/SearchResults";
+import { isKanjiResult, SearchResults } from "./interfaces/SearchResults";
+import { resourcePrefix } from "./background";
 
 export default class AudioPlayer {
   static getAudioUrl(entry: SearchResults & { selected?: number }): string {
@@ -103,7 +104,7 @@ export default class AudioPlayer {
       .then((result) => arrayBufferToBase64(result))
       .then((content) => {
         if (content === longNoAudio && shortenNoAudio === true) {
-          return fetch("resources/no_audio.mp3")
+          return fetch(`${resourcePrefix}resources/no_audio.mp3`)
             .then((response) => response.arrayBuffer())
             .then((response) => arrayBufferToBase64(response));
         }

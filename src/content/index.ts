@@ -1,11 +1,15 @@
-import {docImposterDestroy, docRangeFromPoint} from "./document";
-import {transformNameEntriesToHtml} from "./entryTransformers";
+import { docImposterDestroy, docRangeFromPoint } from "./document";
+import { transformNameEntriesToHtml } from "./entryTransformers";
 import autobind from "../../lib/autobind";
-import defaultConfig, {Config} from "../defaultConfig";
+import defaultConfig, { Config } from "../defaultConfig";
 import Utils from "../Utils";
 import "../../styles/popup.css";
-import {TextSourceRange} from "./source";
-import {isDictionaryResult, isKanjiResult, SearchResults,} from "../interfaces/SearchResults";
+import { TextSourceRange } from "./source";
+import {
+  isDictionaryResult,
+  isKanjiResult,
+  SearchResults,
+} from "../interfaces/SearchResults";
 
 type position = {
   clientX: number;
@@ -717,19 +721,19 @@ class Rikai {
             // How many child nodes does this b element have?
             if (childList[nodeIdx].childNodes.length === 1) {
               // Check for definition number: ［１］, ［２］, ... and add to def
-              const defNum = childList[nodeIdx].childNodes[0].nodeValue.match(
-                /［([１２３４５６７８９０]+)］/
-              );
+              const defNum =
+                childList[nodeIdx].childNodes[0].nodeValue.match(
+                  /［([１２３４５６７８９０]+)］/
+                );
 
               if (defNum) {
                 defText += "<br />" + RegExp.$1;
               } else {
                 // Check for sub-definition number: （１）, （２）, ... and add to def
-                const subDefNum = childList[
-                  nodeIdx
-                ].childNodes[0].nodeValue.match(
-                  /（([１２３４５６７８９０]+)）/
-                );
+                const subDefNum =
+                  childList[nodeIdx].childNodes[0].nodeValue.match(
+                    /（([１２３４５６７８９０]+)）/
+                  );
 
                 if (subDefNum) {
                   // Convert sub def number to circled number
@@ -873,6 +877,7 @@ class Rikai {
 
   async sendRequest(type: string, content: any = ""): Promise<any> {
     return browser.runtime.sendMessage({ type, content }).then((response) => {
+      console.log("WordSearch Response", response);
       if (typeof response === "undefined") {
         this.showPopup(
           "If you have the options page for RikaiRebuilt, please close that. Word search" +
@@ -1290,13 +1295,16 @@ class Rikai {
   sendAllSoundToAnki(): boolean {
     const bodyContent = document.body.innerText;
     const dataRegex = /\[sound:(.*?) - (.*?).mp3]/;
-    const matches = bodyContent.match(/\[sound:(.*? - .*?).mp3]/g).map(soundToMatch => {
-      const [_, reading, kanji] = dataRegex.exec(soundToMatch);
+    const matches = bodyContent
+      .match(/\[sound:(.*? - .*?).mp3]/g)
+      .map((soundToMatch) => {
+        const [_, reading, kanji] = dataRegex.exec(soundToMatch);
 
-      return {
-        reading, kanji
-      }
-    });
+        return {
+          reading,
+          kanji,
+        };
+      });
 
     this.sendRequest("bulkAudioImport", matches);
     return true;
@@ -1390,11 +1398,9 @@ browser.storage.onChanged.addListener((change, storageArea) => {
   }
 });
 
-browser.runtime.onMessage.addListener(
-    (request, sender, sendResponse) => {
-      if (request.type === "bulkAudioImport") {
-        rikai.sendAllSoundToAnki();
-        sendResponse({response: null});
-      }
-    }
-);
+browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.type === "bulkAudioImport") {
+    rikai.sendAllSoundToAnki();
+    sendResponse({ response: null });
+  }
+});

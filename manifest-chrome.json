@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "author": "Gareth Parker",
+  "name": "RikaiRebuilt",
+  "version": "1.3.9",
+
+  "action": {
+    "default_icon": {
+      "48": "icons/smile.png"
+    }
+  },
+
+  "icons": {
+    "48": "icons/smile.png"
+  },
+
+  "permissions": [
+    "activeTab",
+    "storage",
+    "contextMenus",
+    "nativeMessaging",
+    "notifications",
+    "scripting"
+  ],
+
+  "optional_permissions": [
+    "clipboardRead"
+  ],
+
+  "background": {
+    "service_worker": "build/background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "lib/browser-polyfill.min.js",
+        "build/content.js"
+      ],
+      "css": [
+        "styles/popup.css"
+      ]
+    }
+  ],
+
+  "options_ui": {
+    "open_in_tab": true,
+    "page": "options/options.html"
+  }
+}

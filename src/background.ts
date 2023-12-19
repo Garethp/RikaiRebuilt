@@ -1,4 +1,4 @@
-import defaultConfig, {Config} from "./defaultConfig";
+import defaultConfig, { Config } from "./defaultConfig";
 import autobind from "../lib/autobind";
 import AnkiImport from "./AnkiImport";
 import FrequencyDb from "./database/FrequencyDb";
@@ -6,9 +6,15 @@ import PitchDb from "./database/PitchDb";
 import IndexedDictionary from "./database/IndexedDictionary";
 import DictionaryLookup from "./DictionaryLookup";
 import AudioPlayer from "./AudioPlayer";
-import {DictionaryDefinition} from "./interfaces/DictionaryDefinition";
+import { DictionaryDefinition } from "./interfaces/DictionaryDefinition";
 import Utils from "./Utils";
-import {installFrequencyDb, installPitchDb} from "./initializers";
+import { installFrequencyDb, installPitchDb } from "./initializers";
+var browser = require("webextension-polyfill");
+
+export const isManifestV3 = browser.runtime.getManifest().manifest_version == 3;
+export const resourcePrefix = isManifestV3 ? "../" : "";
+
+const action = isManifestV3 ? browser.action : browser.browserAction;
 
 let config = defaultConfig;
 let installedDictionaries: DictionaryDefinition[] = [];
@@ -34,6 +40,8 @@ export class RikaiController {
   }
 
   async enable() {
+    console.log("Enable Rikai");
+
     this.setup();
 
     if (this.enabled === true) {
@@ -63,9 +71,9 @@ export class RikaiController {
         this.updateDictionaries(config.installedDictionaries);
     });
 
-    browser.browserAction.setIcon({
+    action.setIcon({
       path: {
-        48: "icons/smile_star.png",
+        48: `${resourcePrefix}icons/smile_star.png`,
       },
     });
 
@@ -75,9 +83,9 @@ export class RikaiController {
   async disable() {
     browser.storage.local.set({ enabled: false });
 
-    browser.browserAction.setIcon({
+    action.setIcon({
       path: {
-        48: "icons/smile.png",
+        48: `${resourcePrefix}icons/smile.png`,
       },
     });
 
@@ -278,8 +286,10 @@ browser.runtime.onMessage.addListener(async (message) => {
 
   switch (message.type) {
     case "wordSearch":
+      console.log("Starting search");
       return controller.wordSearch(message.content).then(
         (response) => {
+          console.log("Finished", response);
           return { response };
         },
         (f) => console.log(f)
@@ -302,10 +312,10 @@ browser.runtime.onMessage.addListener(async (message) => {
     case "getFrequency":
       return controller
         .getFrequency(
-            message.content.inExpression,
-            message.content.inReading,
-            message.content.useHighlightedWord,
-            message.content.highlightedWord
+          message.content.inExpression,
+          message.content.inReading,
+          message.content.useHighlightedWord,
+          message.content.highlightedWord
         )
         .then((response) => {
           return { response };
@@ -325,68 +335,72 @@ browser.runtime.onMessage.addListener(async (message) => {
       controller.getDictionaryLookup().selectNextDictionary();
       return { response: null };
     case "bulkAudioImport":
-        let progress = 0;
+      let progress = 0;
 
-        const id = `anki-bulk-audio-${(new Date()).getTime()}`
-        // @ts-ignore
-        const supportsProgress = !!browser.notifications.update;
+      const id = `anki-bulk-audio-${new Date().getTime()}`;
+      // @ts-ignore
+      const supportsProgress = !!browser.notifications.update;
 
-        if (supportsProgress) {
-          await browser.notifications.create(id, {
+      if (supportsProgress) {
+        await browser.notifications.create(id, {
+          // @ts-ignore
+          type: "progress",
+          title: "Import audio",
+          message: `Importing ${content.length} audio files`,
+          iconUrl: "icons/smile_star.png",
+          progress: 0,
+        });
+      } else {
+        await browser.notifications.create(id, {
+          type: "basic",
+          title: "Import audio",
+          message: `Importing ${content.length} audio files`,
+          iconUrl: "icons/smile_star.png",
+        });
+      }
+
+      const updateFunction = !supportsProgress
+        ? () => {
+            progress = progress + 1;
+
             // @ts-ignore
-            type: "progress",
-            title: "Import audio",
-            message: `Importing ${content.length} audio files`,
-            iconUrl: 'icons/smile_star.png',
-            progress: 0
-          });
-        } else {
-          await browser.notifications.create(id, {
-            type: "basic",
-            title: "Import audio",
-            message: `Importing ${content.length} audio files`,
-            iconUrl: 'icons/smile_star.png'
-          })
-        }
+            browser.contextMenus.update("anki-bulk-import", {
+              title: `Bulk Import Audio To Anki (${Math.round(
+                (progress / content.length) * 100
+              )}%)`,
+            });
+          }
+        : async () => {
+            progress = progress + 1;
+            // @ts-ignore
+            browser.notifications.update(id, {
+              progress: Math.round((progress / content.length) * 100),
+            });
+          };
 
-        const updateFunction = !supportsProgress ? () => {
-          progress = progress + 1;
+      await ankiImport.bulkDownloadAudio(content, updateFunction);
 
-          // @ts-ignore
-          browser.contextMenus.update('anki-bulk-import', {
-            title: `Bulk Import Audio To Anki (${ Math.round((progress / content.length) * 100)}%)`
-          })
-        } : async () => {
-          progress = progress + 1;
-          // @ts-ignore
-          browser.notifications.update(id, {
-            progress: Math.round((progress / content.length) * 100)
-          })
-        }
+      if (!supportsProgress) {
+        // @ts-ignore
+        browser.contextMenus.update("anki-bulk-import", {
+          title: `Bulk Import Audio To Anki`,
+        });
+        await browser.notifications.clear(id);
+        await browser.notifications.create(`${id}-done`, {
+          type: "basic",
+          title: "Import audio",
+          message: `Audio Import Complete`,
+          iconUrl: "icons/smile_star.png",
+        });
+      } else {
+        // @ts-ignore
+        await browser.notifications.update(id, {
+          type: "basic",
+          message: "Import complete",
+        });
+      }
 
-        await ankiImport.bulkDownloadAudio(content, updateFunction);
-
-        if (!supportsProgress) {
-          // @ts-ignore
-          browser.contextMenus.update('anki-bulk-import', {
-            title: `Bulk Import Audio To Anki`
-          })
-          await browser.notifications.clear(id)
-          await browser.notifications.create(`${id}-done` , {
-            type: "basic",
-            title: "Import audio",
-            message: `Audio Import Complete`,
-            iconUrl: 'icons/smile_star.png'
-          })
-        } else {
-          // @ts-ignore
-          await browser.notifications.update(id, {
-            type: "basic",
-            message: "Import complete"
-          })
-        }
-
-      return {response: null};
+      return { response: null };
   }
 });
 
@@ -455,7 +469,7 @@ browser.runtime.onConnect.addListener((port) => {
   });
 });
 
-browser.browserAction.onClicked.addListener(controller.enable);
+action.onClicked.addListener(controller.enable);
 
 browser.storage.onChanged.addListener((changes, areaName) => {
   if (areaName !== "sync" && areaName !== "local") return;
@@ -472,9 +486,9 @@ browser.storage.onChanged.addListener((changes, areaName) => {
   }
 });
 
-browser.browserAction.setIcon({
+action.setIcon({
   path: {
-    48: "icons/smile.png",
+    48: `${resourcePrefix}icons/smile.png`,
   },
 });
 browser.storage.local.set({ enabled: false });
@@ -526,49 +540,90 @@ browser.runtime.onInstalled.addListener(
   }
 );
 
-// @ts-ignore
-browser.contextMenus.removeAll();
-// @ts-ignore
-browser.contextMenus.create({
-  title: "Options",
-  contexts: ["browser_action"],
-  onclick: () => {
-    browser.tabs.create({
-      url: browser.extension.getURL("options/options.html"),
-    });
-  },
+browser.runtime.onInstalled.addListener(() => {
+  // @ts-ignore
+  browser.contextMenus.removeAll();
+  // @ts-ignore
+  browser.contextMenus.create({
+    id: "rikai-options",
+    title: "Options",
+    contexts: ["all"],
+    // onclick: () => {
+    //   browser.tabs.create({
+    //     url: browser.extension.getURL("options/options.html"),
+    //   });
+    // },
+  });
+
+  // @ts-ignore
+  browser.contextMenus.create({
+    id: "rikai-vnhook",
+    title: "Visual Novel Hook",
+    contexts: ["all"],
+    // onclick: async () => {
+    //   // Chrome doesn't require us to check, and in fact doesn't **allow** us to check for clipboardRead permission
+    //   // because it's technically not required so we're not allowed to include it, but we still have to have a way of
+    //   // checking it for Firefox. However we need to check if we're in firefox land or chrome land in a non-async way
+    //   // that's why we check if getBrowserInfo exists, rather than actually calling it
+    //
+    //   const allowed = browser.runtime.getBrowserInfo
+    //     ? await browser.permissions.request({ permissions: ["clipboardRead"] })
+    //     : true;
+    //
+    //   if (!allowed) return;
+    //
+    //   browser.tabs.create({
+    //     url: browser.extension.getURL("vn-hook/index.html"),
+    //   });
+    // },
+  });
+
+  // @ts-ignore
+  browser.contextMenus.create({
+    id: "anki-bulk-import",
+    title: "Bulk Import Audio To Anki",
+    contexts: ["all"],
+    // onclick: () => {
+    //   browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
+    //     browser.tabs.sendMessage(tabs[0].id, { type: "bulkAudioImport" });
+    //   });
+    // },
+  });
+
+  browser.contextMenus.onClicked.addListener(async (info) => {
+    switch (info.menuItemId) {
+      case "rikai-options":
+        browser.tabs.create({
+          url: browser.runtime.getURL("options/options.html"),
+        });
+        break;
+      case "rikai-vnhook":
+        // Chrome doesn't require us to check, and in fact doesn't **allow** us to check for clipboardRead permission
+        // because it's technically not required so we're not allowed to include it, but we still have to have a way of
+        // checking it for Firefox. However we need to check if we're in firefox land or chrome land in a non-async way
+        // that's why we check if getBrowserInfo exists, rather than actually calling it
+
+        const allowed = browser.runtime.getBrowserInfo
+          ? await browser.permissions.request({
+              permissions: ["clipboardRead"],
+            })
+          : true;
+
+        if (!allowed) return;
+
+        browser.tabs.create({
+          url: browser.runtime.getURL("vn-hook/index.html"),
+        });
+        break;
+
+      case "anki-bulk-import":
+        browser.tabs
+          .query({ active: true, currentWindow: true })
+          .then((tabs) => {
+            browser.tabs.sendMessage(tabs[0].id, { type: "bulkAudioImport" });
+          });
+    }
+  });
 });
 
-// @ts-ignore
-browser.contextMenus.create({
-  title: "Visual Novel Hook",
-  contexts: ["browser_action"],
-  onclick: async () => {
-    // Chrome doesn't require us to check, and in fact doesn't **allow** us to check for clipboardRead permission
-    // because it's technically not required so we're not allowed to include it, but we still have to have a way of
-    // checking it for Firefox. However we need to check if we're in firefox land or chrome land in a non-async way
-    // that's why we check if getBrowserInfo exists, rather than actually calling it
-
-    const allowed = browser.runtime.getBrowserInfo
-        ? await browser.permissions.request({ permissions: ["clipboardRead"] })
-        : true;
-
-    if (!allowed) return;
-
-    browser.tabs.create({
-        url: browser.extension.getURL("vn-hook/index.html"),
-    });
-  }
-});
-
-// @ts-ignore
-browser.contextMenus.create({
-  id: 'anki-bulk-import',
-  title: "Bulk Import Audio To Anki",
-  contexts: ["browser_action"],
-  onclick: () => {
-    browser.tabs.query({active: true, currentWindow: true}).then((tabs) => {
-      browser.tabs.sendMessage(tabs[0].id, {type: "bulkAudioImport"});
-    });
-  },
-});
+console.log("Startup");
