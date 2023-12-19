@@ -1,90 +1,109 @@
-import defaultConfig, {Config} from '../defaultConfig';
+import defaultConfig, { Config } from "../defaultConfig";
 
 let timer = null;
-let previousContent = ""
+let previousContent = "";
 let config: Config = defaultConfig;
 
-browser.storage.sync.get('config').then(({config: extensionConfig}: { config?: Config }) => {
+browser.storage.sync
+  .get("config")
+  .then(({ config: extensionConfig }: { config?: Config }) => {
     config = extensionConfig || defaultConfig;
     updateTimer(config.vnHookClipboardFrequency);
-});
+    showHideCount(config.vnHookShowCount);
+  });
 
-browser.storage.onChanged.addListener(({config: {newValue: extensionConfig}}: { config: { newValue: Config } }, areaName) => {
-    if (areaName === 'local' || !extensionConfig) return;
+browser.storage.onChanged.addListener(
+  (
+    { config: { newValue: extensionConfig } }: { config: { newValue: Config } },
+    areaName
+  ) => {
+    if (areaName === "local" || !extensionConfig) return;
 
     config = extensionConfig || defaultConfig;
     updateTimer(config.vnHookClipboardFrequency);
-});
+    showHideCount(config.vnHookShowCount);
+  }
+);
+
+const showHideCount = (shouldShow: boolean) => {
+  const vnContent = document.getElementById("vn-content");
+  if (shouldShow && !vnContent.classList.contains("with-count")) {
+    vnContent.classList.add("with-count");
+  }
+
+  if (!shouldShow && vnContent.classList.contains("with-count")) {
+    vnContent.classList.remove("with-count");
+  }
+};
 
 const shouldScroll = (): boolean => {
-    if (!config.vnAutoScroll || config.vnHookAppendToTop) return false;
+  if (!config.vnAutoScroll || config.vnHookAppendToTop) return false;
 
-    const rikaiWindow = document.getElementById('rikaichan-window')
+  const rikaiWindow = document.getElementById("rikaichan-window");
 
-    if (rikaiWindow && rikaiWindow.style.display !== "none") return false;
+  if (rikaiWindow && rikaiWindow.style.display !== "none") return false;
 
-    const LEEWAY = 170; // Amount of "leeway" pixels before latching onto the bottom.
+  const LEEWAY = 170; // Amount of "leeway" pixels before latching onto the bottom.
 
-    // Some obscene browser shit because making sense is for dweebs
-    const offset = window.innerHeight + window.scrollY;
-    const distanceFromBottom = document.body.offsetHeight - offset;
+  // Some obscene browser shit because making sense is for dweebs
+  const offset = window.innerHeight + window.scrollY;
+  const distanceFromBottom = document.body.offsetHeight - offset;
 
-    return distanceFromBottom < LEEWAY;
-}
+  return distanceFromBottom < LEEWAY;
+};
 
 const checkClipboard = () => {
-    // @ts-ignore
-    navigator.clipboard.readText().then(content => {
-        if (content.trim() !== previousContent.trim() && content !== "") {
-            addItem(content.trim());
-        }
-    })
+  // @ts-ignore
+  navigator.clipboard.readText().then((content) => {
+    if (content.trim() !== previousContent.trim() && content !== "") {
+      addItem(content.trim());
+    }
+  });
 };
 
 const updateTimer = (frequency: number) => {
-    const stop = () => {
-        clearInterval(timer.id)
-        timer = null
-    };
+  const stop = () => {
+    clearInterval(timer.id);
+    timer = null;
+  };
 
-    const start = () => {
-        const id = setInterval(checkClipboard, frequency)
-        timer = {id, interval: frequency}
-    };
+  const start = () => {
+    const id = setInterval(checkClipboard, frequency);
+    timer = { id, interval: frequency };
+  };
 
-    if (timer === null) {
-        start()
-    } else if (timer.interval !== frequency) {
-        stop()
-        start()
-    }
+  if (timer === null) {
+    start();
+  } else if (timer.interval !== frequency) {
+    stop();
+    start();
+  }
 };
 
 const addItem = (text: string) => {
-    const checkShouldScroll = shouldScroll();
+  const checkShouldScroll = shouldScroll();
 
-    previousContent = text.trim();
-    const vnContent = document.getElementById('vn-content');
+  previousContent = text.trim();
+  const vnContent = document.getElementById("vn-content");
 
-    const newItem = document.createElement('div');
-    newItem.innerText = text;
+  const newItem = document.createElement("div");
+  newItem.innerText = text;
 
-    if (config.vnHookAppendToTop) {
-        vnContent.prepend(newItem);
-    } else {
-        vnContent.appendChild(newItem);
-    }
+  if (config.vnHookAppendToTop) {
+    vnContent.prepend(newItem);
+  } else {
+    vnContent.appendChild(newItem);
+  }
 
-    if (checkShouldScroll) {
-        window.scrollTo(0, document.body.scrollHeight);
-    }
-}
+  if (checkShouldScroll) {
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+};
 
 export default () => {
-    updateTimer(defaultConfig.vnHookClipboardFrequency);
+  updateTimer(defaultConfig.vnHookClipboardFrequency);
 
-    $("#clear-page").on('click', () => {
-        document.getElementById('vn-content').innerHTML = '';
-    })
-}
-
+  $("#clear-page").on("click", () => {
+    document.getElementById("vn-content").innerHTML = "";
+  });
+};
