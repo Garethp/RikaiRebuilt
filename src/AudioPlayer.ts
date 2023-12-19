@@ -1,6 +1,7 @@
 import Utils from "./Utils";
 import { isKanjiResult, SearchResults } from "./interfaces/SearchResults";
-import { resourcePrefix } from "./background";
+import { isManifestV3, resourcePrefix } from "./background";
+const browser = require("webextension-polyfill");
 
 export default class AudioPlayer {
   static getAudioUrl(entry: SearchResults & { selected?: number }): string {
@@ -123,9 +124,30 @@ export default class AudioPlayer {
 
   static async play(entry, config) {
     this.getAudioBase64(entry).then((content) => {
-      const audio = new Audio("data:audio/wav;base64," + content);
-      audio.volume = config.audioVolume / 100 || 1;
+      const audioSource = "data:audio/wav;base64," + content;
+      const audioVolume = config.audioVolume / 100 || 1;
+
+      if (isManifestV3) return this.playOffscreen(audioSource, audioVolume);
+
+      const audio = new Audio(audioSource);
+      audio.volume = audioVolume;
       audio.play();
+    });
+  }
+
+  static async playOffscreen(source: string, volume: number) {
+    await this.createOffscreen();
+    await browser.runtime.sendMessage({ playAudio: { source, volume } });
+  }
+
+  static async createOffscreen() {
+    // @ts-ignore
+    if (await chrome.offscreen.hasDocument()) return;
+    // @ts-ignore
+    await chrome.offscreen.createDocument({
+      url: "../offscreen-audio/index.html",
+      reasons: ["AUDIO_PLAYBACK"],
+      justification: "User Requested Audio Playback",
     });
   }
 }

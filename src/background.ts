@@ -9,7 +9,8 @@ import AudioPlayer from "./AudioPlayer";
 import { DictionaryDefinition } from "./interfaces/DictionaryDefinition";
 import Utils from "./Utils";
 import { installFrequencyDb, installPitchDb } from "./initializers";
-var browser = require("webextension-polyfill");
+
+const browser = require("webextension-polyfill");
 
 export const isManifestV3 = browser.runtime.getManifest().manifest_version == 3;
 export const resourcePrefix = isManifestV3 ? "../" : "";
@@ -338,12 +339,10 @@ browser.runtime.onMessage.addListener(async (message) => {
       let progress = 0;
 
       const id = `anki-bulk-audio-${new Date().getTime()}`;
-      // @ts-ignore
       const supportsProgress = !!browser.notifications.update;
 
       if (supportsProgress) {
         await browser.notifications.create(id, {
-          // @ts-ignore
           type: "progress",
           title: "Import audio",
           message: `Importing ${content.length} audio files`,
@@ -363,7 +362,6 @@ browser.runtime.onMessage.addListener(async (message) => {
         ? () => {
             progress = progress + 1;
 
-            // @ts-ignore
             browser.contextMenus.update("anki-bulk-import", {
               title: `Bulk Import Audio To Anki (${Math.round(
                 (progress / content.length) * 100
@@ -372,7 +370,6 @@ browser.runtime.onMessage.addListener(async (message) => {
           }
         : async () => {
             progress = progress + 1;
-            // @ts-ignore
             browser.notifications.update(id, {
               progress: Math.round((progress / content.length) * 100),
             });
@@ -381,7 +378,6 @@ browser.runtime.onMessage.addListener(async (message) => {
       await ankiImport.bulkDownloadAudio(content, updateFunction);
 
       if (!supportsProgress) {
-        // @ts-ignore
         browser.contextMenus.update("anki-bulk-import", {
           title: `Bulk Import Audio To Anki`,
         });
@@ -393,7 +389,6 @@ browser.runtime.onMessage.addListener(async (message) => {
           iconUrl: "icons/smile_star.png",
         });
       } else {
-        // @ts-ignore
         await browser.notifications.update(id, {
           type: "basic",
           message: "Import complete",
@@ -461,7 +456,6 @@ browser.runtime.onConnect.addListener((port) => {
                 isNameDictionary,
                 isKanjiDictionary,
               });
-              // @ts-ignore
               browser.storage.local.set({ installedDictionaries });
             });
         });
@@ -516,9 +510,7 @@ browser.runtime.onInstalled.addListener(
         if (!config) return;
 
         if (config.openChangelogOnUpdate) {
-          const optionsPageUrl = browser.extension.getURL(
-            "options/options.html"
-          );
+          const optionsPageUrl = browser.runtime.getURL("options/options.html");
 
           if (reason === "update") {
             browser.tabs.create({ url: `${optionsPageUrl}#changelog` });
@@ -533,7 +525,6 @@ browser.runtime.onInstalled.addListener(
           }
         }
         if (newConfigs) {
-          // @ts-ignore
           browser.storage.sync.set({ config });
         }
       });
@@ -541,53 +532,23 @@ browser.runtime.onInstalled.addListener(
 );
 
 browser.runtime.onInstalled.addListener(() => {
-  // @ts-ignore
   browser.contextMenus.removeAll();
-  // @ts-ignore
   browser.contextMenus.create({
     id: "rikai-options",
     title: "Options",
     contexts: ["all"],
-    // onclick: () => {
-    //   browser.tabs.create({
-    //     url: browser.extension.getURL("options/options.html"),
-    //   });
-    // },
   });
 
-  // @ts-ignore
   browser.contextMenus.create({
     id: "rikai-vnhook",
     title: "Visual Novel Hook",
     contexts: ["all"],
-    // onclick: async () => {
-    //   // Chrome doesn't require us to check, and in fact doesn't **allow** us to check for clipboardRead permission
-    //   // because it's technically not required so we're not allowed to include it, but we still have to have a way of
-    //   // checking it for Firefox. However we need to check if we're in firefox land or chrome land in a non-async way
-    //   // that's why we check if getBrowserInfo exists, rather than actually calling it
-    //
-    //   const allowed = browser.runtime.getBrowserInfo
-    //     ? await browser.permissions.request({ permissions: ["clipboardRead"] })
-    //     : true;
-    //
-    //   if (!allowed) return;
-    //
-    //   browser.tabs.create({
-    //     url: browser.extension.getURL("vn-hook/index.html"),
-    //   });
-    // },
   });
 
-  // @ts-ignore
   browser.contextMenus.create({
     id: "anki-bulk-import",
     title: "Bulk Import Audio To Anki",
     contexts: ["all"],
-    // onclick: () => {
-    //   browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
-    //     browser.tabs.sendMessage(tabs[0].id, { type: "bulkAudioImport" });
-    //   });
-    // },
   });
 
   browser.contextMenus.onClicked.addListener(async (info) => {

@@ -20,6 +20,7 @@ module.exports = {
     background: path.resolve(__dirname, "./src/background.ts"),
     options: path.resolve(__dirname, "./src/options/options.js"),
     "vn-hook": path.resolve(__dirname, "./src/vn-hook/index.ts"),
+    "offscreen-audio": path.resolve(__dirname, "./src/OffscreenAudio.ts"),
   },
   plugins: [
     new WebExtWebpackPlugin({
