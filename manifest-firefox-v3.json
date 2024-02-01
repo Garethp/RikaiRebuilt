@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "author": "Gareth Parker",
   "name": "RikaiRebuilt",
-  "version": "1.3.9",
+  "version": "1.4.2",
 
   "action": {
     "default_icon": {
@@ -20,7 +20,6 @@
     "contextMenus",
     "nativeMessaging",
     "notifications",
-    "scripting",
     "offscreen"
   ],
 

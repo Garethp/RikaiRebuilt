@@ -1,3 +1,6 @@
+// @ts-ignore
+const browser = require("webextension-polyfill");
+
 type Theme = {
   name: string;
   backgroundColour: string;

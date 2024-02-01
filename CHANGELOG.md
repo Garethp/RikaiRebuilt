@@ -1,5 +1,10 @@
 ## Changelog
 
+### Version 1.4.0
+ * Adding a Dark Mode for the Options/VN Hook Page
+ * Add an option to see line count for VN Hook Page
+ * Updating to Manifest V3 for Chrome only
+
 ### Version 1.3.8
  * Adding notifications for Bulk Audio Import
 

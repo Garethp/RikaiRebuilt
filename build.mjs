@@ -23,11 +23,12 @@ const build = async (name, manifestFile = "manifest.json") => {
   await copyFilesPromise([
     "build/*",
     "icons/*",
-    "libs/*",
+    "lib/*",
     "options/*",
     "resources/*",
     "styles/*",
     "vn-hook/*",
+    "offscreen-audio/*",
     manifestFile,
     `build-${name}`,
   ]);

@@ -877,7 +877,6 @@ class Rikai {
 
   async sendRequest(type: string, content: any = ""): Promise<any> {
     return browser.runtime.sendMessage({ type, content }).then((response) => {
-      console.log("WordSearch Response", response);
       if (typeof response === "undefined") {
         this.showPopup(
           "If you have the options page for RikaiRebuilt, please close that. Word search" +

@@ -101,7 +101,9 @@ export default class AudioPlayer {
     }
 
     return fetch(AudioPlayer.getAudioUrl(entry))
-      .then((response) => response.arrayBuffer())
+      .then((response) => {
+        return response.arrayBuffer();
+      })
       .then((result) => arrayBufferToBase64(result))
       .then((content) => {
         if (content === longNoAudio && shortenNoAudio === true) {

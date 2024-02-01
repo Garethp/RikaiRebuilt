@@ -41,8 +41,6 @@ export class RikaiController {
   }
 
   async enable() {
-    console.log("Enable Rikai");
-
     this.setup();
 
     if (this.enabled === true) {
@@ -287,10 +285,8 @@ browser.runtime.onMessage.addListener(async (message) => {
 
   switch (message.type) {
     case "wordSearch":
-      console.log("Starting search");
       return controller.wordSearch(message.content).then(
         (response) => {
-          console.log("Finished", response);
           return { response };
         },
         (f) => console.log(f)
@@ -531,8 +527,7 @@ browser.runtime.onInstalled.addListener(
   }
 );
 
-browser.runtime.onInstalled.addListener(() => {
-  browser.contextMenus.removeAll();
+function registerContextMenu() {
   browser.contextMenus.create({
     id: "rikai-options",
     title: "Options",
@@ -585,6 +580,8 @@ browser.runtime.onInstalled.addListener(() => {
           });
     }
   });
-});
+}
 
-console.log("Startup");
+browser.runtime.onStartup.addListener(() => {
+  registerContextMenu();
+});

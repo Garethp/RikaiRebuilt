@@ -1,8 +1,12 @@
 import AudioPlayer from "./AudioPlayer";
-import {DictionaryResult, isDictionaryResult, SearchResults} from "./interfaces/SearchResults";
-import {Config} from "./defaultConfig";
-import {AnkiFields} from "./interfaces/AnkiFields";
-import {RikaiController} from "./background";
+import {
+  DictionaryResult,
+  isDictionaryResult,
+  SearchResults,
+} from "./interfaces/SearchResults";
+import { Config } from "./defaultConfig";
+import { AnkiFields } from "./interfaces/AnkiFields";
+import { RikaiController } from "./background";
 
 export default class AnkiImport {
   private ankiUrl: string = "http://127.0.0.1:49601";
@@ -10,8 +14,6 @@ export default class AnkiImport {
 
   async makeCall(action, params) {
     if (this.MOCK_CALL) {
-      console.log(`POST ${this.ankiUrl}`);
-      console.log({ action, params });
       return;
     }
 
@@ -125,30 +127,36 @@ export default class AnkiImport {
     });
   }
 
-  async bulkDownloadAudio (files: { reading: string; kanji: string }[], onImport: () => void) {
-    const downloadPromises = files.map((file):DictionaryResult => ({
-      data: [[`${file.kanji} [${file.reading}] /something/`]],
-      matchLen: 0,
-      more: false,
-      names: false,
-      kanji :false
-    })).map((entry) => {
-      return AudioPlayer.isNoAudio(entry).then((isEmpty) => {
-        if (isEmpty) return;
-
-        const audioUrl = AudioPlayer.getAudioUrl(entry);
-        let [, dictionaryForm, reading] = entry.data[0][0].match(
-            /^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//
-        );
-
-        const audioFile = `${reading} - ${dictionaryForm}.mp3`;
-        return this.makeCall("downloadAudio", {
-          filename: audioFile,
-          url: audioUrl,
+  async bulkDownloadAudio(
+    files: { reading: string; kanji: string }[],
+    onImport: () => void
+  ) {
+    const downloadPromises = files
+      .map(
+        (file): DictionaryResult => ({
+          data: [[`${file.kanji} [${file.reading}] /something/`]],
+          matchLen: 0,
+          more: false,
+          names: false,
+          kanji: false,
         })
-            .finally(() => onImport());
-      })
-    });
+      )
+      .map((entry) => {
+        return AudioPlayer.isNoAudio(entry).then((isEmpty) => {
+          if (isEmpty) return;
+
+          const audioUrl = AudioPlayer.getAudioUrl(entry);
+          let [, dictionaryForm, reading] = entry.data[0][0].match(
+            /^(.+?)\s+(?:\[(.*?)\])?\s*\/(.+)\//
+          );
+
+          const audioFile = `${reading} - ${dictionaryForm}.mp3`;
+          return this.makeCall("downloadAudio", {
+            filename: audioFile,
+            url: audioUrl,
+          }).finally(() => onImport());
+        });
+      });
 
     return Promise.all(downloadPromises);
   }

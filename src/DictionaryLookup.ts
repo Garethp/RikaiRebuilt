@@ -193,7 +193,6 @@ export default class DictionaryLookup {
           let conjugationReason = null;
 
           if (variant.reasons.length) {
-            console.log(variant.reasons);
             const reasons = variant.reasons.map((reasonList) =>
               reasonList.map((reason) => deinflectL10NKeys[reason]).join(" < ")
             );
